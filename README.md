@@ -1,3 +1,4 @@
+
 <div align="center">
   <h1><strong style="font-size: 24px;">JuniorBridge</strong></h1>
 </div>
@@ -255,7 +256,7 @@ Estudiantes de la Tecnicatura Superior en Desarrollo de Software - ISPC
 
 <p align="center">
   <!-- Imagen del equipo -->
-  <img src="https://github.com/user-attachments/assets/38717c75-119a-4af4-ae62-02f62f49f886" alt="El Palomar" width="400px" />
+  <img width="500" alt="El Palomar" src="https://github.com/user-attachments/assets/07d60560-4f9b-43d1-b0cd-b9dbf757e7bf" />
 </p>
 
 
