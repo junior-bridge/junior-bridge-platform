@@ -222,6 +222,23 @@ Ramas utilizadas para cada funcionalidad o historia de usuario.
 
 ---
 
+## 🚀 Flujo de Trabajo
+
+Cada integrante desarrolla sus tareas en ramas independientes.
+
+Posteriormente:
+
+1. Se realiza Pull Request.
+2. Se revisa el código.
+3. Se integra en develop.
+4. Se realizan pruebas.
+5. Se prepara release.
+6. Se fusiona a main.
+
+De esta manera garantizamos estabilidad y trazabilidad durante todo el ciclo de desarrollo.
+
+---
+
 # 🕊️ ¿Quiénes Somos? 🕊️
 
 **_El Palomar_**
