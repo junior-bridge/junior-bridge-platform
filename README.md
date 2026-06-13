@@ -5,7 +5,7 @@
 
 <p align="center">
   <!-- Logo o imagen del proyecto -->
-  <img src="URL_LOGO" alt="JuniorBridge" width="400px" />
+  <img src="https://github.com/user-attachments/assets/0a3752da-6d97-45a6-9a5c-06185fc06367" alt="JuniorBridge" width="600px" />
 </p>
 
 **_JuniorBridge es una plataforma web que conecta testers junior y estudiantes IT con emprendedores y pequeñas startups que necesitan validar sus aplicaciones antes de lanzarlas al mercado._**
