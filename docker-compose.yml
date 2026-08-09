@@ -1,0 +1,37 @@
+services:
+
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - mongodb
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: junior_bridge
+      POSTGRES_USER: junior_bridge
+      POSTGRES_PASSWORD: junior_bridge_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_junior_bridge:/var/lib/postgresql/data
+  mongodb:
+    image: mongo:8
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data_junior_bridge:/data/db
+
+volumes:
+  postgres_data_junior_bridge:
+  mongodb_data_junior_bridge:
