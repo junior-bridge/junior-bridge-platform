@@ -3,6 +3,7 @@ from django.db import models
 
 
 class UserManager(BaseUserManager):
+
     def create_user(self, email, password=None, **extra_fields):
         if not email:
             raise ValueError("El email es obligatorio")
@@ -39,8 +40,7 @@ class UserManager(BaseUserManager):
 
 class User(AbstractUser):
 
-    # Eliminamos los campos de AbstractUser
-    # que no vamos a utilizar.
+    # Campos de AbstractUser que no vamos a utilizar
     username = None
     first_name = None
     last_name = None
@@ -69,23 +69,35 @@ class User(AbstractUser):
 
     dni = models.CharField(
         max_length=20,
-        unique=True
+        unique=True,
+        blank=True,
+        null=True
     )
 
     phone = models.CharField(
-        max_length=20
+        max_length=20,
+        blank=True
     )
 
     sex = models.CharField(
         max_length=1,
-        choices=Sex.choices
+        choices=Sex.choices,
+        blank=True
     )
 
-    date_of_birth = models.DateField()
+    date_of_birth = models.DateField(
+        blank=True,
+        null=True
+    )
+
+    zona = models.CharField(
+        max_length=100,
+        blank=True
+    )
 
     role = models.CharField(
         max_length=10,
-        choices=Role.choices,
+        choices=Role.choices
     )
 
     reputation = models.DecimalField(
