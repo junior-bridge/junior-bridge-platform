@@ -33,31 +33,3 @@ class Project(models.Model):
     def __str__(self):
         return self.title
     
-class Postulation(models.Model):
-    States = [
-        ("PENDING", "Pending"),
-        ("ACCEPTED", "Accepted"),
-        ("REJECTED", "Rejected"),
-    ]
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='postulations')
-    tester = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='postulations')
-    state=models.CharField(max_length=20, choices=States, default="PENDING")
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    finalized_at = models.DateTimeField(null=True, blank=True)
-    def __str__(self):
-        return f"{self.tester.name} - {self.project.title}"
-
-class Work(models.Model):
-    STATES = [
-        ("PENDING", "Pending"),
-        ("IN_PROGRESS", "In Progress"),
-        ("COMPLETED", "Completed"),]
-    postulation = models.ForeignKey(Postulation, on_delete=models.CASCADE, related_name='works')
-    state = models.CharField(max_length=20, choices=STATES, default="PENDING")
-    calification = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    finalized_at = models.DateTimeField(null=True, blank=True)
-    def __str__(self):
-        return f"Work #{self.id}"
