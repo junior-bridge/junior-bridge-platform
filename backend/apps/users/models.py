@@ -1,32 +1,123 @@
+from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 
-# Create your models here.
 
-class User(models.Model):
-    name = models.CharField(max_length=100)
-    surname = models.CharField(max_length=100)
-    dni=models.CharField(max_length=20)
-    phone = models.CharField(max_length=20)
-    email = models.EmailField()
-    password = models.CharField(max_length=100)
+class UserManager(BaseUserManager):
 
-    SEXS = [
-        ("M", "Male"),
-        ("F", "Female"),
-        ("O", "Other"),
-    ]
-    ROLES = [
-        ("CLIENT", "Client"),
-        ("TESTER", "Tester"),
-        ("ADMIN", "Administrator"),
-    ]
+    def create_user(self, email, password=None, **extra_fields):
+        if not email:
+            raise ValueError("El email es obligatorio")
 
-    role = models.CharField(max_length=50,choices=ROLES)
-    sex = models.CharField(max_length=10, choices=SEXS)
-    date_of_birth = models.DateField()
-    reputation = models.DecimalField(max_digits=3, decimal_places=2, default=0)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+        email = self.normalize_email(email)
+
+        user = self.model(
+            email=email,
+            **extra_fields
+        )
+
+        user.set_password(password)
+        user.save(using=self._db)
+
+        return user
+
+    def create_superuser(self, email, password=None, **extra_fields):
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
+        extra_fields.setdefault("is_active", True)
+
+        if extra_fields.get("is_staff") is not True:
+            raise ValueError("El superusuario debe tener is_staff=True")
+
+        if extra_fields.get("is_superuser") is not True:
+            raise ValueError("El superusuario debe tener is_superuser=True")
+
+        return self.create_user(
+            email,
+            password,
+            **extra_fields
+        )
+
+
+class User(AbstractUser):
+
+    # Campos de AbstractUser que no vamos a utilizar
+    username = None
+    first_name = None
+    last_name = None
+
+    class Role(models.TextChoices):
+        CLIENT = "CLIENT", "Client"
+        TESTER = "TESTER", "Tester"
+        ADMIN = "ADMIN", "Administrator"
+
+    class Sex(models.TextChoices):
+        MALE = "M", "Male"
+        FEMALE = "F", "Female"
+        OTHER = "O", "Other"
+
+    email = models.EmailField(
+        unique=True
+    )
+
+    name = models.CharField(
+        max_length=100
+    )
+
+    surname = models.CharField(
+        max_length=100
+    )
+
+    dni = models.CharField(
+        max_length=20,
+        unique=True,
+        blank=True,
+        null=True
+    )
+
+    phone = models.CharField(
+        max_length=20,
+        blank=True
+    )
+
+    sex = models.CharField(
+        max_length=1,
+        choices=Sex.choices,
+        blank=True
+    )
+
+    date_of_birth = models.DateField(
+        blank=True,
+        null=True
+    )
+
+    zona = models.CharField(
+        max_length=100,
+        blank=True
+    )
+
+    role = models.CharField(
+        max_length=10,
+        choices=Role.choices
+    )
+
+    reputation = models.DecimalField(
+        max_digits=3,
+        decimal_places=2,
+        default=0
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
+
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = []
+
+    objects = UserManager()
 
     def __str__(self):
-        return self.name
+        return self.email
