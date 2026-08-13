@@ -1,11 +1,11 @@
 from rest_framework import serializers
 
-from .models import Proyect
+from .models import Project
 
 
-class ProyectSerializer(serializers.ModelSerializer):
+class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Proyect
+        model = Project
         fields = [
             'id',
             'title',

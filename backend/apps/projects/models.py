@@ -2,7 +2,7 @@ from django.db import models
 
 # Create your models here.
 
-class Proyect(models.Model):
+class Project(models.Model):
     STATE = [
         ("PENDING", "Pending"),
         ("OPEN", "Open"),
@@ -24,12 +24,11 @@ class Proyect(models.Model):
     demo_url = models.URLField()
     technologies = models.TextField()
     modality = models.CharField(max_length=20, choices=MODALITY)
-    # Provisorio: confirmar con el equipo el ciclo de estados del proyecto.
     state = models.CharField(max_length=20, choices=STATE, default="PENDING")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     finalized_at = models.DateTimeField(null=True, blank=True)
-    client = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='proyects_created')
+    client = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='projects_created')
 
     def __str__(self):
         return self.title
@@ -40,14 +39,14 @@ class Postulation(models.Model):
         ("ACCEPTED", "Accepted"),
         ("REJECTED", "Rejected"),
     ]
-    proyect = models.ForeignKey(Proyect, on_delete=models.CASCADE, related_name='postulations')
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='postulations')
     tester = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='postulations')
     state=models.CharField(max_length=20, choices=States, default="PENDING")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     finalized_at = models.DateTimeField(null=True, blank=True)
     def __str__(self):
-        return f"{self.tester.name} - {self.proyect.title}"
+        return f"{self.tester.name} - {self.project.title}"
 
 class Work(models.Model):
     STATES = [
