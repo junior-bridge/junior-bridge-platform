@@ -3,25 +3,48 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useUser, UserRole } from "@/context/UserContext";
 
 export default function LoginPage() {
-const navigate = useRouter();
-const handleLogin = () => {
-  navigate.push("/dashboard");
-};
+  const router = useRouter();
+  const { setUser } = useUser();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function handleLogin() {
+    setError("");
+    setLoading(true);
+
+    try {
+
+      let role: UserRole = "emprendedor";
+      if (email.includes("tester")) role = "tester";
+      if (email.includes("admin")) role = "admin";
+
+      setUser({
+        name: email.split("@")[0],
+        email,
+        role,
+      });
+
+      router.push("/dashboard");
+    } catch {
+      setError("Credenciales incorrectas. Intenta de nuevo.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
-    <main className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
-      <div className="bg-white rounded-3xl border-16 border-[#71A398] shadow-xl w-full max-w-md px-10 py-10">
+    <main className="min-h-screen flex items-center justify-center px-4">
+      <div className="bg-[#dde8e5] rounded-3xl border-2 border-[#71A398] p-8 w-full max-w-lg shadow-xl">
+        <div className="bg-white rounded-2xl px-10 py-10">
+
         <div className="flex flex-col items-center mb-6">
-          <Image
-            src="/logo.png"
-            alt="Juniorbridge"
-            width={160}
-            height={50}
-            priority
-            className="mb-2 h-auto"
-          />
+          <Image src="/logo.png" alt="Juniorbridge" width={160} height={50} priority className="mb-2 h-auto" />
           <p className="text-gray-600 text-sm">Inicia sesión para continuar</p>
         </div>
 
@@ -30,7 +53,6 @@ const handleLogin = () => {
             <Image src="/google.png" alt="Google" width={20} height={20} className="h-auto" />
             Continúa con Google
           </button>
-
           <button className="flex items-center justify-center gap-2 w-full border border-gray-300 rounded-full py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition">
             <Image src="/github.png" alt="GitHub" width={20} height={20} className="h-auto" />
             Continúa con GitHub
@@ -45,26 +67,28 @@ const handleLogin = () => {
 
         <form className="flex flex-col gap-4" onSubmit={(e) => { e.preventDefault(); handleLogin(); }}>
           <div className="flex flex-col gap-1">
-            <label htmlFor="email" className="text-sm text-gray-700">
-              Correo Electrónico
-            </label>
+            <label htmlFor="email" className="text-sm text-gray-700">Correo Electrónico</label>
             <input
               id="email"
               type="email"
               autoComplete="email"
-              className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-600"
             />
           </div>
 
           <div className="flex flex-col gap-1">
-            <label htmlFor="password" className="text-sm text-gray-700">
-              Contraseña
-            </label>
+            <label htmlFor="password" className="text-sm text-gray-700">Contraseña</label>
             <input
               id="password"
               type="password"
               autoComplete="current-password"
-              className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-300"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-600"
             />
             <div className="flex justify-end">
               <Link href="/forgot-password" className="text-xs text-gray-500 hover:underline">
@@ -73,13 +97,15 @@ const handleLogin = () => {
             </div>
           </div>
 
+          {error && <p className="text-xs text-red-500 text-center">{error}</p>}
+
           <button
             type="submit"
-            className="w-full rounded-full py-2.5 text-white text-sm font-semibold transition hover:opacity-90 mt-1"
+            disabled={loading}
+            className="w-full rounded-full py-2.5 text-white text-sm font-semibold transition hover:opacity-90 mt-1 disabled:opacity-60"
             style={{ backgroundColor: "#e07b39" }}
-            onClick={handleLogin}
           >
-            Iniciar Sesión
+            {loading ? "Ingresando..." : "Iniciar Sesión"}
           </button>
         </form>
 
@@ -89,6 +115,7 @@ const handleLogin = () => {
             Regístrate
           </Link>
         </p>
+        </div>
       </div>
     </main>
   );
