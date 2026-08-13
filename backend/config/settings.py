@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     'apps.postulations',
     'apps.users',
     'apps.reports',
-    'apps.proyects',
+    'apps.projects',
 ]
 
 AUTH_USER_MODEL = "users.User"
