@@ -12,7 +12,7 @@ class Postulation(models.Model):
     status = models.CharField(max_length=20, choices=State.choices, default=State.PENDING)
 
     id_project=models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='postulations')
-    id_tester=models.ForeignKey('user.User', on_delete=models.CASCADE, related_name='postulations')
+    id_tester=models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='postulations')
 
     postulation_date = models.DateTimeField(auto_now_add=True)
 
