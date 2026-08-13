@@ -4,20 +4,35 @@ from django.db import models
 
 class Proyect(models.Model):
     STATE = [
+        ("PENDING", "Pending"),
         ("OPEN", "Open"),
         ("IN_PROGRESS", "In Progress"),
+        ("IN_REVIEW", "In Review"),
         ("COMPLETED", "Completed"),
+        ("REJECTED", "Rejected"),
     ]
-    name = models.CharField(max_length=100)
+
+    MODALITY = [
+        ("REMOTE", "Remote"),
+        ("ON_SITE", "On Site"),
+        ("HYBRID", "Hybrid"),
+    ]
+
+    title = models.CharField(max_length=100)
     description = models.TextField()
-    information=models.TextField()
-    state=models.CharField(max_length=20, choices=STATE, default="OPEN")
+    repository = models.URLField()
+    demo_url = models.URLField()
+    technologies = models.TextField()
+    modality = models.CharField(max_length=20, choices=MODALITY)
+    # Provisorio: confirmar con el equipo el ciclo de estados del proyecto.
+    state = models.CharField(max_length=20, choices=STATE, default="PENDING")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     finalized_at = models.DateTimeField(null=True, blank=True)
     client = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='proyects_created')
+
     def __str__(self):
-        return self.name
+        return self.title
     
 class Postulation(models.Model):
     States = [
@@ -32,7 +47,7 @@ class Postulation(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     finalized_at = models.DateTimeField(null=True, blank=True)
     def __str__(self):
-        return f"{self.tester.name} - {self.proyect.name}"
+        return f"{self.tester.name} - {self.proyect.title}"
 
 class Work(models.Model):
     STATES = [
