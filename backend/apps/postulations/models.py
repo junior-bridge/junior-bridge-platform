@@ -9,7 +9,7 @@ class Postulation(models.Model):
         REJECTED = 'rejected', 'Rejected'
 
     id_postulation = models.BigAutoField(primary_key=True)
-    state = models.CharField(max_length=20, choices=State.choices, default=State.PENDING)
+    status = models.CharField(max_length=20, choices=State.choices, default=State.PENDING)
 
     id_project=models.ForeignKey('projects.Project', on_delete=models.CASCADE, related_name='postulations')
     id_tester=models.ForeignKey('user.User', on_delete=models.CASCADE, related_name='postulations')
