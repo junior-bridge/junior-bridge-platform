@@ -28,3 +28,19 @@ class ProjectSerializer(serializers.ModelSerializer):
             'updated_at',
             'finalized_at',
         ]
+
+
+class ProjectStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = ['state']
+
+    def validate_state(self, value):
+        allowed_states = ['OPEN', 'REJECTED']
+
+        if value not in allowed_states:
+            raise serializers.ValidationError(
+                'The state must be OPEN or REJECTED.'
+            )
+
+        return value
