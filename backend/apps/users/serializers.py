@@ -36,7 +36,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
             "surname": { "required": True, },
 
-            "zona": { "required": True, "allow_blank": False, },
+            "zona": { "required": False, "allow_blank": False, },
 
             "dni": { "required": False, "allow_null": True, "allow_blank": True, },
 
