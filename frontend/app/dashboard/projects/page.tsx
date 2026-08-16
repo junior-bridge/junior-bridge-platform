@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useUser } from "@/context/UserContext";
 import { Plus, ChevronRight, Search } from "lucide-react";
 
@@ -45,9 +46,9 @@ export default function ProjectsPage() {
           </p>
         </div>
         {user.role === "emprendedor" && (
-          <button className="flex items-center gap-2 rounded-full px-5 py-2.5 text-white text-sm font-semibold hover:opacity-90 transition" style={{ backgroundColor: "#e07b39" }}>
+          <Link href="/dashboard/projects/new" className="flex items-center gap-2 rounded-full px-5 py-2.5 text-white text-sm font-semibold hover:opacity-90 transition" style={{ backgroundColor: "#e07b39" }}>
             <Plus size={15} /> Nuevo Proyecto
-          </button>
+          </Link>
         )}
       </div>
 
