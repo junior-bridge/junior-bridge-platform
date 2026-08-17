@@ -175,8 +175,7 @@ class LogoutView(APIView):
             try:
                 RefreshToken(refresh_token).blacklist()
             except TokenError:
-                # Si el token ya expiró o es inválido,
-                # igual eliminamos las cookies.
+                
                 pass
 
         response = Response(
