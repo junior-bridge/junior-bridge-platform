@@ -144,6 +144,8 @@ ACCOUNT_SIGNUP_FIELDS = [
     "password2*",
 ]
 
+SOCIALACCOUNT_ADAPTER = "apps.users.adapter.JuniorBridgeSocialAccountAdapter"
+
 # Django REST Framework
 
 REST_FRAMEWORK = {
