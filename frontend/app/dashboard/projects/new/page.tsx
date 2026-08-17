@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import Input from "@/components/ui/Input";
 import { useUser } from "@/context/UserContext";
 
 type ProjectForm = {
@@ -36,16 +37,16 @@ function isValidHttpUrl(value: string) {
 }
 
 export default function NewProjectPage() {
-  const { user } = useUser();
+  const { user, isClient } = useUser();
   const router = useRouter();
   const [form, setForm] = useState<ProjectForm>(initialForm);
   const [errors, setErrors] = useState<ProjectFormErrors>({});
 
   useEffect(() => {
-    if (user && user.role !== "emprendedor") {
+    if (user && !isClient) {
       router.replace("/dashboard/projects");
     }
-  }, [router, user]);
+  }, [isClient, router, user]);
 
   function validateForm() {
     const nextErrors: ProjectFormErrors = {};
@@ -99,15 +100,15 @@ export default function NewProjectPage() {
     if (!validateForm()) return;
   }
 
-  function getInputClassName(field: keyof ProjectForm) {
+  function getControlClassName(field: keyof ProjectForm) {
     const borderClass = errors[field]
-      ? "border-red-400 focus:ring-red-200"
-      : "border-gray-200 focus:ring-teal-300";
+      ? "border-red-400"
+      : "border-gray-300";
 
-    return `border rounded-lg px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 ${borderClass}`;
+    return `border rounded-md px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-600 ${borderClass}`;
   }
 
-  if (!user || user.role !== "emprendedor") return null;
+  if (!user || !isClient) return null;
 
   return (
     <main className="px-6 py-6 max-w-3xl">
@@ -127,25 +128,18 @@ export default function NewProjectPage() {
 
       <form onSubmit={handleSubmit} noValidate className="bg-white rounded-xl p-6 shadow-sm">
         <div className="flex flex-col gap-5">
-          <div className="flex flex-col gap-1">
-            <label htmlFor="title" className="text-sm text-gray-600 font-medium">
-              Título del proyecto
-            </label>
-            <input
-              id="title"
-              name="title"
-              type="text"
-              maxLength={100}
-              required
-              value={form.title}
-              onChange={handleChange}
-              aria-invalid={Boolean(errors.title)}
-              aria-describedby={errors.title ? "title-error" : undefined}
-              placeholder="Ej.: Plataforma de gestión para comercios"
-              className={getInputClassName("title")}
-            />
-            {errors.title && <p id="title-error" className="text-xs text-red-500">{errors.title}</p>}
-          </div>
+          <Input
+            id="title"
+            name="title"
+            label="Título del proyecto"
+            type="text"
+            maxLength={100}
+            required
+            value={form.title}
+            onChange={handleChange}
+            error={errors.title}
+            placeholder="Ej.: Plataforma de gestión para comercios"
+          />
 
           <div className="flex flex-col gap-1">
             <label htmlFor="description" className="text-sm text-gray-600 font-medium">
@@ -161,70 +155,49 @@ export default function NewProjectPage() {
               aria-invalid={Boolean(errors.description)}
               aria-describedby={errors.description ? "description-error" : undefined}
               placeholder="Contanos de qué se trata el proyecto y qué necesitás validar."
-              className={`${getInputClassName("description")} resize-y`}
+              className={`${getControlClassName("description")} resize-y`}
             />
             {errors.description && <p id="description-error" className="text-xs text-red-500">{errors.description}</p>}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="flex flex-col gap-1">
-              <label htmlFor="repository" className="text-sm text-gray-600 font-medium">
-                URL del repositorio
-              </label>
-              <input
-                id="repository"
-                name="repository"
-                type="url"
-                required
-                value={form.repository}
-                onChange={handleChange}
-                aria-invalid={Boolean(errors.repository)}
-                aria-describedby={errors.repository ? "repository-error" : undefined}
-                placeholder="https://github.com/usuario/proyecto"
-                className={getInputClassName("repository")}
-              />
-              {errors.repository && <p id="repository-error" className="text-xs text-red-500">{errors.repository}</p>}
-            </div>
+            <Input
+              id="repository"
+              name="repository"
+              label="URL del repositorio"
+              type="url"
+              required
+              value={form.repository}
+              onChange={handleChange}
+              error={errors.repository}
+              placeholder="https://github.com/usuario/proyecto"
+            />
 
-            <div className="flex flex-col gap-1">
-              <label htmlFor="demo_url" className="text-sm text-gray-600 font-medium">
-                URL de la demo
-              </label>
-              <input
-                id="demo_url"
-                name="demo_url"
-                type="url"
-                required
-                value={form.demo_url}
-                onChange={handleChange}
-                aria-invalid={Boolean(errors.demo_url)}
-                aria-describedby={errors.demo_url ? "demo-url-error" : undefined}
-                placeholder="https://mi-proyecto.com"
-                className={getInputClassName("demo_url")}
-              />
-              {errors.demo_url && <p id="demo-url-error" className="text-xs text-red-500">{errors.demo_url}</p>}
-            </div>
+            <Input
+              id="demo_url"
+              name="demo_url"
+              label="URL de la demo"
+              type="url"
+              required
+              value={form.demo_url}
+              onChange={handleChange}
+              error={errors.demo_url}
+              placeholder="https://mi-proyecto.com"
+            />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="flex flex-col gap-1">
-              <label htmlFor="technologies" className="text-sm text-gray-600 font-medium">
-                Tecnologías
-              </label>
-              <input
-                id="technologies"
-                name="technologies"
-                type="text"
-                required
-                value={form.technologies}
-                onChange={handleChange}
-                aria-invalid={Boolean(errors.technologies)}
-                aria-describedby={errors.technologies ? "technologies-error" : undefined}
-                placeholder="React, Django, PostgreSQL"
-                className={getInputClassName("technologies")}
-              />
-              {errors.technologies && <p id="technologies-error" className="text-xs text-red-500">{errors.technologies}</p>}
-            </div>
+            <Input
+              id="technologies"
+              name="technologies"
+              label="Tecnologías"
+              type="text"
+              required
+              value={form.technologies}
+              onChange={handleChange}
+              error={errors.technologies}
+              placeholder="React, Django, PostgreSQL"
+            />
 
             <div className="flex flex-col gap-1">
               <label htmlFor="modality" className="text-sm text-gray-600 font-medium">
@@ -238,7 +211,7 @@ export default function NewProjectPage() {
                 onChange={handleChange}
                 aria-invalid={Boolean(errors.modality)}
                 aria-describedby={errors.modality ? "modality-error" : undefined}
-                className={getInputClassName("modality")}
+                className={getControlClassName("modality")}
               >
                 <option value="" disabled>Seleccioná una modalidad</option>
                 <option value="REMOTE">Remoto</option>

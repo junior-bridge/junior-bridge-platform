@@ -31,7 +31,7 @@ const statusColors: Record<string, string> = {
 };
 
 export default function ProjectsPage() {
-  const { user } = useUser();
+  const { user, isClient, isTester, isAdmin } = useUser();
   if (!user) return null;
 
   return (
@@ -40,12 +40,12 @@ export default function ProjectsPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-800">Proyectos</h1>
           <p className="text-gray-500 text-sm mt-1">
-            {user.role === "emprendedor" && "Gestioná tus proyectos publicados"}
-            {user.role === "tester" && "Explorá proyectos disponibles"}
-            {user.role === "admin" && "Todos los proyectos de la plataforma"}
+            {isClient && "Gestioná tus proyectos publicados"}
+            {isTester && "Explorá proyectos disponibles"}
+            {isAdmin && "Todos los proyectos de la plataforma"}
           </p>
         </div>
-        {user.role === "emprendedor" && (
+        {isClient && (
           <Link href="/dashboard/projects/new" className="flex items-center gap-2 rounded-full px-5 py-2.5 text-white text-sm font-semibold hover:opacity-90 transition" style={{ backgroundColor: "#e07b39" }}>
             <Plus size={15} /> Nuevo Proyecto
           </Link>
@@ -57,7 +57,7 @@ export default function ProjectsPage() {
         <input type="text" placeholder="Buscar proyecto..." className="bg-transparent text-sm outline-none w-full placeholder-gray-400" />
       </div>
 
-      {user.role === "emprendedor" && (
+      {isClient && (
         <div className="flex flex-col gap-4">
           {emprendedorProjects.map((p) => (
             <div key={p.id} className="bg-white rounded-xl p-5 shadow-sm">
@@ -87,7 +87,7 @@ export default function ProjectsPage() {
         </div>
       )}
 
-      {user.role === "tester" && (
+      {isTester && (
         <div className="flex flex-col gap-4">
           {testerProjects.map((p) => (
             <div key={p.id} className="bg-white rounded-xl p-5 shadow-sm flex items-center justify-between">
@@ -108,7 +108,7 @@ export default function ProjectsPage() {
         </div>
       )}
 
-      {user.role === "admin" && (
+      {isAdmin && (
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <table className="w-full text-sm">
             <thead>
