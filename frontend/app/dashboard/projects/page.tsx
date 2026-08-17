@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useUser } from "@/context/UserContext";
 import { Plus, ChevronRight, Search } from "lucide-react";
 
-const emprendedorProjects = [
+const clientProjects = [
   { id: "PRJ-001", name: "SaaS Dashboard", description: "Plataforma de gestión empresarial", testers: 3, bugs: 8, progress: 65, status: "IN PROGRESS", created: "01 Ago 2026" },
   { id: "PRJ-002", name: "App Fintech", description: "Aplicación de pagos móviles", testers: 1, bugs: 2, progress: 90, status: "IN REVIEW", created: "15 Jul 2026" },
   { id: "PRJ-003", name: "E-commerce Platform", description: "Tienda online con carrito y checkout", testers: 2, bugs: 15, progress: 100, status: "PUBLISHED", created: "10 Jun 2026" },
@@ -59,7 +59,7 @@ export default function ProjectsPage() {
 
       {isClient && (
         <div className="flex flex-col gap-4">
-          {emprendedorProjects.map((p) => (
+          {clientProjects.map((p) => (
             <div key={p.id} className="bg-white rounded-xl p-5 shadow-sm">
               <div className="flex items-start justify-between mb-3">
                 <div>
