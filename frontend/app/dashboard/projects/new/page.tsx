@@ -6,6 +6,10 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Input from "@/components/ui/Input";
 import { useUser } from "@/context/UserContext";
+import {
+  createProject,
+  type ProjectModality,
+} from "@/lib/api";
 
 type ProjectForm = {
   title: string;
@@ -41,6 +45,9 @@ export default function NewProjectPage() {
   const router = useRouter();
   const [form, setForm] = useState<ProjectForm>(initialForm);
   const [errors, setErrors] = useState<ProjectFormErrors>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
     if (user && !isClient) {
@@ -93,11 +100,42 @@ export default function NewProjectPage() {
 
     setForm((currentForm) => ({ ...currentForm, [field]: value }));
     setErrors((currentErrors) => ({ ...currentErrors, [field]: undefined }));
+    setSubmitError("");
   }
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!validateForm()) return;
+
+    setIsSubmitting(true);
+    setSubmitError("");
+
+    try {
+      await createProject({
+        title: form.title.trim(),
+        description: form.description.trim(),
+        repository: form.repository.trim(),
+        demo_url: form.demo_url.trim(),
+        technologies: form.technologies.trim(),
+        modality: form.modality as ProjectModality,
+      });
+
+      setSuccessMessage(
+        "Proyecto enviado correctamente y pendiente de revisión.",
+      );
+
+      window.setTimeout(() => {
+        router.push("/dashboard/projects");
+      }, 2000);
+    } catch (error) {
+      setSubmitError(
+        error instanceof Error
+          ? error.message
+          : "No se pudo publicar el proyecto.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   function getControlClassName(field: keyof ProjectForm) {
@@ -224,6 +262,14 @@ export default function NewProjectPage() {
         </div>
 
         <div className="flex items-center justify-end gap-3 mt-7 pt-5 border-t border-gray-100">
+          <div className="mr-auto" aria-live="polite">
+            {submitError && (
+              <p className="text-sm text-red-500">{submitError}</p>
+            )}
+            {successMessage && (
+              <p className="text-sm text-green-700">{successMessage}</p>
+            )}
+          </div>
           <Link
             href="/dashboard/projects"
             className="rounded-full px-5 py-2.5 text-sm font-semibold text-gray-600 border border-gray-200 hover:bg-gray-50 transition"
@@ -232,7 +278,8 @@ export default function NewProjectPage() {
           </Link>
           <button
             type="submit"
-            className="rounded-full px-5 py-2.5 text-white text-sm font-semibold hover:opacity-90 transition"
+            disabled={isSubmitting || Boolean(successMessage)}
+            className="rounded-full px-5 py-2.5 text-white text-sm font-semibold hover:opacity-90 transition disabled:opacity-60 disabled:cursor-not-allowed"
             style={{ backgroundColor: "#e07b39" }}
           >
             Publicar proyecto
