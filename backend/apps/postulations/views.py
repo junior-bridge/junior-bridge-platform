@@ -46,3 +46,60 @@ class ProjectPostulationCreateView(APIView):
             serializer.data,
             status=status.HTTP_201_CREATED
         )
+
+
+class PostulationAcceptView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, id_postulation):
+        try:
+            postulation = Postulation.objects.get(pk=id_postulation)
+        except Postulation.DoesNotExist:
+            return Response(
+                {"detail": "Postulation not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        if request.user != postulation.id_project.client:
+            return Response(
+                {"detail": "Only the client project owner can accept postulations."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        postulation.status = "Accepted"
+        postulation.save()
+
+        serializer = PostulationSerializer(postulation)
+
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK
+        )
+
+class PostulationRejectView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, id_postulation):
+        try:
+            postulation = Postulation.objects.get(pk=id_postulation)
+        except Postulation.DoesNotExist:
+            return Response(
+                {"detail": "Postulation not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        if request.user != postulation.id_project.client:
+            return Response(
+                {"detail": "Only the client project owner can reject postulations."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        postulation.status = "Rejected"
+        postulation.save()
+
+        serializer = PostulationSerializer(postulation)
+
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK
+        )
