@@ -1,9 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useUser } from "@/context/UserContext";
 import { Plus, ChevronRight, Search } from "lucide-react";
 
-const emprendedorProjects = [
+const clientProjects = [
   { id: "PRJ-001", name: "SaaS Dashboard", description: "Plataforma de gestión empresarial", testers: 3, bugs: 8, progress: 65, status: "IN PROGRESS", created: "01 Ago 2026" },
   { id: "PRJ-002", name: "App Fintech", description: "Aplicación de pagos móviles", testers: 1, bugs: 2, progress: 90, status: "IN REVIEW", created: "15 Jul 2026" },
   { id: "PRJ-003", name: "E-commerce Platform", description: "Tienda online con carrito y checkout", testers: 2, bugs: 15, progress: 100, status: "PUBLISHED", created: "10 Jun 2026" },
@@ -30,7 +31,7 @@ const statusColors: Record<string, string> = {
 };
 
 export default function ProjectsPage() {
-  const { user } = useUser();
+  const { user, isClient, isTester, isAdmin } = useUser();
   if (!user) return null;
 
   return (
@@ -39,15 +40,15 @@ export default function ProjectsPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-800">Proyectos</h1>
           <p className="text-gray-500 text-sm mt-1">
-            {user.role === "emprendedor" && "Gestioná tus proyectos publicados"}
-            {user.role === "tester" && "Explorá proyectos disponibles"}
-            {user.role === "admin" && "Todos los proyectos de la plataforma"}
+            {isClient && "Gestioná tus proyectos publicados"}
+            {isTester && "Explorá proyectos disponibles"}
+            {isAdmin && "Todos los proyectos de la plataforma"}
           </p>
         </div>
-        {user.role === "emprendedor" && (
-          <button className="flex items-center gap-2 rounded-full px-5 py-2.5 text-white text-sm font-semibold hover:opacity-90 transition" style={{ backgroundColor: "#e07b39" }}>
+        {isClient && (
+          <Link href="/dashboard/projects/new" className="flex items-center gap-2 rounded-full px-5 py-2.5 text-white text-sm font-semibold hover:opacity-90 transition" style={{ backgroundColor: "#e07b39" }}>
             <Plus size={15} /> Nuevo Proyecto
-          </button>
+          </Link>
         )}
       </div>
 
@@ -56,9 +57,9 @@ export default function ProjectsPage() {
         <input type="text" placeholder="Buscar proyecto..." className="bg-transparent text-sm outline-none w-full placeholder-gray-400" />
       </div>
 
-      {user.role === "emprendedor" && (
+      {isClient && (
         <div className="flex flex-col gap-4">
-          {emprendedorProjects.map((p) => (
+          {clientProjects.map((p) => (
             <div key={p.id} className="bg-white rounded-xl p-5 shadow-sm">
               <div className="flex items-start justify-between mb-3">
                 <div>
@@ -86,7 +87,7 @@ export default function ProjectsPage() {
         </div>
       )}
 
-      {user.role === "tester" && (
+      {isTester && (
         <div className="flex flex-col gap-4">
           {testerProjects.map((p) => (
             <div key={p.id} className="bg-white rounded-xl p-5 shadow-sm flex items-center justify-between">
@@ -107,7 +108,7 @@ export default function ProjectsPage() {
         </div>
       )}
 
-      {user.role === "admin" && (
+      {isAdmin && (
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <table className="w-full text-sm">
             <thead>
