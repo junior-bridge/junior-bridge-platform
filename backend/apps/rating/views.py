@@ -73,3 +73,30 @@ class PostulationRatingView(APIView):
             RatingSerializer(rating).data,
             status=status.HTTP_201_CREATED,
         )
+
+class RatingUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, id_rating):
+        try:
+            rating = Rating.objects.get(
+                pk=id_rating
+            )
+        except Rating.DoesNotExist:
+            return Response(
+                {"detail": "Rating not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        serializer = RatingSerializer(
+            rating,
+            data=request.data,
+        )
+
+        serializer.is_valid(raise_exception=True)
+        rating = serializer.save()
+
+        return Response(
+            RatingSerializer(rating).data,
+            status=status.HTTP_200_OK,
+        )
