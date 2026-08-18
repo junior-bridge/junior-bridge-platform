@@ -22,7 +22,7 @@ function StarRow({ label, value }: { label: string; value: number }) {
 
 export default function ReputationPage() {
   const { user } = useUser();
-  if (!user || user.role !== "tester") return <div className="px-6 py-6"><p className="text-gray-500">Esta sección es solo para testers.</p></div>;
+  if (!user || user.role !== "TESTER") return <div className="px-6 py-6"><p className="text-gray-500">Esta sección es solo para testers.</p></div>;
 
   const avg = (ratings.reduce((s, r) => s + r.stars, 0) / ratings.length).toFixed(1);
 

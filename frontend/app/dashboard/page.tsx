@@ -7,15 +7,14 @@ import AdminDashboard from "@/app/dashboard/views/AdminDashboard";
 
 export default function DashboardPage() {
   const { user } = useUser();
-
   if (!user) return null;
 
   switch (user.role) {
-    case "emprendedor":
+    case "CLIENT":
       return <EmprendedorDashboard userName={user.name} />;
-    case "tester":
+    case "TESTER":
       return <TesterDashboard userName={user.name} />;
-    case "admin":
+    case "ADMIN":
       return <AdminDashboard userName={user.name} />;
   }
 }

@@ -17,7 +17,7 @@ const topTesters = [
 
 export default function StatsPage() {
   const { user } = useUser();
-  if (!user || user.role !== "admin") return <div className="px-6 py-6"><p className="text-gray-500">Acceso restringido.</p></div>;
+  if (!user || user.role !== "ADMIN") return <div className="px-6 py-6"><p className="text-gray-500">Acceso restringido.</p></div>;
 
   return (
     <div className="px-6 py-6">
