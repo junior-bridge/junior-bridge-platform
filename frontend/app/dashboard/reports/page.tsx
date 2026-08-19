@@ -27,7 +27,7 @@ export default function ReportsPage() {
   const { user } = useUser();
   if (!user) return null;
 
-  const reports = user.role === "tester" ? testerReports : user.role === "emprendedor" ? emprendedorReports : adminReports;
+  const reports = user.role === "TESTER" ? testerReports : user.role === "CLIENT" ? emprendedorReports : adminReports;
 
   return (
     <div className="px-6 py-6">
@@ -35,12 +35,12 @@ export default function ReportsPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-800">Reportes</h1>
           <p className="text-gray-500 text-sm mt-1">
-            {user.role === "emprendedor" && "Bugs reportados en tus proyectos"}
-            {user.role === "tester" && "Tus reportes de bugs enviados"}
-            {user.role === "admin" && "Todos los reportes de la plataforma"}
+            {user.role === "CLIENT" && "Bugs reportados en tus proyectos"}
+            {user.role === "TESTER" && "Tus reportes de bugs enviados"}
+            {user.role === "ADMIN" && "Todos los reportes de la plataforma"}
           </p>
         </div>
-        {user.role === "tester" && (
+        {user.role === "TESTER" && (
           <button className="flex items-center gap-2 rounded-full px-5 py-2.5 text-white text-sm font-semibold hover:opacity-90" style={{ backgroundColor: "#e07b39" }}>
             <Plus size={15} /> Nuevo Reporte
           </button>
@@ -53,7 +53,7 @@ export default function ReportsPage() {
             <tr className="text-[10px] text-gray-400 uppercase tracking-wide border-b border-gray-100 bg-gray-50">
               <th className="text-left px-4 py-3 font-semibold">ID</th>
               <th className="text-left px-4 py-3 font-semibold">Proyecto</th>
-              {user.role !== "tester" && <th className="text-left px-4 py-3 font-semibold">Tester</th>}
+              {user.role !== "TESTER" && <th className="text-left px-4 py-3 font-semibold">Tester</th>}
               <th className="text-left px-4 py-3 font-semibold">Descripción</th>
               <th className="text-left px-4 py-3 font-semibold">Riesgo</th>
               <th className="text-left px-4 py-3 font-semibold">Estado</th>
@@ -65,7 +65,7 @@ export default function ReportsPage() {
               <tr key={r.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50 cursor-pointer">
                 <td className="px-4 py-3 text-gray-500 font-medium text-xs">{r.id}</td>
                 <td className="px-4 py-3 text-gray-600 text-xs">{r.project}</td>
-                {user.role !== "tester" && <td className="px-4 py-3 text-gray-500 text-xs">{"tester" in r ? String(r.tester) : ""}</td>}
+                {user.role !== "TESTER" && <td className="px-4 py-3 text-gray-500 text-xs">{"tester" in r ? String(r.tester) : ""}</td>}
                 <td className="px-4 py-3 text-gray-600 text-xs max-w-xs truncate">{r.description}</td>
                 <td className="px-4 py-3"><span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${riskColors[r.risk]}`}>{r.risk}</span></td>
                 <td className="px-4 py-3"><span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${statusColors[r.status]}`}>{r.status}</span></td>
