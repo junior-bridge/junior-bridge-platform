@@ -19,8 +19,7 @@ class ProjectPostulationCreateView(APIView):
                 {"detail": "Project not found."},
                 status=status.HTTP_404_NOT_FOUND
             )
-
-        if request.user.role != "Tester":
+        if request.user.role not in ("Tester", "TESTER"):
             return Response(
                 {"detail": "Only testers can apply to projects."},
                 status=status.HTTP_403_FORBIDDEN
