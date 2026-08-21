@@ -140,7 +140,7 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "JuniorBridge API",
     "DESCRIPTION": "API for JuniorBridge platform",
     "VERSION": "1.0.0",
-    "SERVE_PERMISSION_CLASSES": ["rest_framework.permissions.AllowedAny"]
+    "SERVE_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny"]
 }
 
 
