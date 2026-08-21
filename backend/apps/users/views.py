@@ -13,6 +13,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from .serializers import RegisterSerializer, LoginSerializer, UserSerializer
 
+from drf_spectacular.utils import extend_schema, OpenApiResponse
 
 def get_tokens_for_user(user):
 
@@ -63,23 +64,43 @@ def clear_auth_cookies(response):
 
     return response
 
-
+@extend_schema(tags=['Authentication / Token'])
 @method_decorator(ensure_csrf_cookie, name="dispatch")
 class CsrfTokenView(APIView):
 
     permission_classes = [AllowAny]
-
+    @extend_schema(
+        summary="Get Token CSRF",
+        description="Stablishes the CSRF cookie required for protected requests.",
+        responses={
+            200: OpenApiResponse(
+                description="Cookie CSRF stablish correctly."
+            ),
+        },
+    )
     def get(self, request):
         return Response(
-            {"detail": "CSRF cookie establecida."},
+            {"detail": "CSRF cookie stablished."},
             status=status.HTTP_200_OK,
         )
 
 
+@extend_schema(tags=['Authentication'])
 class RegisterView(APIView):
 
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        summary="User Register",
+        description="Create a new user account and automatically log in.",
+        request=RegisterSerializer,
+        responses={
+            201:UserSerializer,
+            400: OpenApiResponse(
+                description="Invalid Data"
+            ),
+        },
+    )
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -97,10 +118,22 @@ class RegisterView(APIView):
         return set_auth_cookies(response, tokens)
 
 
+@extend_schema(tags=['Authentication'])
 class LoginView(APIView):
 
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        summary="Login",
+        description="Authenticates the user and sets the authentication cookies.",
+        request=LoginSerializer,
+        responses={
+            200:UserSerializer,
+            400: OpenApiResponse(
+                description="Invalid Data o Credentials"
+            ),
+        },
+    )
     def post(self, request):
         serializer = LoginSerializer(
             data=request.data,
@@ -122,10 +155,26 @@ class LoginView(APIView):
         return set_auth_cookies(response, tokens)
 
 
+@extend_schema(tags=['Authentication / Token'])
 class CookieTokenRefreshView(APIView):
 
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        summary="Renew access token",
+        description=(
+            "Renew access token using the refresh token stored in the HttpOnly cookie."
+        ),
+        request=None,
+        responses={
+            200: OpenApiResponse(
+                description="Token renewed successfully."
+            ),
+            401: OpenApiResponse(
+                description="Refresh token invalid ,expiered or inexistent."
+            ),
+        },
+    )
     def post(self, request):
         refresh_token = request.COOKIES.get("refresh_token")
 
@@ -164,10 +213,21 @@ class CookieTokenRefreshView(APIView):
         return set_auth_cookies(response, tokens)
 
 
+@extend_schema(tags=['Authentication'])
 class LogoutView(APIView):
 
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        summary="Logout",
+        description=" Logout the user and clear the authentication cookies.",
+        request=None,
+        responses={
+            200: OpenApiResponse(
+                description="Logout Successfully."
+            ),
+        },
+    )
     def post(self, request):
         refresh_token = request.COOKIES.get("refresh_token")
 
@@ -187,10 +247,22 @@ class LogoutView(APIView):
         return clear_auth_cookies(response)
 
 
+@extend_schema(tags=['Authentication / Profile'])
 class ProfileView(APIView):
 
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        summary="Get profile",
+        request=None,
+        description="Get the user data authenticated.",
+        responses={
+            200: UserSerializer,
+            401: OpenApiResponse(
+                description="User is not authenticated"
+            ),
+        },
+    )
     def get(self, request):
         serializer = UserSerializer(request.user)
 
@@ -198,7 +270,21 @@ class ProfileView(APIView):
             serializer.data,
             status=status.HTTP_200_OK,
         )
-
+    
+    @extend_schema(
+        summary="Update profile",
+        description="Update partially the data of the authenticated user.",
+        request=UserSerializer,
+        responses={
+            200: UserSerializer,
+            400: OpenApiResponse(
+                description="Invalid Data"
+            ),
+            401: OpenApiResponse(
+                description="User is not authenticated"
+            ),
+        },
+    )
     def put(self, request):
         serializer = UserSerializer(
             request.user,

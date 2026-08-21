@@ -7,10 +7,29 @@ from apps.projects.models import Project
 from .models import Postulation
 from .serializers import PostulationSerializer
 
+from drf_spectacular.utils import extend_schema, OpenApiResponse
+@extend_schema(tags=['Postulations'])
+
 
 class ProjectPostulationCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        summary="Create Postulations",
+        description="Allow testers to apply to a project. Only testers can apply, and they cannot apply to the same project more than once.",
+        responses={
+            201: PostulationSerializer,
+            400: OpenApiResponse(
+                description="Tester already applied to this project."
+            ),
+            403: OpenApiResponse(
+                description="Only testers can apply to projects."
+            ),
+            404: OpenApiResponse(
+                description="Proyect not found"
+            ),
+        },
+    )
     def post(self, request, id_project):
         try:
             project = Project.objects.get(pk=id_project)
@@ -46,10 +65,23 @@ class ProjectPostulationCreateView(APIView):
             status=status.HTTP_201_CREATED
         )
 
-
+@extend_schema(tags=['Postulations'])
 class PostulationAcceptView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        summary="Accept Postulation",
+        description="Allow owner to accept a postulation.",
+        responses={
+            200: PostulationSerializer,
+            403: OpenApiResponse(
+                description="User is not the owner of the project."
+            ),
+            404: OpenApiResponse(
+                description="Postuation not found"
+            ),
+        },
+    )
     def post(self, request, id_postulation):
         try:
             postulation = Postulation.objects.get(pk=id_postulation)
@@ -74,10 +106,23 @@ class PostulationAcceptView(APIView):
             serializer.data,
             status=status.HTTP_200_OK
         )
-
+@extend_schema(tags=['Postulations'])
 class PostulationRejectView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        summary="Reject Postulation",
+        description="Allow owner to reject a postulation.",
+        responses={
+            200: PostulationSerializer,
+            403: OpenApiResponse(
+                description="User is not the owner of the project."
+            ),
+            404: OpenApiResponse(
+                description="Postulation not found."
+            ),
+        },
+    )
     def post(self, request, id_postulation):
         try:
             postulation = Postulation.objects.get(pk=id_postulation)
