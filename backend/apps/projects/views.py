@@ -5,7 +5,11 @@ from rest_framework.permissions import IsAuthenticated
 from apps.users.permissions import IsAdmin, IsClient
 
 from .models import Project
-from .serializers import ProjectSerializer, ProjectStatusSerializer
+from .serializers import (
+    PendingProjectSerializer,
+    ProjectSerializer,
+    ProjectStatusSerializer,
+)
 
 
 class ProjectCreateView(generics.CreateAPIView):
@@ -15,6 +19,18 @@ class ProjectCreateView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(client=self.request.user)
+
+
+class PendingProjectListView(generics.ListAPIView):
+    serializer_class = PendingProjectSerializer
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def get_queryset(self):
+        return (
+            Project.objects.filter(state='PENDING')
+            .select_related('client')
+            .order_by('-created_at')
+        )
 
 
 class ProjectStatusUpdateView(generics.UpdateAPIView):

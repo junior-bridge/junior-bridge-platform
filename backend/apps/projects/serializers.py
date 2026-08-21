@@ -1,6 +1,14 @@
 from rest_framework import serializers
 
+from apps.users.models import User
+
 from .models import Project
+
+
+class ProjectClientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'name', 'surname', 'email']
 
 
 class ProjectSerializer(serializers.ModelSerializer):
@@ -28,6 +36,10 @@ class ProjectSerializer(serializers.ModelSerializer):
             'updated_at',
             'finalized_at',
         ]
+
+
+class PendingProjectSerializer(ProjectSerializer):
+    client = ProjectClientSerializer(read_only=True)
 
 
 class ProjectStatusSerializer(serializers.ModelSerializer):
