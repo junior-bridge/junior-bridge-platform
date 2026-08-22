@@ -173,6 +173,14 @@ export type { User, AuthResponse };
 
 export type ProjectModality = "REMOTE" | "ON_SITE" | "HYBRID";
 
+export type ProjectState =
+  | "PENDING"
+  | "OPEN"
+  | "IN_PROGRESS"
+  | "IN_REVIEW"
+  | "COMPLETED"
+  | "REJECTED";
+
 export type CreateProjectData = {
   title: string;
   description: string;
@@ -184,13 +192,7 @@ export type CreateProjectData = {
 
 export type Project = CreateProjectData & {
   id: number;
-  state:
-    | "PENDING"
-    | "OPEN"
-    | "IN_PROGRESS"
-    | "IN_REVIEW"
-    | "COMPLETED"
-    | "REJECTED";
+  state: ProjectState;
   client: number;
   created_at: string;
   updated_at: string;
@@ -206,4 +208,39 @@ export async function createProject(
     method: "POST",
     body: JSON.stringify(data),
   });
+}
+
+export type ProjectClient = {
+  id: number;
+  name: string;
+  surname: string;
+  email: string;
+};
+
+export type AdminProject = CreateProjectData & {
+  id: number;
+  state: ProjectState;
+  client: ProjectClient;
+  created_at: string;
+  updated_at: string;
+  finalized_at: string | null;
+};
+
+export async function getProjects(): Promise<AdminProject[]> {
+  return apiFetch<AdminProject[]>("/api/projects/");
+}
+
+export async function updateProjectStatus(
+  id: number,
+  state: "OPEN" | "REJECTED",
+): Promise<{ state: "OPEN" | "REJECTED" }> {
+  await getCsrfToken();
+
+  return apiFetch<{ state: "OPEN" | "REJECTED" }>(
+    `/api/projects/${id}/status/`,
+    {
+      method: "PATCH",
+      body: JSON.stringify({ state }),
+    },
+  );
 }
