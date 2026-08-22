@@ -1,0 +1,102 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>JuniorBridge API</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@latest/swagger-ui.css">
+    <style>
+        .swagger-ui .information-container {
+            background-color: #0f172a;
+            border-radius: 12px;
+            padding: 35px 25px;
+            margin-top: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Centrar todo el contenedor de información */
+        .swagger-ui .information-container .info {
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        /* Título: JuniorBridge API */
+        .swagger-ui .info .title {
+            font-size: 34px !important;
+            font-weight: 800 !important;
+            color: #ffffff !important;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Insignias de versión (1.0.0 y OAS 3.0) */
+        .swagger-ui .info .title .version,
+        .swagger-ui .info .title .version-pragma {
+            color: #ffffff !important;
+            border-radius: 6px;
+            font-size: 13px;
+            padding: 3px 8px;
+            vertical-align: middle;
+        }
+
+        /* Enlace a /api/schema/ */
+        .swagger-ui .info .base-url {
+            color: #94a3b8 !important;
+            font-size: 13px;
+            display: block;
+            margin-top: 6px;
+        }
+
+        .swagger-ui .info .base-url a {
+            color: #60a5fa !important;
+            text-decoration: none;
+        }
+
+        /* Descripción: "API for JuniorBridge platform" */
+        .swagger-ui .info .description p {
+            color: #cbd5e1 !important;
+            font-size: 15px;
+            margin-top: 12px;
+        }
+
+
+        .swagger-ui .info::before {
+            content: "";
+            display: block;
+            height: 100px;
+            margin: 0 auto 12px auto;
+            background: url("{% static 'logo.png' %}") center/contain no-repeat;
+            color: #ffffff;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="swagger-ui"></div>
+    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@latest/swagger-ui-bundle.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@latest/swagger-ui-standalone-preset.js"></script>
+    <script>
+        window.onload = function () {
+            window.ui = SwaggerUIBundle({
+                url: "{% url 'schema' %}",
+                dom_id: '#swagger-ui',
+                deepLinking: true,
+                presets: [
+                    SwaggerUIBundle.presets.apis,
+                    SwaggerUIStandalonePreset
+                ],
+                plugins: [
+                    SwaggerUIBundle.plugins.DownloadUrl
+                ],
+                layout: "BaseLayout"
+            });
+        };
+    </script>
+</body>
+
+</html>

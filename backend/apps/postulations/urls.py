@@ -1,6 +1,6 @@
 from django.urls import path
 
-from backend.apps.postulations.views import PostulationAcceptView, PostulationRejectView
+from apps.postulations.views import PostulationAcceptView, PostulationRejectView
 
 from apps.rating.views import PostulationRatingView
 
