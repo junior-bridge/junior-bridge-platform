@@ -38,8 +38,12 @@ export default function ReportsPage() {
             {user.role === "CLIENT" && "Bugs reportados en tus proyectos"}
             {user.role === "TESTER" && "Tus reportes de bugs enviados"}
             {user.role === "ADMIN" && "Todos los reportes de la plataforma"}
+            {user.role === "CLIENT" && "Bugs reportados en tus proyectos"}
+            {user.role === "TESTER" && "Tus reportes de bugs enviados"}
+            {user.role === "ADMIN" && "Todos los reportes de la plataforma"}
           </p>
         </div>
+        
         {user.role === "TESTER" && (
           <button className="flex items-center gap-2 rounded-full px-5 py-2.5 text-white text-sm font-semibold hover:opacity-90" style={{ backgroundColor: "#e07b39" }}>
             <Plus size={15} /> Nuevo Reporte
@@ -53,6 +57,7 @@ export default function ReportsPage() {
             <tr className="text-[10px] text-gray-400 uppercase tracking-wide border-b border-gray-100 bg-gray-50">
               <th className="text-left px-4 py-3 font-semibold">ID</th>
               <th className="text-left px-4 py-3 font-semibold">Proyecto</th>
+              {user.role !== "TESTER" && <th className="text-left px-4 py-3 font-semibold">Tester</th>}
               {user.role !== "TESTER" && <th className="text-left px-4 py-3 font-semibold">Tester</th>}
               <th className="text-left px-4 py-3 font-semibold">Descripción</th>
               <th className="text-left px-4 py-3 font-semibold">Riesgo</th>

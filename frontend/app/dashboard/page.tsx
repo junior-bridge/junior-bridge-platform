@@ -7,7 +7,6 @@ import AdminDashboard from "@/app/dashboard/views/AdminDashboard";
 
 export default function DashboardPage() {
   const { user } = useUser();
-
   if (!user) return null;
 
   switch (user.role) {

@@ -4,21 +4,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Home,
-  FolderOpen,
-  ClipboardList,
-  FileText,
-  User,
-  Bell,
-  Settings,
-  LogOut,
-  Users,
-  BarChart2,
-  Bug,
+  Home, FolderOpen, ClipboardList, FileText,
+  User, Bell, Settings, LogOut, Users, BarChart2, Bug,
 } from "lucide-react";
-import { UserRole } from "@/context/UserContext";
+import type { User as ApiUser } from "@/lib/api";
 
-const navByRole: Record<UserRole, { icon: React.ElementType; label: string; href: string }[]> = {
+const navByRole: Record<ApiUser["role"], { icon: React.ElementType; label: string; href: string }[]> = {
   CLIENT: [
     { icon: Home, label: "Inicio", href: "/dashboard" },
     { icon: FolderOpen, label: "Proyectos", href: "/dashboard/projects" },
@@ -45,29 +36,29 @@ const navByRole: Record<UserRole, { icon: React.ElementType; label: string; href
   ],
 };
 
+const roleLabel: Record<ApiUser["role"], string> = {
+  CLIENT: "Emprendedor",
+  TESTER: "Tester",
+  ADMIN: "Admin",
+};
+
 interface SidebarProps {
   userName: string;
-  userRole: UserRole;
+  userRole: ApiUser["role"];
   onLogout: () => void;
 }
 
 export default function Sidebar({ userName, userRole, onLogout }: SidebarProps) {
   const pathname = usePathname();
-  const navItems = navByRole[userRole];
+  const navItems = navByRole[userRole] ?? navByRole.CLIENT;
 
   return (
     <aside className="w-48 bg-[#2d6a4f] flex flex-col justify-between py-6 px-4 shrink-0">
       <div>
         <div className="mb-1">
-          <Image
-            src="/logo.png"
-            alt="Juniorbridge"
-            width={130}
-            height={40}
-            className="h-auto"
-          />
+          <Image src="/logo.png" alt="Juniorbridge" width={130} height={40} className="h-auto brightness-0 invert" />
         </div>
-        <p className="text-green-200 text-xs text-center mb-6 capitalize">{userRole}</p>
+        <p className="text-green-200 text-xs text-center mb-6">{roleLabel[userRole]}</p>
 
         <nav className="flex flex-col gap-1">
           {navItems.map(({ icon: Icon, label, href }) => {
@@ -77,9 +68,7 @@ export default function Sidebar({ userName, userRole, onLogout }: SidebarProps) 
                 key={label}
                 href={href}
                 className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition ${
-                  isActive
-                    ? "bg-green-700 text-white font-semibold"
-                    : "text-green-100 hover:bg-green-700"
+                  isActive ? "bg-green-700 text-white font-semibold" : "text-green-100 hover:bg-green-700"
                 }`}
               >
                 <Icon size={16} />
@@ -108,17 +97,11 @@ export default function Sidebar({ userName, userRole, onLogout }: SidebarProps) 
           </Link>
         )}
 
-        <Link
-          href="/dashboard/settings"
-          className="flex items-center gap-3 px-3 py-2 rounded-lg text-green-100 hover:bg-green-700 text-sm transition"
-        >
+        <Link href="/dashboard/settings" className="flex items-center gap-3 px-3 py-2 rounded-lg text-green-100 hover:bg-green-700 text-sm transition">
           <Settings size={16} /> Configuración
         </Link>
 
-        <button
-          onClick={onLogout}
-          className="flex items-center gap-3 px-3 py-2 rounded-lg text-green-100 hover:bg-green-700 text-sm transition text-left w-full"
-        >
+        <button onClick={onLogout} className="flex items-center gap-3 px-3 py-2 rounded-lg text-green-100 hover:bg-green-700 text-sm transition text-left w-full">
           <LogOut size={16} /> Cerrar Sesión
         </button>
       </div>

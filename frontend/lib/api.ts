@@ -1,3 +1,7 @@
+// =============================================================================
+// SHARED API CLIENT
+// =============================================================================
+
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -108,6 +112,10 @@ async function apiFetch<T>(
   return response.json() as Promise<T>;
 }
 
+// =============================================================================
+// AUTHENTICATION
+// =============================================================================
+
 export type RegisterData = {
   email: string;
   password: string;
@@ -125,7 +133,6 @@ export async function registerUser(
     body: JSON.stringify(data),
   });
 }
-
 export type LoginData = {
   email: string;
   password: string;
@@ -186,3 +193,44 @@ export async function refreshToken(): Promise<void> {
 }
 
 export type { User, AuthResponse };
+
+// =============================================================================
+// PROJECTS
+// =============================================================================
+
+export type ProjectModality = "REMOTE" | "ON_SITE" | "HYBRID";
+
+export type CreateProjectData = {
+  title: string;
+  description: string;
+  repository: string;
+  demo_url: string;
+  technologies: string;
+  modality: ProjectModality;
+};
+
+export type Project = CreateProjectData & {
+  id: number;
+  state:
+    | "PENDING"
+    | "OPEN"
+    | "IN_PROGRESS"
+    | "IN_REVIEW"
+    | "COMPLETED"
+    | "REJECTED";
+  client: number;
+  created_at: string;
+  updated_at: string;
+  finalized_at: string | null;
+};
+
+export async function createProject(
+  data: CreateProjectData,
+): Promise<Project> {
+  await getCsrfToken();
+
+  return apiFetch<Project>("/api/projects/", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}

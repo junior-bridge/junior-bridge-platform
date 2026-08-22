@@ -25,18 +25,13 @@ export default function DashboardLayout({
     if (!isLoading && !isAuthenticated) {
       router.push("/login");
     }
-  }, [isLoading, isAuthenticated, router]);
+  }, [isAuthenticated, isLoading, router]);
 
-  if (isLoading) {
-    return null;
-  }
+  if (isLoading) return null;
+  if (!user) return null;
 
-  if (!user) {
-    return null;
-  }
-
-  function handleLogout() {
-    logout();
+  async function handleLogout() {
+    await logout();
     router.push("/login");
   }
 
@@ -51,11 +46,17 @@ export default function DashboardLayout({
     "?"
   ).toUpperCase();
 
+  const roleLabel: Record<string, string> = {
+  CLIENT: "Emprendedor",
+  TESTER: "Tester",
+  ADMIN: "Admin",
+};
+
   return (
     <div className="flex h-screen bg-[#f5f0eb] overflow-hidden">
       <Sidebar
         userName={displayName}
-        userRole={user.role as UserRole}
+        userRole={user.role}
         onLogout={handleLogout}
       />
 
@@ -83,7 +84,7 @@ export default function DashboardLayout({
                 </p>
 
                 <p className="text-xs text-gray-400">
-                  {user.role}
+                  {roleLabel[user.role] ?? user.role}
                 </p>
               </div>
 
