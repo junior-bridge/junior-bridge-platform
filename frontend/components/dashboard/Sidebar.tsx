@@ -19,7 +19,7 @@ import {
 import { UserRole } from "@/context/UserContext";
 
 const navByRole: Record<UserRole, { icon: React.ElementType; label: string; href: string }[]> = {
-  emprendedor: [
+  CLIENT: [
     { icon: Home, label: "Inicio", href: "/dashboard" },
     { icon: FolderOpen, label: "Proyectos", href: "/dashboard/projects" },
     { icon: ClipboardList, label: "Postulaciones", href: "/dashboard/postulations" },
@@ -27,7 +27,7 @@ const navByRole: Record<UserRole, { icon: React.ElementType; label: string; href
     { icon: User, label: "Mi Perfil", href: "/dashboard/profile" },
     { icon: Bell, label: "Notificaciones", href: "/dashboard/notifications" },
   ],
-  tester: [
+  TESTER: [
     { icon: Home, label: "Inicio", href: "/dashboard" },
     { icon: FolderOpen, label: "Proyectos", href: "/dashboard/projects" },
     { icon: Bug, label: "Mis Reportes", href: "/dashboard/reports" },
@@ -35,7 +35,7 @@ const navByRole: Record<UserRole, { icon: React.ElementType; label: string; href
     { icon: User, label: "Mi Perfil", href: "/dashboard/profile" },
     { icon: Bell, label: "Notificaciones", href: "/dashboard/notifications" },
   ],
-  admin: [
+  ADMIN: [
     { icon: Home, label: "Inicio", href: "/dashboard" },
     { icon: Users, label: "Usuarios", href: "/dashboard/users" },
     { icon: FolderOpen, label: "Proyectos", href: "/dashboard/projects" },
@@ -98,7 +98,7 @@ export default function Sidebar({ userName, userRole, onLogout }: SidebarProps) 
           <p className="text-green-100 text-xs font-medium truncate">{userName}</p>
         </div>
 
-        {userRole === "emprendedor" && (
+        {userRole === "CLIENT" && (
           <Link
             href="/dashboard/projects/new"
             className="w-full rounded-full py-2 text-white text-sm font-semibold text-center hover:opacity-90 transition"

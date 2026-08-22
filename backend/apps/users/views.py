@@ -1,8 +1,14 @@
+from urllib.parse import urlencode
+
 from django.conf import settings
-from django.views.decorators.csrf import ensure_csrf_cookie
+from django.shortcuts import redirect
+from django.urls import reverse
 from django.utils.decorators import method_decorator
+from django.views import View
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 from rest_framework import status
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -12,61 +18,18 @@ from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .serializers import RegisterSerializer, LoginSerializer, UserSerializer
-
-
-def get_tokens_for_user(user):
-
-    refresh = RefreshToken.for_user(user)
-
-    return {
-        "access": str(refresh.access_token),
-        "refresh": str(refresh),
-    }
-
-
-def set_auth_cookies(response, tokens):
-
-    response.set_cookie(
-        key="access_token",
-        value=tokens["access"],
-        httponly=settings.AUTH_COOKIE_HTTPONLY,
-        secure=settings.AUTH_COOKIE_SECURE,
-        samesite=settings.AUTH_COOKIE_SAMESITE,
-        max_age=900,
-        path="/",
-    )
-
-    response.set_cookie(
-        key="refresh_token",
-        value=tokens["refresh"],
-        httponly=settings.AUTH_COOKIE_HTTPONLY,
-        secure=settings.AUTH_COOKIE_SECURE,
-        samesite=settings.AUTH_COOKIE_SAMESITE,
-        max_age=604800,
-        path="/api/auth/token/refresh/",
-    )
-
-    return response
-
-
-def clear_auth_cookies(response):
-
-    response.delete_cookie(
-        "access_token",
-        path="/",
-    )
-
-    response.delete_cookie(
-        "refresh_token",
-        path="/api/auth/token/refresh/",
-    )
-
-    return response
+from .services import (
+    clear_auth_cookies,
+    create_auth_redirect_response,
+    create_auth_response,
+    set_auth_cookies,
+    validate_oauth_flow,
+    validate_oauth_process,
+)
 
 
 @method_decorator(ensure_csrf_cookie, name="dispatch")
 class CsrfTokenView(APIView):
-
     permission_classes = [AllowAny]
 
     def get(self, request):
@@ -75,6 +38,74 @@ class CsrfTokenView(APIView):
             status=status.HTTP_200_OK,
         )
 
+
+class GoogleOAuthStartView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        process = request.data.get("process")
+        flow = request.data.get("flow")
+
+        try:
+            validate_oauth_process(process)
+        except ValidationError:
+            return Response(
+                {"detail": "Proceso OAuth inválido."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if process == "signup":
+            try:
+                validate_oauth_flow(flow)
+            except ValidationError:
+                return Response(
+                    {"detail": "Flujo OAuth inválido."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            request.session["oauth_flow"] = flow
+
+        else:
+            request.session.pop("oauth_flow", None)
+
+        request.session["oauth_process"] = process
+        request.session.save()
+
+        finalize_url = reverse("oauth-finalize")
+
+        login_url = (
+            "/accounts/google/login/"
+            + "?"
+            + urlencode({"next": finalize_url})
+        )
+
+        return Response(
+            {
+                "login_url": login_url,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class OAuthFinalizeView(View):
+
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return redirect(
+                settings.FRONTEND_OAUTH_ERROR_URL
+            )
+
+        response = create_auth_redirect_response(
+            request.user,
+            settings.FRONTEND_OAUTH_SUCCESS_URL,
+        )
+
+        request.session.pop("oauth_process", None)
+        request.session.pop("oauth_flow", None)
+        request.session.save()
+
+        return response
+    
 
 class RegisterView(APIView):
 
@@ -85,16 +116,14 @@ class RegisterView(APIView):
         serializer.is_valid(raise_exception=True)
 
         user = serializer.save()
-        tokens = get_tokens_for_user(user)
 
-        response = Response(
-            {
+        return create_auth_response(
+            user,
+            data={
                 "user": UserSerializer(user).data,
             },
-            status=status.HTTP_201_CREATED,
+            status_code=status.HTTP_201_CREATED,
         )
-
-        return set_auth_cookies(response, tokens)
 
 
 class LoginView(APIView):
@@ -110,16 +139,14 @@ class LoginView(APIView):
         serializer.is_valid(raise_exception=True)
 
         user = serializer.validated_data["user"]
-        tokens = get_tokens_for_user(user)
 
-        response = Response(
-            {
+        return create_auth_response(
+            user,
+            data={
                 "user": UserSerializer(user).data,
             },
-            status=status.HTTP_200_OK,
+            status_code=status.HTTP_200_OK,
         )
-
-        return set_auth_cookies(response, tokens)
 
 
 class CookieTokenRefreshView(APIView):
@@ -175,7 +202,6 @@ class LogoutView(APIView):
             try:
                 RefreshToken(refresh_token).blacklist()
             except TokenError:
-                
                 pass
 
         response = Response(

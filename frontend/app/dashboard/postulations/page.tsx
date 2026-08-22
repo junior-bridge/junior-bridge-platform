@@ -30,11 +30,11 @@ export default function PostulationsPage() {
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Postulaciones</h1>
         <p className="text-gray-500 text-sm mt-1">
-          {user.role === "emprendedor" ? "Testers que se postularon a tus proyectos" : "Tus postulaciones a proyectos"}
+          {user.role === "CLIENT" ? "Testers que se postularon a tus proyectos" : "Tus postulaciones a proyectos"}
         </p>
       </div>
 
-      {user.role === "emprendedor" && (
+      {user.role === "CLIENT" && (
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <table className="w-full text-sm">
             <thead>
@@ -78,7 +78,7 @@ export default function PostulationsPage() {
         </div>
       )}
 
-      {user.role === "tester" && (
+      {user.role === "TESTER" && (
         <div className="flex flex-col gap-4">
           {testerPostulations.map((p) => (
             <div key={p.id} className="bg-white rounded-xl p-5 shadow-sm flex items-center justify-between">

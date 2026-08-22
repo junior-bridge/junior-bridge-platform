@@ -142,6 +142,33 @@ export async function loginUser(
   });
 }
 
+export type OAuthProvider = "google" | "github";
+export type OAuthProcess = "signup" | "login";
+export type OAuthFlow = "entrepreneur" | "tester";
+
+type OAuthStartResponse = {
+  login_url: string;
+};
+
+export async function startOAuth(
+  provider: OAuthProvider,
+  process: OAuthProcess,
+  flow?: OAuthFlow,
+): Promise<OAuthStartResponse> {
+  await getCsrfToken();
+
+  return apiFetch<OAuthStartResponse>(
+    `/api/auth/oauth/${provider}/start/`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        process,
+        ...(flow ? { flow } : {}),
+      }),
+    },
+  );
+}
+
 export async function getProfile(): Promise<User> {
   return apiFetch<User>("/api/auth/profile/");
 }

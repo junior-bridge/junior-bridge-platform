@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
+    "allauth.socialaccount.providers.google",
+    "allauth.socialaccount.providers.github",
 
     "apps.postulations",
     "apps.users",
@@ -145,6 +147,27 @@ ACCOUNT_SIGNUP_FIELDS = [
 ]
 
 SOCIALACCOUNT_ADAPTER = "apps.users.adapter.JuniorBridgeSocialAccountAdapter"
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = False
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
+
+SOCIALACCOUNT_PROVIDERS = {
+    "google": {
+        "SCOPE": [
+            "profile",
+            "email",
+        ],
+        "AUTH_PARAMS": {
+            "access_type": "online",
+        },
+        "EMAIL_AUTHENTICATION": True,
+        "EMAIL_AUTHENTICATION_AUTO_CONNECT": True,
+    },
+}
+
+SOCIALACCOUNT_LOGIN_ON_GET = False
+
+FRONTEND_OAUTH_SUCCESS_URL = os.environ["FRONTEND_OAUTH_SUCCESS_URL"]
+FRONTEND_OAUTH_ERROR_URL = os.environ["FRONTEND_OAUTH_ERROR_URL"]
 
 # Django REST Framework
 
@@ -176,6 +199,9 @@ CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:3001",
+    "http://127.0.0.1:3001",
 ]
 
 
@@ -183,6 +209,9 @@ CORS_ALLOWED_ORIGINS = [
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:3001",
+    "http://127.0.0.1:3001",
     # "https://app.juniorbridge.com",  # Producción
 ]
 

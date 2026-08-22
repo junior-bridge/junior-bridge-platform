@@ -1,7 +1,27 @@
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 
+from .services import (
+    apply_social_role,
+    validate_oauth_context,
+    validate_oauth_process,
+)
 
-class JuniorBridgeSocialAccountAdapter(DefaultSocialAccountAdapter):
+
+class JuniorBridgeSocialAccountAdapter(
+    DefaultSocialAccountAdapter
+):
+
+    def is_auto_signup_allowed(self, request, sociallogin):
+        process = request.session.get("oauth_process")
+
+        if process == "login":
+            return False
+
+        return super().is_auto_signup_allowed(
+            request,
+            sociallogin,
+        )
+
     def populate_user(self, request, sociallogin, data):
         user = super().populate_user(
             request,
@@ -9,23 +29,52 @@ class JuniorBridgeSocialAccountAdapter(DefaultSocialAccountAdapter):
             data,
         )
 
-        first_name = (data.get("first_name") or "").strip()
-        last_name = (data.get("last_name") or "").strip()
-        full_name = (data.get("name") or "").strip()
-        email = (data.get("email") or "").strip()
+        process = request.session.get("oauth_process")
+        flow = request.session.get("oauth_flow")
 
-        if not first_name and full_name:
-            parts = full_name.split(maxsplit=1)
+        print(
+            "OAUTH POPULATE DEBUG:",
+            "process=",
+            process,
+            "flow=",
+            flow,
+            "provider=",
+            sociallogin.account.provider,
+            "role_before=",
+            repr(user.role),
+            flush=True,
+        )
 
-            first_name = parts[0]
+        if process == "signup":
+            flow = validate_oauth_context(
+                request,
+                sociallogin.account.provider,
+            )
 
-            if len(parts) > 1 and not last_name:
-                last_name = parts[1]
+            apply_social_role(
+                user,
+                flow,
+            )
 
-        if not first_name and email:
-            first_name = email.split("@", 1)[0]
-
-        user.name = first_name
-        user.surname = last_name
+        print(
+            "OAUTH POPULATE RESULT:",
+            "process=",
+            process,
+            "flow=",
+            flow,
+            "role_after=",
+            repr(user.role),
+            flush=True,
+        )
 
         return user
+
+    def pre_social_login(self, request, sociallogin):
+        process = request.session.get("oauth_process")
+
+        validate_oauth_process(process)
+
+        return super().pre_social_login(
+            request,
+            sociallogin,
+        )

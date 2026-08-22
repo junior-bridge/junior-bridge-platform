@@ -11,11 +11,11 @@ export default function DashboardPage() {
   if (!user) return null;
 
   switch (user.role) {
-    case "emprendedor":
+    case "CLIENT":
       return <EmprendedorDashboard userName={user.name} />;
-    case "tester":
+    case "TESTER":
       return <TesterDashboard userName={user.name} />;
-    case "admin":
+    case "ADMIN":
       return <AdminDashboard userName={user.name} />;
   }
 }

@@ -45,7 +45,7 @@ export default function ProfilePage() {
               />
             </div>
           ))}
-          {user.role === "tester" && (
+          {user.role === "TESTER" && (
             <div className="flex flex-col gap-1">
               <label className="text-sm text-gray-600 font-medium">Especialidades</label>
               <input type="text" defaultValue="Web, Mobile, Security" disabled={!editing} className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-300 disabled:bg-gray-50 disabled:text-gray-400" />

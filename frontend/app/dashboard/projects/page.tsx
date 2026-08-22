@@ -39,12 +39,12 @@ export default function ProjectsPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-800">Proyectos</h1>
           <p className="text-gray-500 text-sm mt-1">
-            {user.role === "emprendedor" && "Gestioná tus proyectos publicados"}
-            {user.role === "tester" && "Explorá proyectos disponibles"}
-            {user.role === "admin" && "Todos los proyectos de la plataforma"}
+            {user.role === "CLIENT" && "Gestioná tus proyectos publicados"}
+            {user.role === "TESTER" && "Explorá proyectos disponibles"}
+            {user.role === "ADMIN" && "Todos los proyectos de la plataforma"}
           </p>
         </div>
-        {user.role === "emprendedor" && (
+        {user.role === "CLIENT" && (
           <button className="flex items-center gap-2 rounded-full px-5 py-2.5 text-white text-sm font-semibold hover:opacity-90 transition" style={{ backgroundColor: "#e07b39" }}>
             <Plus size={15} /> Nuevo Proyecto
           </button>
@@ -56,7 +56,7 @@ export default function ProjectsPage() {
         <input type="text" placeholder="Buscar proyecto..." className="bg-transparent text-sm outline-none w-full placeholder-gray-400" />
       </div>
 
-      {user.role === "emprendedor" && (
+      {user.role === "CLIENT" && (
         <div className="flex flex-col gap-4">
           {emprendedorProjects.map((p) => (
             <div key={p.id} className="bg-white rounded-xl p-5 shadow-sm">
@@ -86,7 +86,7 @@ export default function ProjectsPage() {
         </div>
       )}
 
-      {user.role === "tester" && (
+      {user.role === "TESTER" && (
         <div className="flex flex-col gap-4">
           {testerProjects.map((p) => (
             <div key={p.id} className="bg-white rounded-xl p-5 shadow-sm flex items-center justify-between">
@@ -107,7 +107,7 @@ export default function ProjectsPage() {
         </div>
       )}
 
-      {user.role === "admin" && (
+      {user.role === "ADMIN" && (
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <table className="w-full text-sm">
             <thead>
