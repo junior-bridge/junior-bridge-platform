@@ -38,7 +38,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         ]
 
 
-class PendingProjectSerializer(ProjectSerializer):
+class AdminProjectSerializer(ProjectSerializer):
     client = ProjectClientSerializer(read_only=True)
 
 

@@ -3,19 +3,13 @@ from django.urls import path
 from apps.postulations.views import ProjectPostulationCreateView
 
 from .views import (
-    PendingProjectListView,
-    ProjectCreateView,
+    ProjectListCreateView,
     ProjectStatusUpdateView,
 )
 
 
 urlpatterns = [
-    path('', ProjectCreateView.as_view(), name='project-create'),
-    path(
-        'pending/',
-        PendingProjectListView.as_view(),
-        name='pending-project-list',
-    ),
+    path('', ProjectListCreateView.as_view(), name='project-create'),
     path(
         '<int:id_project>/postulations/',
         ProjectPostulationCreateView.as_view(),

@@ -8,17 +8,42 @@ from apps.users.permissions import IsAdmin, IsClient
 
 from .models import Project
 from .serializers import (
-    PendingProjectSerializer,
+    AdminProjectSerializer,
     ProjectSerializer,
     ProjectStatusSerializer,
 )
 
 
 @extend_schema(tags=['Projects'])
-class ProjectCreateView(generics.CreateAPIView):
-    queryset = Project.objects.all()
+class ProjectListCreateView(generics.ListCreateAPIView):
+    queryset = Project.objects.select_related('client').order_by('-created_at')
     serializer_class = ProjectSerializer
-    permission_classes = [IsAuthenticated, IsClient]
+
+    def get_permissions(self):
+        role_permission = IsAdmin if self.request.method == 'GET' else IsClient
+        return [IsAuthenticated(), role_permission()]
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return AdminProjectSerializer
+
+        return ProjectSerializer
+
+    @extend_schema(
+        summary="List projects",
+        description=(
+            "Returns all projects ordered from newest to oldest. "
+            "Only administrators can access this endpoint."
+        ),
+        responses={
+            200: AdminProjectSerializer(many=True),
+            403: OpenApiResponse(
+                description="Only administrators can list projects."
+            ),
+        },
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
 
     @extend_schema(
         summary="Create Project",
@@ -37,35 +62,6 @@ class ProjectCreateView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(client=self.request.user)
-
-
-@extend_schema(tags=['Projects'])
-class PendingProjectListView(generics.ListAPIView):
-    serializer_class = PendingProjectSerializer
-    permission_classes = [IsAuthenticated, IsAdmin]
-
-    @extend_schema(
-        summary="List pending projects",
-        description=(
-            "Returns projects pending administrative review. "
-            "Only administrators can access this endpoint."
-        ),
-        responses={
-            200: PendingProjectSerializer(many=True),
-            403: OpenApiResponse(
-                description="Only administrators can list pending projects."
-            ),
-        },
-    )
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
-
-    def get_queryset(self):
-        return (
-            Project.objects.filter(state='PENDING')
-            .select_related('client')
-            .order_by('-created_at')
-        )
 
 
 @extend_schema(tags=['Projects'])
