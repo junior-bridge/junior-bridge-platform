@@ -48,6 +48,11 @@ const projectStateLabels: Record<ProjectState, string> = {
 
 type ProjectFilter = ProjectState | "ALL";
 
+type PendingAction = {
+  project: AdminProject;
+  state: "OPEN" | "REJECTED";
+};
+
 export default function ProjectsPage() {
   const { user, isClient, isTester, isAdmin } = useUser();
   const [adminProjects, setAdminProjects] = useState<AdminProject[]>([]);
@@ -56,6 +61,7 @@ export default function ProjectsPage() {
   const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [processingId, setProcessingId] = useState<number | null>(null);
+  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
@@ -77,9 +83,12 @@ export default function ProjectsPage() {
   const visibleAdminProjects = adminProjects.filter((project) => {
     const matchesState =
       projectFilter === "ALL" || project.state === projectFilter;
-    const matchesSearch = project.title
-      .toLowerCase()
-      .includes(search.trim().toLowerCase());
+    const normalizedSearch = search.trim().toLowerCase();
+    const clientName = `${project.client.name} ${project.client.surname}`
+      .toLowerCase();
+    const matchesSearch =
+      project.title.toLowerCase().includes(normalizedSearch) ||
+      clientName.includes(normalizedSearch);
 
     return matchesState && matchesSearch;
   });
@@ -88,12 +97,7 @@ export default function ProjectsPage() {
     project: AdminProject,
     state: "OPEN" | "REJECTED",
   ) {
-    const action = state === "OPEN" ? "aprobar" : "rechazar";
-
-    if (!window.confirm(`¿Confirmás que querés ${action} este proyecto?`)) {
-      return;
-    }
-
+    setPendingAction(null);
     setProcessingId(project.id);
     setMessage("");
     setError("");
@@ -250,6 +254,24 @@ export default function ProjectsPage() {
                       <td className="px-4 py-3 text-xs">
                         <p className="text-gray-700 font-medium">{project.title}</p>
                         <p className="text-gray-400 mt-1">{project.description}</p>
+                        <div className="flex gap-3 mt-2">
+                          <a
+                            href={project.repository}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[10px] text-[#2d6a4f] hover:underline"
+                          >
+                            Repositorio
+                          </a>
+                          <a
+                            href={project.demo_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[10px] text-[#2d6a4f] hover:underline"
+                          >
+                            Demo
+                          </a>
+                        </div>
                       </td>
                       <td className="px-4 py-3 text-gray-500 text-xs">
                         {project.client.name} {project.client.surname}
@@ -270,7 +292,7 @@ export default function ProjectsPage() {
                             <button
                               type="button"
                               disabled={processingId === project.id}
-                              onClick={() => handleStatusChange(project, "OPEN")}
+                              onClick={() => setPendingAction({ project, state: "OPEN" })}
                               className="bg-[#2d6a4f] text-white text-[10px] font-semibold rounded-lg px-3 py-1.5 hover:opacity-90 disabled:opacity-50"
                             >
                               Aprobar
@@ -278,7 +300,7 @@ export default function ProjectsPage() {
                             <button
                               type="button"
                               disabled={processingId === project.id}
-                              onClick={() => handleStatusChange(project, "REJECTED")}
+                              onClick={() => setPendingAction({ project, state: "REJECTED" })}
                               className="border border-red-200 text-red-600 text-[10px] font-semibold rounded-lg px-3 py-1.5 hover:bg-red-50 disabled:opacity-50"
                             >
                               Rechazar
@@ -291,6 +313,47 @@ export default function ProjectsPage() {
                 </tbody>
               </table>
             )}
+          </div>
+        </div>
+      )}
+      {pendingAction && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center px-4 z-50">
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="bg-white rounded-xl shadow-lg p-6 w-full max-w-sm"
+          >
+            <h2 className="text-lg font-bold text-gray-800 mb-2">
+              Confirmar acción
+            </h2>
+            <p className="text-sm text-gray-500 mb-6">
+              ¿Querés {pendingAction.state === "OPEN" ? "aprobar" : "rechazar"} el proyecto &quot;{pendingAction.project.title}&quot;?
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setPendingAction(null)}
+                className="border border-gray-200 text-gray-600 text-sm font-semibold rounded-lg px-4 py-2 hover:bg-gray-50"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  handleStatusChange(
+                    pendingAction.project,
+                    pendingAction.state,
+                  )
+                }
+                className={`text-white text-sm font-semibold rounded-lg px-4 py-2 hover:opacity-90 ${
+                  pendingAction.state === "OPEN"
+                    ? "bg-[#2d6a4f]"
+                    : "bg-red-600"
+                }`}
+              >
+                {pendingAction.state === "OPEN" ? "Aprobar" : "Rechazar"}
+              </button>
+            </div>
           </div>
         </div>
       )}
