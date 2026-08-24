@@ -4,7 +4,7 @@ from apps.postulations.views import PostulationAcceptView, PostulationRejectView
 
 from apps.rating.views import PostulationRatingView
 
-from apps.reports.views import PostulationReportCreateView
+from apps.reports.views import PostulationReportView
 
 
 urlpatterns = [
@@ -16,6 +16,6 @@ urlpatterns = [
         name="postulation-rating",
     ),
     path("<int:id_postulation>/reports/",
-        PostulationReportCreateView.as_view(),
+        PostulationReportView.as_view(),
         name="postulation-report-create")
 ]

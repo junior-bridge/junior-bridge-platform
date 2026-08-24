@@ -97,7 +97,7 @@ class PostulationAcceptView(APIView):
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        postulation.status = "Accepted"
+        postulation.status = Postulation.State.ACCEPTED
         postulation.save()
 
         serializer = PostulationSerializer(postulation)
@@ -138,7 +138,7 @@ class PostulationRejectView(APIView):
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        postulation.status = "Rejected"
+        postulation.status = Postulation.State.REJECTED
         postulation.save()
 
         serializer = PostulationSerializer(postulation)
