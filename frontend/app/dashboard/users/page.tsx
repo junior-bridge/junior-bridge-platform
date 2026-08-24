@@ -4,11 +4,11 @@ import { useUser } from "@/context/UserContext";
 import { Search, UserPlus } from "lucide-react";
 
 const users = [
-  { id: "USR-001", name: "Roxana Pop", email: "roxana@mail.com", role: "tester", status: "activo", joined: "01 Ago 2026", projects: 4, reputation: "4.9" },
-  { id: "USR-002", name: "Martin Díaz", email: "martin@mail.com", role: "emprendedor", status: "activo", joined: "28 Jul 2026", projects: 3, reputation: "-" },
-  { id: "USR-003", name: "Trevor Guy", email: "trevor@mail.com", role: "tester", status: "pendiente", joined: "06 Ago 2026", projects: 1, reputation: "4.2" },
-  { id: "USR-004", name: "Laura Sosa", email: "laura@mail.com", role: "emprendedor", status: "activo", joined: "15 Jul 2026", projects: 2, reputation: "-" },
-  { id: "USR-005", name: "Ringo Star", email: "ringo@mail.com", role: "tester", status: "activo", joined: "10 Jun 2026", projects: 8, reputation: "4.5" },
+  { id: "USR-001", name: "Roxana Pop", email: "roxana@mail.com", role: "TESTER", status: "activo", joined: "01 Ago 2026", projects: 4, reputation: "4.9" },
+  { id: "USR-002", name: "Martin Díaz", email: "martin@mail.com", role: "CLIENT", status: "activo", joined: "28 Jul 2026", projects: 3, reputation: "-" },
+  { id: "USR-003", name: "Trevor Guy", email: "trevor@mail.com", role: "TESTER", status: "pendiente", joined: "06 Ago 2026", projects: 1, reputation: "4.2" },
+  { id: "USR-004", name: "Laura Sosa", email: "laura@mail.com", role: "CLIENT", status: "activo", joined: "15 Jul 2026", projects: 2, reputation: "-" },
+  { id: "USR-005", name: "Ringo Star", email: "ringo@mail.com", role: "TESTER", status: "activo", joined: "10 Jun 2026", projects: 8, reputation: "4.5" },
 ];
 
 const roleColors: Record<string, string> = { tester: "bg-blue-100 text-blue-700", emprendedor: "bg-orange-100 text-orange-700" };

@@ -9,37 +9,39 @@ import {
 } from "lucide-react";
 import type { User as ApiUser } from "@/lib/api";
 
-const navByRole: Record<ApiUser["role"], { icon: React.ElementType; label: string; href: string }[]> = {
+type UserRole = ApiUser["role"];
+
+const navByRole: Record<UserRole, { icon: React.ElementType; label: string; href: string }[]> = {
   CLIENT: [
-    { icon: Home, label: "Inicio", href: "/dashboard" },
-    { icon: FolderOpen, label: "Proyectos", href: "/dashboard/projects" },
-    { icon: ClipboardList, label: "Postulaciones", href: "/dashboard/postulations" },
-    { icon: FileText, label: "Reportes recibidos", href: "/dashboard/reports" },
-    { icon: User, label: "Mi Perfil", href: "/dashboard/profile" },
-    { icon: Bell, label: "Notificaciones", href: "/dashboard/notifications" },
+    { icon: Home,          label: "Inicio",             href: "/dashboard" },
+    { icon: FolderOpen,    label: "Proyectos",           href: "/dashboard/projects" },
+    { icon: ClipboardList, label: "Postulaciones",       href: "/dashboard/postulations" },
+    { icon: FileText,      label: "Reportes recibidos",  href: "/dashboard/reports" },
+    { icon: User,          label: "Mi Perfil",           href: "/dashboard/profile" },
+    { icon: Bell,          label: "Notificaciones",      href: "/dashboard/notifications" },
   ],
   TESTER: [
-    { icon: Home, label: "Inicio", href: "/dashboard" },
-    { icon: FolderOpen, label: "Proyectos", href: "/dashboard/projects" },
-    { icon: Bug, label: "Mis Reportes", href: "/dashboard/reports" },
-    { icon: BarChart2, label: "Mi Reputación", href: "/dashboard/reputation" },
-    { icon: User, label: "Mi Perfil", href: "/dashboard/profile" },
-    { icon: Bell, label: "Notificaciones", href: "/dashboard/notifications" },
+    { icon: Home,       label: "Inicio",          href: "/dashboard" },
+    { icon: FolderOpen, label: "Proyectos",        href: "/dashboard/projects" },
+    { icon: Bug,        label: "Mis Reportes",     href: "/dashboard/reports" },
+    { icon: BarChart2,  label: "Mi Reputación",    href: "/dashboard/reputation" },
+    { icon: User,       label: "Mi Perfil",        href: "/dashboard/profile" },
+    { icon: Bell,       label: "Notificaciones",   href: "/dashboard/notifications" },
   ],
   ADMIN: [
-    { icon: Home, label: "Inicio", href: "/dashboard" },
-    { icon: Users, label: "Usuarios", href: "/dashboard/users" },
-    { icon: FolderOpen, label: "Proyectos", href: "/dashboard/projects" },
-    { icon: Bug, label: "Reportes", href: "/dashboard/reports" },
-    { icon: BarChart2, label: "Estadísticas", href: "/dashboard/stats" },
-    { icon: Bell, label: "Notificaciones", href: "/dashboard/notifications" },
+    { icon: Home,       label: "Inicio",          href: "/dashboard" },
+    { icon: Users,      label: "Usuarios",         href: "/dashboard/users" },
+    { icon: FolderOpen, label: "Proyectos",        href: "/dashboard/projects" },
+    { icon: Bug,        label: "Reportes",         href: "/dashboard/reports" },
+    { icon: BarChart2,  label: "Estadísticas",     href: "/dashboard/stats" },
+    { icon: Bell,       label: "Notificaciones",   href: "/dashboard/notifications" },
   ],
 };
 
-const roleLabel: Record<ApiUser["role"], string> = {
+const roleLabel: Record<UserRole, string> = {
   CLIENT: "Emprendedor",
   TESTER: "Tester",
-  ADMIN: "Admin",
+  ADMIN:  "Admin",
 };
 
 interface SidebarProps {
@@ -88,7 +90,11 @@ export default function Sidebar({ userName, userRole, onLogout }: SidebarProps) 
         </div>
 
         {userRole === "CLIENT" && (
-          <Link href="/dashboard/projects/new" className="w-full rounded-full py-2 text-white text-sm font-semibold text-center hover:opacity-90 transition" style={{ backgroundColor: "#e07b39" }}>
+          <Link
+            href="/dashboard/projects/new"
+            className="w-full rounded-full py-2 text-white text-sm font-semibold text-center hover:opacity-90 transition"
+            style={{ backgroundColor: "#e07b39" }}
+          >
             Publicar proyecto
           </Link>
         )}

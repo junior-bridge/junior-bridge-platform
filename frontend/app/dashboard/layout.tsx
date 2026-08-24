@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Search, Bell } from "lucide-react";
 import { useUser } from "@/context/UserContext";
+import type { User } from "@/lib/api";
 import Sidebar from "@/components/dashboard/Sidebar";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -34,7 +35,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className="flex h-screen bg-[#f5f0eb] overflow-hidden">
       <Sidebar
         userName={user.name}
-        userRole={user.role}
+        userRole={user.role as User["role"]}
         onLogout={handleLogout}
       />
 

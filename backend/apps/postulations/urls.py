@@ -1,11 +1,15 @@
 from django.urls import path
 
-from apps.postulations.views import PostulationAcceptView, PostulationRejectView
-
+from apps.postulations.views import (
+    PostulationAcceptView,
+    PostulationRejectView,
+    UserPostulationsListView,
+)
 from apps.rating.views import PostulationRatingView
 
 
 urlpatterns = [
+    path('user-active/', UserPostulationsListView.as_view(), name='postulation-user-active'),
     path('<int:id_postulation>/accept/', PostulationAcceptView.as_view(), name='postulation-accept'),
     path('<int:id_postulation>/reject/', PostulationRejectView.as_view(), name='postulation-reject'),
     path(
