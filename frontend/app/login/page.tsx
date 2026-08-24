@@ -48,28 +48,33 @@ export default function LoginPage() {
   async function handleOAuthLogin(
     provider: "google" | "github") {
     setError("");
-
-    const flow = provider === "google" ? "entrepreneur" : "tester";
-
     setOauthLoading(provider);
 
     try {
-      const response = await startOAuth("google", "login",);
-
-      const apiUrl =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
-      window.location.assign(`${apiUrl}${response.login_url}`);
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("No se pudo iniciar la autenticación con el proveedor seleccionado.");
-      }
+      const response = await startOAuth(
+        provider,
+        "login",
+      );
     
+      const apiUrl =
+        process.env.NEXT_PUBLIC_API_URL ||
+        "http://localhost:8000";
+
+      window.location.assign(
+      `${apiUrl}${response.login_url}`,
+      );
+    } catch (err) { 
+      if (err instanceof Error) { 
+        setError(err.message);
+      } else { 
+        setError(
+          "No se pudo iniciar la autenticación."
+        );
+      }
+
       setOauthLoading(null);
+      }
     }
-  }
 
   return (
     <main className="min-h-screen flex items-center justify-center px-4">
@@ -199,6 +204,3 @@ export default function LoginPage() {
   </main>
   );
 }
-
-
-

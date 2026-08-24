@@ -1,9 +1,9 @@
-from django.urls import include, path
+from django.urls import path
 
 from .views import (
     CookieTokenRefreshView,
     CsrfTokenView,
-    GoogleOAuthStartView,
+    SocialOAuthStartView,
     LoginView,
     LogoutView,
     OAuthFinalizeView,
@@ -19,6 +19,6 @@ urlpatterns = [
     path("logout/", LogoutView.as_view(), name="auth-logout"),
     path("token/refresh/", CookieTokenRefreshView.as_view(),name="token-refresh",),
     path("profile/", ProfileView.as_view(), name="auth-profile"),
-    path("oauth/google/start/", GoogleOAuthStartView.as_view(), name="google-oauth-start"),
+    path("oauth/<str:provider>/start/", SocialOAuthStartView.as_view(), name="social-oauth-start"),
     path("oauth/finalize/", OAuthFinalizeView.as_view(), name="oauth-finalize"),
 ]

@@ -1,6 +1,4 @@
-// =============================================================================
 // SHARED API CLIENT
-// =============================================================================
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
@@ -112,9 +110,7 @@ async function apiFetch<T>(
   return response.json() as Promise<T>;
 }
 
-// =============================================================================
 // AUTHENTICATION
-// =============================================================================
 
 export type RegisterData = {
   email: string;
@@ -194,9 +190,7 @@ export async function refreshToken(): Promise<void> {
 
 export type { User, AuthResponse };
 
-// =============================================================================
 // PROJECTS
-// =============================================================================
 
 export type ProjectModality = "REMOTE" | "ON_SITE" | "HYBRID";
 
