@@ -88,7 +88,11 @@ export default function Sidebar({ userName, userRole, onLogout }: SidebarProps) 
         </div>
 
         {userRole === "CLIENT" && (
-          <Link href="/dashboard/projects/new" className="w-full rounded-full py-2 text-white text-sm font-semibold text-center hover:opacity-90 transition" style={{ backgroundColor: "#e07b39" }}>
+          <Link
+            href="/dashboard/projects/new"
+            className="w-full rounded-full py-2 text-white text-sm font-semibold text-center hover:opacity-90 transition"
+            style={{ backgroundColor: "#e07b39" }}
+          >
             Publicar proyecto
           </Link>
         )}
