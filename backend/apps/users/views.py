@@ -1,12 +1,10 @@
 from urllib.parse import urlencode
-
 from django.conf import settings
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import ensure_csrf_cookie
-
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -48,10 +46,18 @@ class CsrfTokenView(APIView):
         )
 
 
-class GoogleOAuthStartView(APIView):
+class SocialOAuthStartView(APIView):
     permission_classes = [AllowAny]
 
-    def post(self, request):
+    ALLOWED_PROVIDERS = {"google", "github"}
+
+    def post(self, request, provider):
+        if provider not in self.ALLOWED_PROVIDERS:
+            return Response(
+                {"detail": "Proveedor OAuth inválido."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         process = request.data.get("process")
         flow = request.data.get("flow")
 
@@ -73,7 +79,6 @@ class GoogleOAuthStartView(APIView):
                 )
 
             request.session["oauth_flow"] = flow
-
         else:
             request.session.pop("oauth_flow", None)
 
@@ -83,7 +88,7 @@ class GoogleOAuthStartView(APIView):
         finalize_url = reverse("oauth-finalize")
 
         login_url = (
-            "/accounts/google/login/"
+            f"/accounts/{provider}/login/"
             + "?"
             + urlencode({"next": finalize_url})
         )
