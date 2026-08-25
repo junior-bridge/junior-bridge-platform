@@ -1,8 +1,15 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useUser } from "@/context/UserContext";
 import { Plus, ChevronRight, Search } from "lucide-react";
+import {
+  getProjects,
+  updateProjectStatus,
+  type AdminProject,
+  type ProjectState,
+} from "@/lib/api";
 
 const clientProjects = [
   { id: "PRJ-001", name: "SaaS Dashboard", description: "Plataforma de gestión empresarial", testers: 3, bugs: 8, progress: 65, status: "IN PROGRESS", created: "01 Ago 2026" },
@@ -16,13 +23,13 @@ const testerProjects = [
   { id: "PRJ-006", name: "Plataforma Educativa", owner: "Carlos Ruiz", skills: ["Web", "UX"], deadline: "10 Ago 2026", status: "CERRADO" },
 ];
 
-const adminProjects = [
-  { id: "PRJ-001", name: "SaaS Dashboard", owner: "Martin Díaz", testers: 3, bugs: 8, status: "IN PROGRESS", created: "01 Ago 2026" },
-  { id: "PRJ-002", name: "App Fintech", owner: "Laura Sosa", testers: 1, bugs: 2, status: "IN REVIEW", created: "15 Jul 2026" },
-  { id: "PRJ-003", name: "E-commerce", owner: "Carlos Ruiz", testers: 2, bugs: 15, status: "PUBLISHED", created: "10 Jun 2026" },
-];
-
 const statusColors: Record<string, string> = {
+  "PENDING": "bg-yellow-100 text-yellow-700",
+  "OPEN": "bg-teal-100 text-teal-700",
+  "IN_PROGRESS": "bg-green-100 text-green-700",
+  "IN_REVIEW": "bg-orange-100 text-orange-600",
+  "COMPLETED": "bg-blue-100 text-blue-700",
+  "REJECTED": "bg-red-100 text-red-700",
   "IN PROGRESS": "bg-green-100 text-green-700",
   "IN REVIEW": "bg-orange-100 text-orange-600",
   "PUBLISHED": "bg-teal-100 text-teal-700",
@@ -30,8 +37,97 @@ const statusColors: Record<string, string> = {
   "CERRADO": "bg-gray-100 text-gray-400",
 };
 
+const projectStateLabels: Record<ProjectState, string> = {
+  PENDING: "Pendiente",
+  OPEN: "Abierto",
+  IN_PROGRESS: "En progreso",
+  IN_REVIEW: "En revisión",
+  COMPLETED: "Completado",
+  REJECTED: "Rechazado",
+};
+
+type ProjectFilter = ProjectState | "ALL";
+
+type PendingAction = {
+  project: AdminProject;
+  state: "OPEN" | "REJECTED";
+};
+
 export default function ProjectsPage() {
   const { user, isClient, isTester, isAdmin } = useUser();
+  const [adminProjects, setAdminProjects] = useState<AdminProject[]>([]);
+  const [projectFilter, setProjectFilter] =
+    useState<ProjectFilter>("PENDING");
+  const [search, setSearch] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [processingId, setProcessingId] = useState<number | null>(null);
+  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    getProjects()
+      .then(setAdminProjects)
+      .catch((requestError) => {
+        setError(
+          requestError instanceof Error
+            ? requestError.message
+            : "No se pudieron cargar los proyectos.",
+        );
+      })
+      .finally(() => setIsLoading(false));
+  }, [isAdmin]);
+
+  const visibleAdminProjects = adminProjects.filter((project) => {
+    const matchesState =
+      projectFilter === "ALL" || project.state === projectFilter;
+    const normalizedSearch = search.trim().toLowerCase();
+    const clientName = `${project.client.name} ${project.client.surname}`
+      .toLowerCase();
+    const matchesSearch =
+      project.title.toLowerCase().includes(normalizedSearch) ||
+      clientName.includes(normalizedSearch);
+
+    return matchesState && matchesSearch;
+  });
+
+  async function handleStatusChange(
+    project: AdminProject,
+    state: "OPEN" | "REJECTED",
+  ) {
+    setPendingAction(null);
+    setProcessingId(project.id);
+    setMessage("");
+    setError("");
+
+    try {
+      const response = await updateProjectStatus(project.id, state);
+
+      setAdminProjects((projects) =>
+        projects.map((currentProject) =>
+          currentProject.id === project.id
+            ? { ...currentProject, state: response.state }
+            : currentProject,
+        ),
+      );
+      setMessage(
+        state === "OPEN"
+          ? "Proyecto aprobado correctamente."
+          : "Proyecto rechazado correctamente.",
+      );
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : "No se pudo actualizar el proyecto.",
+      );
+    } finally {
+      setProcessingId(null);
+    }
+  }
+
   if (!user) return null;
 
   return (
@@ -52,9 +148,31 @@ export default function ProjectsPage() {
         )}
       </div>
 
-      <div className="flex items-center gap-2 bg-white rounded-full px-4 py-2 w-72 border border-gray-200 mb-6">
-        <Search size={15} className="text-gray-400" />
-        <input type="text" placeholder="Buscar proyecto..." className="bg-transparent text-sm outline-none w-full placeholder-gray-400" />
+      <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center gap-2 bg-white rounded-full px-4 py-2 w-72 border border-gray-200">
+          <Search size={15} className="text-gray-400" />
+          <input
+            type="text"
+            placeholder="Buscar proyecto..."
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            className="bg-transparent text-sm outline-none w-full placeholder-gray-400"
+          />
+        </div>
+        {isAdmin && (
+          <select
+            value={projectFilter}
+            onChange={(event) =>
+              setProjectFilter(event.target.value as ProjectFilter)
+            }
+            className="bg-white rounded-full px-4 py-2 text-sm text-gray-600 border border-gray-200 outline-none"
+          >
+            <option value="ALL">Todos los estados</option>
+            {Object.entries(projectStateLabels).map(([state, label]) => (
+              <option key={state} value={state}>{label}</option>
+            ))}
+          </select>
+        )}
       </div>
 
       {isClient && (
@@ -109,27 +227,134 @@ export default function ProjectsPage() {
       )}
 
       {isAdmin && (
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-[10px] text-gray-400 uppercase tracking-wide border-b border-gray-100 bg-gray-50">
-                {["ID", "Proyecto", "Emprendedor", "Testers", "Bugs", "Estado", "Creado"].map(h => <th key={h} className="text-left px-4 py-3 font-semibold">{h}</th>)}
-              </tr>
-            </thead>
-            <tbody>
-              {adminProjects.map((p) => (
-                <tr key={p.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50">
-                  <td className="px-4 py-3 text-gray-400 text-xs">{p.id}</td>
-                  <td className="px-4 py-3 text-gray-700 font-medium text-xs">{p.name}</td>
-                  <td className="px-4 py-3 text-gray-500 text-xs">{p.owner}</td>
-                  <td className="px-4 py-3 text-gray-600 text-center text-xs">{p.testers}</td>
-                  <td className="px-4 py-3 text-gray-600 text-center text-xs">{p.bugs}</td>
-                  <td className="px-4 py-3"><span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${statusColors[p.status]}`}>{p.status}</span></td>
-                  <td className="px-4 py-3 text-gray-400 text-xs">{p.created}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div>
+          {message && (
+            <p className="bg-green-50 text-green-700 text-sm rounded-lg px-4 py-3 mb-4">{message}</p>
+          )}
+          {error && (
+            <p className="bg-red-50 text-red-700 text-sm rounded-lg px-4 py-3 mb-4">{error}</p>
+          )}
+
+          <div className="bg-white rounded-xl shadow-sm overflow-x-auto">
+            {isLoading ? (
+              <p className="text-center text-sm text-gray-400 py-8">Cargando proyectos...</p>
+            ) : visibleAdminProjects.length === 0 ? (
+              <p className="text-center text-sm text-gray-400 py-8">No hay proyectos para mostrar.</p>
+            ) : (
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-[10px] text-gray-400 uppercase tracking-wide border-b border-gray-100 bg-gray-50">
+                    {["ID", "Proyecto", "Emprendedor", "Modalidad", "Tecnologías", "Estado", "Creado", "Acciones"].map(h => <th key={h} className="text-left px-4 py-3 font-semibold">{h}</th>)}
+                  </tr>
+                </thead>
+                <tbody>
+                  {visibleAdminProjects.map((project) => (
+                    <tr key={project.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50">
+                      <td className="px-4 py-3 text-gray-400 text-xs">{project.id}</td>
+                      <td className="px-4 py-3 text-xs">
+                        <p className="text-gray-700 font-medium">{project.title}</p>
+                        <p className="text-gray-400 mt-1">{project.description}</p>
+                        <div className="flex gap-3 mt-2">
+                          <a
+                            href={project.repository}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[10px] text-[#2d6a4f] hover:underline"
+                          >
+                            Repositorio
+                          </a>
+                          <a
+                            href={project.demo_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[10px] text-[#2d6a4f] hover:underline"
+                          >
+                            Demo
+                          </a>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-gray-500 text-xs">
+                        {project.client.name} {project.client.surname}
+                      </td>
+                      <td className="px-4 py-3 text-gray-500 text-xs">{project.modality}</td>
+                      <td className="px-4 py-3 text-gray-500 text-xs">{project.technologies}</td>
+                      <td className="px-4 py-3">
+                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${statusColors[project.state]}`}>
+                          {projectStateLabels[project.state]}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-gray-400 text-xs">
+                        {new Date(project.created_at).toLocaleDateString("es-AR")}
+                      </td>
+                      <td className="px-4 py-3">
+                        {project.state === "PENDING" && (
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              disabled={processingId === project.id}
+                              onClick={() => setPendingAction({ project, state: "OPEN" })}
+                              className="bg-[#2d6a4f] text-white text-[10px] font-semibold rounded-lg px-3 py-1.5 hover:opacity-90 disabled:opacity-50"
+                            >
+                              Aprobar
+                            </button>
+                            <button
+                              type="button"
+                              disabled={processingId === project.id}
+                              onClick={() => setPendingAction({ project, state: "REJECTED" })}
+                              className="border border-red-200 text-red-600 text-[10px] font-semibold rounded-lg px-3 py-1.5 hover:bg-red-50 disabled:opacity-50"
+                            >
+                              Rechazar
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+      )}
+      {pendingAction && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center px-4 z-50">
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="bg-white rounded-xl shadow-lg p-6 w-full max-w-sm"
+          >
+            <h2 className="text-lg font-bold text-gray-800 mb-2">
+              Confirmar acción
+            </h2>
+            <p className="text-sm text-gray-500 mb-6">
+              ¿Querés {pendingAction.state === "OPEN" ? "aprobar" : "rechazar"} el proyecto &quot;{pendingAction.project.title}&quot;?
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setPendingAction(null)}
+                className="border border-gray-200 text-gray-600 text-sm font-semibold rounded-lg px-4 py-2 hover:bg-gray-50"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  handleStatusChange(
+                    pendingAction.project,
+                    pendingAction.state,
+                  )
+                }
+                className={`text-white text-sm font-semibold rounded-lg px-4 py-2 hover:opacity-90 ${
+                  pendingAction.state === "OPEN"
+                    ? "bg-[#2d6a4f]"
+                    : "bg-red-600"
+                }`}
+              >
+                {pendingAction.state === "OPEN" ? "Aprobar" : "Rechazar"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
