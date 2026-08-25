@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useUser } from "@/context/UserContext";
@@ -21,6 +22,22 @@ const statusColors: Record<string, string> = {
     IN_REVIEW: "bg-orange-100 text-orange-600",
     COMPLETED: "bg-teal-100 text-teal-700",
     REJECTED: "bg-red-100 text-red-600",
+};
+
+const projectStateLabels: Record<ProjectState, string> = {
+  PENDING: "Pendiente",
+  OPEN: "Abierto",
+  IN_PROGRESS: "En progreso",
+  IN_REVIEW: "En revisión",
+  COMPLETED: "Completado",
+  REJECTED: "Rechazado",
+};
+
+type ProjectFilter = ProjectState | "ALL";
+
+type PendingAction = {
+  project: AdminProject;
+  state: "OPEN" | "REJECTED";
 };
 
 export default function ProjectsPage() {

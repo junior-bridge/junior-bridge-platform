@@ -14,7 +14,7 @@ urlpatterns = [
         name='project-postulation-create'
     ),
     path(
-        '<int:pk>/status/',
+        '<int:id_project>/status/',
         ProjectStatusUpdateView.as_view(),
         name='project-status-update',
     ),
