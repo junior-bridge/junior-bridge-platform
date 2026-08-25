@@ -6,7 +6,7 @@ from apps.postulations.views import (
     UserPostulationsListView,
 )
 from apps.rating.views import PostulationRatingView
-
+from apps.reports.views import PostulationReportListCreateAPIView 
 
 urlpatterns = [
     path('user-active/', UserPostulationsListView.as_view(), name='postulation-user-active'),
@@ -16,5 +16,11 @@ urlpatterns = [
         "<int:id_postulation>/rating/",
         PostulationRatingView.as_view(),
         name="postulation-rating",
+    ),
+    
+    path(
+        "<int:postulation_id>/reports/",
+        PostulationReportListCreateAPIView.as_view(),
+        name="postulation-reports",
     ),
 ]

@@ -1,6 +1,4 @@
-// =============================================================================
 // SHARED API CLIENT
-// =============================================================================
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -96,6 +94,19 @@ async function apiFetch<T>(
             error = await response.json();
         } catch {}
 
+        if (
+            Array.isArray(error.email) &&
+            error.email.some(
+                (message) =>
+                    typeof message === "string" &&
+                    message.toLowerCase().includes("already exists"),
+            )
+        ) {
+            throw new Error(
+                "Ya existe un usuario registrado con ese correo electrónico.",
+            );
+        }
+
         throw new Error(
             typeof error.detail === "string"
                 ? error.detail
@@ -110,9 +121,7 @@ async function apiFetch<T>(
     return response.json() as Promise<T>;
 }
 
-// =============================================================================
 // AUTHENTICATION
-// =============================================================================
 
 export type RegisterData = {
     email: string;
@@ -124,11 +133,27 @@ export type RegisterData = {
 export async function registerUser(data: RegisterData): Promise<AuthResponse> {
     await getCsrfToken();
 
-    return apiFetch<AuthResponse>("/api/auth/register/", {
-        method: "POST",
-        body: JSON.stringify(data),
-    });
+    try {
+        return await apiFetch<AuthResponse>("/api/auth/register/", {
+            method: "POST",
+            body: JSON.stringify(data),
+        });
+    } catch (error) {
+        if (
+            error instanceof Error &&
+            (error.message.toLowerCase().includes("already exists") ||
+                error.message.toLowerCase().includes("already registered") ||
+                error.message.toLowerCase().includes("duplicate"))
+        ) {
+            throw new Error(
+                "Ya existe un usuario registrado con ese correo electrónico.",
+            );
+        }
+
+        throw error;
+    }
 }
+
 export type LoginData = {
     email: string;
     password: string;
@@ -140,6 +165,30 @@ export async function loginUser(data: LoginData): Promise<AuthResponse> {
     return apiFetch<AuthResponse>("/api/auth/login/", {
         method: "POST",
         body: JSON.stringify(data),
+    });
+}
+
+export type OAuthProvider = "google" | "github";
+export type OAuthProcess = "signup" | "login";
+export type OAuthFlow = "entrepreneur" | "tester";
+
+type OAuthStartResponse = {
+    login_url: string;
+};
+
+export async function startOAuth(
+    provider: OAuthProvider,
+    process: OAuthProcess,
+    flow?: OAuthFlow,
+): Promise<OAuthStartResponse> {
+    await getCsrfToken();
+
+    return apiFetch<OAuthStartResponse>(`/api/auth/oauth/${provider}/start/`, {
+        method: "POST",
+        body: JSON.stringify({
+            process,
+            ...(flow ? { flow } : {}),
+        }),
     });
 }
 
@@ -161,9 +210,7 @@ export async function refreshToken(): Promise<void> {
 
 export type { User, AuthResponse };
 
-// =============================================================================
 // PROJECTS
-// =============================================================================
 
 export type ProjectModality = "REMOTE" | "ON_SITE" | "HYBRID";
 
@@ -317,6 +364,10 @@ export type CreateReportData = {
     risk_level: string;
     capture_evidence?: File;
 };
+
+export async function getReports(): Promise<Report[]> {
+    return apiFetch<Report[]>("/api/reports/");
+}
 
 export async function createReport(
     postulationId: number,

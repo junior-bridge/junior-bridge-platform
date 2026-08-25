@@ -53,7 +53,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
         if User.objects.filter(email__iexact=value).exists():
             raise serializers.ValidationError(
-                "No se pudo completar el registro."
+                "Ya existe un usuario registrado con este email."
             )
 
         return value
