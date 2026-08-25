@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -7,12 +8,9 @@ import { useState } from "react";
 import AuthCard from "@/components/ui/AuthCard";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
-import RoleSelector, {
-  type RegistrationRole,
-} from "@/components/auth/RoleSelector";
-import { registerUser } from "@/lib/api";
+import RoleSelector, { type RegistrationRole, } from "@/components/auth/RoleSelector";
 import { useUser } from "@/context/UserContext";
-import Image from "next/image";
+import { registerUser, startOAuth } from "@/lib/api";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -30,6 +28,9 @@ export default function RegisterPage() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [oauthLoading, setOauthLoading] = useState<
+    "google" | "github" | null
+  >(null);
 
   const isEntrepreneur = selectedRole === "emprendedor";
 
@@ -53,7 +54,7 @@ export default function RegisterPage() {
 
     if (!isEntrepreneur) {
       setError(
-        "El registro de Tester Junior se realizará mediante Google o GitHub.",
+        "El registro de Tester Junior se realiza mediante Google o GitHub.",
       );
       return;
     }
@@ -67,7 +68,7 @@ export default function RegisterPage() {
         email: email.trim(),
         password,
       });
-      
+
       setUser(response.user);
 
       router.push("/dashboard");
@@ -82,19 +83,35 @@ export default function RegisterPage() {
     }
   }
 
-  function handleOAuth(provider: "google" | "github") {
+    async function handleOAuth(
+    provider: "google" | "github",
+  ) {
     setError("");
 
-    if (isEntrepreneur && provider === "github") {
-      setError("GitHub corresponde al flujo de Tester Junior.");
-      return;
-    }
+    const flow =
+      selectedRole === "emprendedor"
+        ? "entrepreneur"
+        : "tester";
 
-    setError(
-      `El registro con ${
-        provider === "google" ? "Google" : "GitHub"
-      } se implementará en el flujo OAuth.`,
-    );
+    setOauthLoading(provider);
+
+    try {
+      const response = await startOAuth(
+        provider,
+        "signup",
+        flow,
+      );
+
+      window.location.href = `http://localhost:8000${response.login_url}`;
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("No se pudo iniciar el registro con OAuth.");
+      }
+
+      setOauthLoading(null);
+    }
   }
 
   return (
@@ -106,29 +123,37 @@ export default function RegisterPage() {
         <button
           type="button"
           onClick={() => handleOAuth("google")}
-          className="flex items-center justify-center gap-2 w-full border border-gray-300 rounded-full py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition"
+          disabled={oauthLoading !== null}
+          className="flex items-center justify-center gap-2 w-full border border-gray-300 rounded-full py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <Image 
+          <Image
             src="/google.png"
             alt="Google"
             width={20}
             height={20}
           />
-          Continúa con Google
+
+          {oauthLoading === "google"
+            ? "Conectando..."
+            : "Continúa con Google"}
         </button>
 
         <button
           type="button"
           onClick={() => handleOAuth("github")}
-          className="flex items-center justify-center gap-2 w-full border border-gray-300 rounded-full py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition"
+          disabled={oauthLoading !== null}
+          className="flex items-center justify-center gap-2 w-full border border-gray-300 rounded-full py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <Image 
+          <Image
             src="/github.png"
             alt="GitHub"
             width={20}
             height={20}
           />
-          Continúa con GitHub
+
+          {oauthLoading === "github"
+            ? "Conectando..."
+            : "Continúa con GitHub"}
         </button>
       </div>
 
@@ -164,7 +189,9 @@ export default function RegisterPage() {
                 type="text"
                 autoComplete="given-name"
                 value={name}
-                onChange={(event) => setName(event.target.value)}
+                onChange={(event) =>
+                  setName(event.target.value)
+                }
                 required
               />
 
@@ -175,7 +202,9 @@ export default function RegisterPage() {
                 type="text"
                 autoComplete="family-name"
                 value={surname}
-                onChange={(event) => setSurname(event.target.value)}
+                onChange={(event) =>
+                  setSurname(event.target.value)
+                }
                 required
               />
             </div>
@@ -187,7 +216,9 @@ export default function RegisterPage() {
               type="email"
               autoComplete="email"
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              onChange={(event) =>
+                setEmail(event.target.value)
+              }
               required
             />
 
@@ -198,7 +229,9 @@ export default function RegisterPage() {
               type="password"
               autoComplete="new-password"
               value={password}
-              onChange={(event) => setPassword(event.target.value)}
+              onChange={(event) =>
+                setPassword(event.target.value)
+              }
               minLength={8}
               required
             />
@@ -222,7 +255,9 @@ export default function RegisterPage() {
                 type="checkbox"
                 checked={acceptedTerms}
                 onChange={(event) =>
-                  setAcceptedTerms(event.target.checked)
+                  setAcceptedTerms(
+                    event.target.checked,
+                  )
                 }
                 className="mt-0.5"
               />
@@ -254,7 +289,7 @@ export default function RegisterPage() {
 
             <p className="text-xs text-gray-500 mt-2 leading-relaxed max-w-xs">
               El registro de Tester se realizará mediante Google o
-              GitHub. Este flujo se habilitará con OAuth.
+              GitHub.
             </p>
 
             {error && (

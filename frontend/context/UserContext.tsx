@@ -16,6 +16,8 @@ import {
 
 import { ROLE_LABELS } from "@/constants/roles";
 
+export type UserRole = User["role"];
+
 interface UserContextType {
   user: User | null;
   setUser: (user: User | null) => void;
