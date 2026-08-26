@@ -20,13 +20,13 @@ class ProjectListCreateView(generics.ListCreateAPIView):
     serializer_class = ProjectSerializer
 
     def get_permissions(self):
-        role_permission = IsAdmin if self.request.method == 'GET' else IsClient
-        return [IsAuthenticated(), role_permission()]
+        if self.request.method == 'POST':
+            return [IsAuthenticated(), IsClient()]
+        return [IsAuthenticated()]
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
             return AdminProjectSerializer
-
         return ProjectSerializer
 
     @extend_schema(
@@ -62,6 +62,14 @@ class ProjectListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(client=self.request.user)
+
+
+class UserProjectsListView(generics.ListAPIView):
+    serializer_class = ProjectSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Project.objects.filter(client=self.request.user).order_by('-created_at')
 
 
 @extend_schema(tags=['Projects'])
