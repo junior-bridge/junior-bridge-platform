@@ -215,12 +215,12 @@ export type { User, AuthResponse };
 export type ProjectModality = "REMOTE" | "ON_SITE" | "HYBRID";
 
 export type ProjectState =
-  | "PENDING"
-  | "OPEN"
-  | "IN_PROGRESS"
-  | "IN_REVIEW"
-  | "COMPLETED"
-  | "REJECTED";
+    | "PENDING"
+    | "OPEN"
+    | "IN_PROGRESS"
+    | "IN_REVIEW"
+    | "COMPLETED"
+    | "REJECTED";
 
 export type CreateProjectData = {
     title: string;
@@ -408,7 +408,20 @@ export async function createReport(
 
     if (!response.ok) {
         const err = await response.json().catch(() => ({}));
-        throw new Error(err.detail ?? "No se pudo crear el reporte.");
+
+        let errorMessage = err.detail;
+
+        if (!errorMessage && typeof err === "object" && err !== null) {
+            const messages = Object.entries(err)
+                .map(
+                    ([key, val]) =>
+                        `${key}: ${Array.isArray(val) ? val.join(", ") : val}`,
+                )
+                .join(" | ");
+            if (messages) errorMessage = messages;
+        }
+
+        throw new Error(errorMessage ?? "No se pudo crear el reporte.");
     }
 
     return response.json();
@@ -489,36 +502,36 @@ export async function updateRating(
 }
 
 export type ProjectClient = {
-  id: number;
-  name: string;
-  surname: string;
-  email: string;
+    id: number;
+    name: string;
+    surname: string;
+    email: string;
 };
 
 export type AdminProject = CreateProjectData & {
-  id: number;
-  state: ProjectState;
-  client: ProjectClient;
-  created_at: string;
-  updated_at: string;
-  finalized_at: string | null;
+    id: number;
+    state: ProjectState;
+    client: ProjectClient;
+    created_at: string;
+    updated_at: string;
+    finalized_at: string | null;
 };
 
-export async function getProjects(): Promise<AdminProject[]> {
-  return apiFetch<AdminProject[]>("/api/projects/");
+export async function getProjectsByAdmin(): Promise<AdminProject[]> {
+    return apiFetch<AdminProject[]>("/api/projects/");
 }
 
 export async function updateProjectStatus(
-  id: number,
-  state: "OPEN" | "REJECTED",
+    id: number,
+    state: "OPEN" | "REJECTED",
 ): Promise<{ state: "OPEN" | "REJECTED" }> {
-  await getCsrfToken();
+    await getCsrfToken();
 
-  return apiFetch<{ state: "OPEN" | "REJECTED" }>(
-    `/api/projects/${id}/status/`,
-    {
-      method: "PATCH",
-      body: JSON.stringify({ state }),
-    },
-  );
+    return apiFetch<{ state: "OPEN" | "REJECTED" }>(
+        `/api/projects/${id}/status/`,
+        {
+            method: "PATCH",
+            body: JSON.stringify({ state }),
+        },
+    );
 }
