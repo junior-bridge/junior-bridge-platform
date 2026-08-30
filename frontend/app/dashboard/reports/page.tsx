@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useUser } from "@/context/UserContext";
 import { Plus, X, Upload } from "lucide-react";
 import {
-    getReports,
+    getPostulationReports,
     createReport,
     getUserPostulations,
     type Report,
@@ -70,8 +70,17 @@ export default function ReportsPage() {
     const loadReports = useCallback(async () => {
         try {
             setError(null);
-            const data = await getReports();
-            setReports(data);
+            setLoading(true);
+
+            const postulations = await getUserPostulations();
+            setUserPostulations(postulations);
+
+            const reportsPromises = postulations.map((p) =>
+                getPostulationReports(p.id_postulation).catch(() => []),
+            );
+            const reportsNested = await Promise.all(reportsPromises);
+
+            setReports(reportsNested.flat());
         } catch (err) {
             console.error("Error cargando reportes:", err);
             setError(
@@ -85,50 +94,46 @@ export default function ReportsPage() {
     }, []);
 
     useEffect(() => {
+        let isMounted = true;
+
         if (!user) return;
 
-        let isSubscribed = true;
-
-        async function fetchReports() {
+        async function initFetch() {
             try {
                 setError(null);
-                const data = await getReports();
-                if (isSubscribed) {
-                    setReports(data);
-                }
+                const postulations = await getUserPostulations();
+
+                if (!isMounted) return;
+                setUserPostulations(postulations);
+
+                const reportsPromises = postulations.map((p) =>
+                    getPostulationReports(p.id_postulation).catch(() => []),
+                );
+                const reportsNested = await Promise.all(reportsPromises);
+
+                if (!isMounted) return;
+                setReports(reportsNested.flat());
             } catch (err) {
-                if (isSubscribed) {
-                    console.error("Error cargando reportes:", err);
-                    setError(
-                        err instanceof Error
-                            ? err.message
-                            : "No se pudieron cargar los reportes.",
-                    );
-                }
+                if (!isMounted) return;
+                console.error("Error cargando reportes:", err);
+                setError(
+                    err instanceof Error
+                        ? err.message
+                        : "No se pudieron cargar los reportes.",
+                );
             } finally {
-                if (isSubscribed) {
+                if (isMounted) {
                     setLoading(false);
                 }
             }
         }
 
-        fetchReports();
+        initFetch();
 
         return () => {
-            isSubscribed = false;
+            isMounted = false;
         };
     }, [user]);
-
-    useEffect(() => {
-        if (isModalOpen && user?.role === "TESTER") {
-            getUserPostulations()
-                .then((data) => setUserPostulations(data))
-                .catch((err) =>
-                    console.error("Error al obtener postulaciones:", err),
-                );
-        }
-    }, [isModalOpen, user]);
-
     async function handleCreateReport(e: React.FormEvent) {
         e.preventDefault();
         if (!postulationId || !title || !description) {

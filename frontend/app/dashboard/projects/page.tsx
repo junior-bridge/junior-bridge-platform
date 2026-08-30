@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { useUser } from "@/context/UserContext";
-import { Plus, ChevronRight, Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import {
     getProjects,
     getUserProjects,
+    ProjectState,
+    AdminProject,
     getUserPostulations,
     applyToProject,
     updateProjectState,
@@ -25,19 +26,19 @@ const statusColors: Record<string, string> = {
 };
 
 const projectStateLabels: Record<ProjectState, string> = {
-  PENDING: "Pendiente",
-  OPEN: "Abierto",
-  IN_PROGRESS: "En progreso",
-  IN_REVIEW: "En revisión",
-  COMPLETED: "Completado",
-  REJECTED: "Rechazado",
+    PENDING: "Pendiente",
+    OPEN: "Abierto",
+    IN_PROGRESS: "En progreso",
+    IN_REVIEW: "En revisión",
+    COMPLETED: "Completado",
+    REJECTED: "Rechazado",
 };
 
 type ProjectFilter = ProjectState | "ALL";
 
 type PendingAction = {
-  project: AdminProject;
-  state: "OPEN" | "REJECTED";
+    project: AdminProject;
+    state: "OPEN" | "REJECTED";
 };
 
 export default function ProjectsPage() {
@@ -66,7 +67,6 @@ export default function ProjectsPage() {
                     setProjects(projs);
                 }
             } catch {
-                // En caso de error de red o inicialización
             } finally {
                 setLoading(false);
             }
