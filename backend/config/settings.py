@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     "apps.reports",
     "apps.projects",
     "apps.rating",
+    "apps.admin_dashboard",
 
 ]
 
