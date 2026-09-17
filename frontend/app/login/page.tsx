@@ -5,8 +5,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import Input from "@/components/ui/Input";
 import { useUser } from "@/context/UserContext";
 import { loginUser, startOAuth } from "@/lib/api";
+
+type LoginErrors = Partial<Record<"email" | "password", string>>;
 
 export default function LoginPage() {
     const router = useRouter();
@@ -14,6 +17,7 @@ export default function LoginPage() {
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [fieldErrors, setFieldErrors] = useState<LoginErrors>({});
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
     const [oauthLoading, setOauthLoading] = useState<
@@ -24,11 +28,27 @@ export default function LoginPage() {
         event.preventDefault();
 
         setError("");
+        const nextErrors: LoginErrors = {};
+        const normalizedEmail = email.trim();
+
+        if (!normalizedEmail) {
+            nextErrors.email = "El correo electrónico es obligatorio.";
+        } else if (!/^\S+@\S+\.\S+$/.test(normalizedEmail)) {
+            nextErrors.email = "Ingresá un correo electrónico válido.";
+        }
+
+        if (!password) {
+            nextErrors.password = "La contraseña es obligatoria.";
+        }
+
+        setFieldErrors(nextErrors);
+        if (Object.keys(nextErrors).length > 0) return;
+
         setLoading(true);
 
         try {
             const response = await loginUser({
-                email: email.trim(),
+                email: normalizedEmail,
                 password,
             });
 
@@ -139,42 +159,44 @@ export default function LoginPage() {
                         onSubmit={handleLogin}
                     >
                         <div className="flex flex-col gap-1">
-                            <label
-                                htmlFor="email"
-                                className="text-sm text-gray-700"
-                            >
-                                Correo Electrónico
-                            </label>
-
-                            <input
+                            <Input
                                 id="email"
                                 name="email"
+                                label="Correo Electrónico"
                                 type="email"
                                 autoComplete="email"
                                 value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                onChange={(e) => {
+                                    setEmail(e.target.value);
+                                    setFieldErrors((current) => ({
+                                        ...current,
+                                        email: undefined,
+                                    }));
+                                }}
                                 required
-                                className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-600"
+                                error={fieldErrors.email}
+                                helperText="Usá el correo con el que registraste tu cuenta."
                             />
                         </div>
 
                         <div className="flex flex-col gap-1">
-                            <label
-                                htmlFor="password"
-                                className="text-sm text-gray-700"
-                            >
-                                Contraseña
-                            </label>
-
-                            <input
+                            <Input
                                 id="password"
                                 name="password"
+                                label="Contraseña"
                                 type="password"
                                 autoComplete="current-password"
                                 value={password}
-                                onChange={(e) => setPassword(e.target.value)}
+                                onChange={(e) => {
+                                    setPassword(e.target.value);
+                                    setFieldErrors((current) => ({
+                                        ...current,
+                                        password: undefined,
+                                    }));
+                                }}
                                 required
-                                className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-600"
+                                error={fieldErrors.password}
+                                helperText="Ingresá la contraseña de tu cuenta."
                             />
 
                             <div className="flex justify-end">

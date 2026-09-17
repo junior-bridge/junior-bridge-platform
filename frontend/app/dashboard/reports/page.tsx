@@ -41,6 +41,9 @@ const statusLabels: Record<string, string> = {
     CLOSED: "RESUELTO",
 };
 
+type ReportFormField = "postulationId" | "title" | "description";
+type ReportFormErrors = Partial<Record<ReportFormField, string>>;
+
 function formatDate(date: string) {
     return new Date(date).toLocaleDateString("es-AR", {
         day: "2-digit",
@@ -59,6 +62,7 @@ export default function ReportsPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [modalError, setModalError] = useState<string | null>(null);
+    const [formErrors, setFormErrors] = useState<ReportFormErrors>({});
     const [userPostulations, setUserPostulations] = useState<Postulation[]>([]);
 
     const [postulationId, setPostulationId] = useState("");
@@ -136,18 +140,28 @@ export default function ReportsPage() {
     }, [user]);
     async function handleCreateReport(e: React.FormEvent) {
         e.preventDefault();
-        if (!postulationId || !title || !description) {
-            setModalError("Por favor completa los campos obligatorios.");
-            return;
+        const nextErrors: ReportFormErrors = {};
+
+        if (!postulationId) {
+            nextErrors.postulationId = "Seleccioná una postulación.";
         }
+        if (!title.trim()) {
+            nextErrors.title = "El título del bug es obligatorio.";
+        }
+        if (!description.trim()) {
+            nextErrors.description = "La descripción es obligatoria.";
+        }
+
+        setFormErrors(nextErrors);
+        if (Object.keys(nextErrors).length > 0) return;
 
         try {
             setSubmitting(true);
             setModalError(null);
 
             await createReport(Number(postulationId), {
-                title,
-                description,
+                title: title.trim(),
+                description: description.trim(),
                 risk_level: riskLevel,
                 capture_evidence: evidenceFile ?? undefined,
             });
@@ -158,6 +172,7 @@ export default function ReportsPage() {
             setPostulationId("");
             setEvidenceFile(null);
             setRiskLevel("MEDIUM");
+            setFormErrors({});
 
             await loadReports();
         } catch (err) {
@@ -357,10 +372,20 @@ export default function ReportsPage() {
                                 <select
                                     required
                                     value={postulationId}
-                                    onChange={(e) =>
-                                        setPostulationId(e.target.value)
+                                    onChange={(e) => {
+                                        setPostulationId(e.target.value);
+                                        setFormErrors((current) => ({
+                                            ...current,
+                                            postulationId: undefined,
+                                        }));
+                                    }}
+                                    aria-invalid={Boolean(formErrors.postulationId)}
+                                    aria-describedby={
+                                        formErrors.postulationId
+                                            ? "postulation-error"
+                                            : undefined
                                     }
-                                    className="w-full text-xs rounded-lg border border-gray-200 px-3 py-2 outline-none focus:border-orange-500"
+                                    className={`w-full text-xs rounded-lg border px-3 py-2 outline-none focus:border-orange-500 ${formErrors.postulationId ? "border-red-400" : "border-gray-200"}`}
                                 >
                                     <option value="">
                                         Selecciona una postulación...
@@ -376,6 +401,19 @@ export default function ReportsPage() {
                                         </option>
                                     ))}
                                 </select>
+                                {formErrors.postulationId && (
+                                    <p
+                                        id="postulation-error"
+                                        className="mt-1 text-xs text-red-500"
+                                    >
+                                        {formErrors.postulationId}
+                                    </p>
+                                )}
+                                {!formErrors.postulationId && (
+                                    <p className="mt-1 text-xs text-gray-500">
+                                        Elegí el proyecto en el que encontraste el problema.
+                                    </p>
+                                )}
                             </div>
 
                             <div>
@@ -386,10 +424,35 @@ export default function ReportsPage() {
                                     type="text"
                                     required
                                     value={title}
-                                    onChange={(e) => setTitle(e.target.value)}
+                                    onChange={(e) => {
+                                        setTitle(e.target.value);
+                                        setFormErrors((current) => ({
+                                            ...current,
+                                            title: undefined,
+                                        }));
+                                    }}
+                                    aria-invalid={Boolean(formErrors.title)}
+                                    aria-describedby={
+                                        formErrors.title
+                                            ? "title-error"
+                                            : undefined
+                                    }
                                     placeholder="Ej: Botón de pago no responde"
-                                    className="w-full text-xs rounded-lg border border-gray-200 px-3 py-2 outline-none focus:border-orange-500"
+                                    className={`w-full text-xs rounded-lg border px-3 py-2 outline-none focus:border-orange-500 ${formErrors.title ? "border-red-400" : "border-gray-200"}`}
                                 />
+                                {formErrors.title && (
+                                    <p
+                                        id="title-error"
+                                        className="mt-1 text-xs text-red-500"
+                                    >
+                                        {formErrors.title}
+                                    </p>
+                                )}
+                                {!formErrors.title && (
+                                    <p className="mt-1 text-xs text-gray-500">
+                                        Resumí el problema en una frase concreta.
+                                    </p>
+                                )}
                             </div>
 
                             <div>
@@ -417,12 +480,35 @@ export default function ReportsPage() {
                                     required
                                     rows={3}
                                     value={description}
-                                    onChange={(e) =>
-                                        setDescription(e.target.value)
+                                    onChange={(e) => {
+                                        setDescription(e.target.value);
+                                        setFormErrors((current) => ({
+                                            ...current,
+                                            description: undefined,
+                                        }));
+                                    }}
+                                    aria-invalid={Boolean(formErrors.description)}
+                                    aria-describedby={
+                                        formErrors.description
+                                            ? "description-error"
+                                            : undefined
                                     }
                                     placeholder="Describe los pasos para reproducir la falla..."
-                                    className="w-full text-xs rounded-lg border border-gray-200 px-3 py-2 outline-none focus:border-orange-500 resize-none"
+                                    className={`w-full text-xs rounded-lg border px-3 py-2 outline-none focus:border-orange-500 resize-none ${formErrors.description ? "border-red-400" : "border-gray-200"}`}
                                 />
+                                {formErrors.description && (
+                                    <p
+                                        id="description-error"
+                                        className="mt-1 text-xs text-red-500"
+                                    >
+                                        {formErrors.description}
+                                    </p>
+                                )}
+                                {!formErrors.description && (
+                                    <p className="mt-1 text-xs text-gray-500">
+                                        Contá qué hiciste, qué esperabas y qué ocurrió.
+                                    </p>
+                                )}
                             </div>
 
                             <div>
