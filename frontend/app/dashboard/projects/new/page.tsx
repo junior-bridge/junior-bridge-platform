@@ -31,7 +31,10 @@ const initialForm: ProjectForm = {
 function isValidHttpUrl(value: string) {
     try {
         const url = new URL(value);
-        return url.protocol === "http:" || url.protocol === "https:";
+        return (
+            (url.protocol === "http:" || url.protocol === "https:") &&
+            url.hostname.toLowerCase().endsWith(".com")
+        );
     } catch {
         return false;
     }
@@ -69,14 +72,14 @@ export default function NewProjectPage() {
             nextErrors.repository = "La URL del repositorio es obligatoria.";
         } else if (!isValidHttpUrl(form.repository.trim())) {
             nextErrors.repository =
-                "Ingresá una URL válida que comience con http:// o https://.";
+                "Ingresá una URL válida que comience con http:// o https:// y termine en .com.";
         }
 
         if (!form.demo_url.trim()) {
             nextErrors.demo_url = "La URL de la demo es obligatoria.";
         } else if (!isValidHttpUrl(form.demo_url.trim())) {
             nextErrors.demo_url =
-                "Ingresá una URL válida que comience con http:// o https://.";
+                "Ingresá una URL válida que comience con http:// o https:// y termine en .com.";
         }
 
         if (!form.technologies.trim()) {
@@ -186,6 +189,7 @@ export default function NewProjectPage() {
                         value={form.title}
                         onChange={handleChange}
                         error={errors.title}
+                        helperText="Usá un título claro y de hasta 100 caracteres."
                         placeholder="Ej.: Plataforma de gestión para comercios"
                     />
 
@@ -232,6 +236,7 @@ export default function NewProjectPage() {
                             value={form.repository}
                             onChange={handleChange}
                             error={errors.repository}
+                            helperText="Debe empezar con http:// o https:// y terminar en .com."
                             placeholder="https://github.com/usuario/proyecto"
                         />
 
@@ -244,6 +249,7 @@ export default function NewProjectPage() {
                             value={form.demo_url}
                             onChange={handleChange}
                             error={errors.demo_url}
+                            helperText="Usá una URL de prueba que empiece con http:// o https:// y termine en .com."
                             placeholder="https://mi-proyecto.com"
                         />
                     </div>
@@ -258,6 +264,7 @@ export default function NewProjectPage() {
                             value={form.technologies}
                             onChange={handleChange}
                             error={errors.technologies}
+                            helperText="Separá las tecnologías con comas. Ej.: React, Django."
                             placeholder="React, Django, PostgreSQL"
                         />
 

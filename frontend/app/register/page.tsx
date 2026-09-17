@@ -14,6 +14,14 @@ import RoleSelector, {
 import { useUser } from "@/context/UserContext";
 import { registerUser, startOAuth } from "@/lib/api";
 
+type RegisterField =
+    | "name"
+    | "surname"
+    | "email"
+    | "password"
+    | "confirmPassword";
+type RegisterFieldErrors = Partial<Record<RegisterField, string>>;
+
 export default function RegisterPage() {
     const router = useRouter();
     const { setUser } = useUser();
@@ -28,6 +36,7 @@ export default function RegisterPage() {
     const [confirmPassword, setConfirmPassword] = useState("");
 
     const [acceptedTerms, setAcceptedTerms] = useState(false);
+    const [fieldErrors, setFieldErrors] = useState<RegisterFieldErrors>({});
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
     const [oauthLoading, setOauthLoading] = useState<
@@ -42,15 +51,35 @@ export default function RegisterPage() {
         event.preventDefault();
         setError("");
 
+        const nextErrors: RegisterFieldErrors = {};
+        const normalizedEmail = email.trim();
+
+        if (!name.trim()) nextErrors.name = "El nombre es obligatorio.";
+        if (!surname.trim()) nextErrors.surname = "El apellido es obligatorio.";
+        if (!normalizedEmail) {
+            nextErrors.email = "El correo electrónico es obligatorio.";
+        } else if (!/^\S+@\S+\.\S+$/.test(normalizedEmail)) {
+            nextErrors.email = "Ingresá un correo electrónico válido.";
+        }
+        if (!password) {
+            nextErrors.password = "La contraseña es obligatoria.";
+        } else if (password.length < 8) {
+            nextErrors.password =
+                "La contraseña debe tener al menos 8 caracteres.";
+        }
+        if (!confirmPassword) {
+            nextErrors.confirmPassword = "Confirmá tu contraseña.";
+        } else if (password !== confirmPassword) {
+            nextErrors.confirmPassword = "Las contraseñas no coinciden.";
+        }
+
+        setFieldErrors(nextErrors);
+        if (Object.keys(nextErrors).length > 0) return;
+
         if (!acceptedTerms) {
             setError(
                 "Debes aceptar los términos de servicio y la política de privacidad.",
             );
-            return;
-        }
-
-        if (password !== confirmPassword) {
-            setError("Las contraseñas no coinciden.");
             return;
         }
 
@@ -67,7 +96,7 @@ export default function RegisterPage() {
             const response = await registerUser({
                 name: name.trim(),
                 surname: surname.trim(),
-                email: email.trim(),
+                email: normalizedEmail,
                 password,
             });
 
@@ -188,10 +217,16 @@ export default function RegisterPage() {
                                 type="text"
                                 autoComplete="given-name"
                                 value={name}
-                                onChange={(event) =>
-                                    setName(event.target.value)
-                                }
+                                onChange={(event) => {
+                                    setName(event.target.value);
+                                    setFieldErrors((current) => ({
+                                        ...current,
+                                        name: undefined,
+                                    }));
+                                }}
                                 required
+                                error={fieldErrors.name}
+                                helperText="Solo necesitamos tu nombre real."
                             />
 
                             <Input
@@ -201,10 +236,16 @@ export default function RegisterPage() {
                                 type="text"
                                 autoComplete="family-name"
                                 value={surname}
-                                onChange={(event) =>
-                                    setSurname(event.target.value)
-                                }
+                                onChange={(event) => {
+                                    setSurname(event.target.value);
+                                    setFieldErrors((current) => ({
+                                        ...current,
+                                        surname: undefined,
+                                    }));
+                                }}
                                 required
+                                error={fieldErrors.surname}
+                                helperText="Escribí tu apellido tal como figura en tu perfil."
                             />
                         </div>
 
@@ -215,8 +256,16 @@ export default function RegisterPage() {
                             type="email"
                             autoComplete="email"
                             value={email}
-                            onChange={(event) => setEmail(event.target.value)}
+                            onChange={(event) => {
+                                setEmail(event.target.value);
+                                setFieldErrors((current) => ({
+                                    ...current,
+                                    email: undefined,
+                                }));
+                            }}
                             required
+                            error={fieldErrors.email}
+                            helperText="Usá un correo válido; lo necesitarás para iniciar sesión."
                         />
 
                         <Input
@@ -226,11 +275,17 @@ export default function RegisterPage() {
                             type="password"
                             autoComplete="new-password"
                             value={password}
-                            onChange={(event) =>
-                                setPassword(event.target.value)
-                            }
+                            onChange={(event) => {
+                                setPassword(event.target.value);
+                                setFieldErrors((current) => ({
+                                    ...current,
+                                    password: undefined,
+                                }));
+                            }}
                             minLength={8}
                             required
+                            error={fieldErrors.password}
+                            helperText="Debe tener al menos 8 caracteres, una mayúscula y un carácter especial"
                         />
 
                         <Input
@@ -240,11 +295,17 @@ export default function RegisterPage() {
                             type="password"
                             autoComplete="new-password"
                             value={confirmPassword}
-                            onChange={(event) =>
-                                setConfirmPassword(event.target.value)
-                            }
+                            onChange={(event) => {
+                                setConfirmPassword(event.target.value);
+                                setFieldErrors((current) => ({
+                                    ...current,
+                                    confirmPassword: undefined,
+                                }));
+                            }}
                             minLength={8}
                             required
+                            error={fieldErrors.confirmPassword}
+                            helperText="Repetí exactamente la contraseña anterior."
                         />
 
                         <label className="flex items-start gap-2 text-xs text-gray-500">
@@ -286,7 +347,7 @@ export default function RegisterPage() {
 
                         {error && (
                             <p className="text-sm text-red-500 text-center mt-4">
-                                {error} aaaaaaa
+                                {error}
                             </p>
                         )}
                     </div>
