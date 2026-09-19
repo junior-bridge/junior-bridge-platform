@@ -34,6 +34,10 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+
+    "daphne",
+    "channels",
+
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -58,6 +62,7 @@ INSTALLED_APPS = [
     "apps.projects",
     "apps.rating",
     "apps.admin_dashboard",
+    "apps.notifications",
 
 ]
 
@@ -95,14 +100,15 @@ TEMPLATES = [
     },
 ]
 
+# WebSockets con Channels
+ASGI_APPLICATION = "config.asgi.application"
 
 WSGI_APPLICATION = "config.wsgi.application"
-
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DATABASES = {
+DATABASES = { 
     "default": {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": os.environ["POSTGRES_DB"],
@@ -191,6 +197,7 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": True,
 }
 
+AUTH_COOKIE_NAME = "access_token"
 
 # CORS
 
@@ -258,3 +265,22 @@ MONGODB_DATABASE = os.getenv(
     "MONGODB_DATABASE",
     "junior_bridge"
 )
+
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            # En desarrollo local
+            "hosts": [("127.0.0.1", 6379)],
+            
+            # En producción :
+            # "hosts": [("redis", 6379)],  # Si usas Docker Compose
+        },
+    },
+}
+
+# Configuración de WebSocket
+WEBSOCKET_ACCEPT_ALL = False  # Requerir autenticación
+WEBSOCKET_TIMEOUT = 300  # 5 minutos de inactividad
+
