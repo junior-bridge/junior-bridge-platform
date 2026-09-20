@@ -1,5 +1,14 @@
+from apps.users.models import User
 from rest_framework import serializers
 from apps.notifications.models import Notification
+
+ 
+class UserSimpleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email']
+        read_only_fields = ['id', 'username', 'email']
+ 
 
 class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -56,3 +65,17 @@ class NotificationUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
         fields = ['is_read']
+
+class NotificationWebSocketSerializer(serializers.ModelSerializer):
+    
+    username = serializers.CharField(source='id_user.username', read_only=True)
+    class Meta:
+        model = Notification
+        fields = [
+            'id_notification',
+            'type',
+            'message',
+            'username',
+            'created_at',
+            'is_read'
+        ]

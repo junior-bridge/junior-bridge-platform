@@ -1,58 +1,61 @@
-"""
-ASGI config for config project.
-
-It exposes the ASGI callable as a module-level variable named ``application``.
-
-For more information on this file, see
-https://docs.djangoproject.com/en/6.0/howto/deployment/asgi/
-"""
-
 import os
-from django.core.asgi import get_asgi_application
-from channels.routing import ProtocolTypeRouter, URLRouter
-from channels.auth import AuthMiddlewareStack
-from channels.security.websocket import AllowedHostsOriginValidator
-
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 
-# ═════════════════════════════════════════════════════════════════════════════
-# ¿QUÉ ESTÁ PASANDO AQUÍ?
-# ═════════════════════════════════════════════════════════════════════════════
-#
-# 1. get_asgi_application()
-#    - Cargar toda la configuración de Django
-#    - Esto es lo que hace que funcione Django
-#
-# 2. ProtocolTypeRouter
-#    - Es un enrutador que dice:
-#    - "Si es HTTP, usa Django normal"
-#    - "Si es WebSocket, usa Channels"
-#
-# 3. AuthMiddlewareStack
-#    - Middleware que extrae el token JWT de la conexión WebSocket
-#    - Lo convierte en un usuario autenticado
-#
-# 4. URLRouter
-#    - Enruta las WebSocket URLs a los Consumer correcto
-#    - Necesita un archivo config/routing.py que crearemos después
-#
-# ═════════════════════════════════════════════════════════════════════════════
+from django.core.asgi import get_asgi_application
+from channels.routing import ProtocolTypeRouter, URLRouter
+from channels.db import database_sync_to_async
 
-# Cargar configuración de Django
 django_asgi_app = get_asgi_application()
 
-# Importar el routing (lo crearemos en el siguiente paso)
-from config import routing  # ← Necesita existir
+from config import routing
+
+@database_sync_to_async
+def get_user_from_token(token_str):
+    try:
+        from django.contrib.auth.models import AnonymousUser
+        from rest_framework_simplejwt.tokens import AccessToken
+        
+        access_token = AccessToken(token_str)
+        user_id = access_token['user_id']
+        
+        from apps.users.models import User
+        user = User.objects.get(id=user_id)
+        return user
+    except Exception as e:
+        from django.contrib.auth.models import AnonymousUser
+        return AnonymousUser()
+
+
+class JWTCookieAuthMiddleware:
+    def __init__(self, inner):
+        self.inner = inner
+
+    async def __call__(self, scope, receive, send):
+        from django.contrib.auth.models import AnonymousUser
+        
+        headers = dict(scope.get('headers', []))
+        cookie_header = headers.get(b'cookie', b'').decode()
+        
+        token = None
+        
+        if 'access_token=' in cookie_header:
+            cookies = cookie_header.split('; ')
+            for cookie in cookies:
+                if cookie.startswith('access_token='):
+                    token = cookie.split('=', 1)[1]
+                    break
+        
+        if token:
+            scope['user'] = await get_user_from_token(token)
+        else:
+            scope['user'] = AnonymousUser()
+        
+        await self.inner(scope, receive, send)
+
 
 application = ProtocolTypeRouter({
     "http": django_asgi_app,
-    
-    "websocket": AllowedHostsOriginValidator(
-        AuthMiddlewareStack(
-            URLRouter(
-                routing.websocket_urlpatterns  # ← Definiremos esto en routing.py
-            )
-        )
+    "websocket": JWTCookieAuthMiddleware(
+        URLRouter(routing.websocket_urlpatterns)
     ),
 })
-
