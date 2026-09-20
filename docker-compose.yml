@@ -8,15 +8,24 @@ services:
             - "8000:8000"
         volumes:
             - ./backend:/app
+        command: daphne -b 0.0.0.0 -p 8000 config.asgi:application
         depends_on:
-            - postgres
-            - mongodb
+            postgres:
+                condition: service_started
+            mongodb:
+                condition: service_started
+            redis:
+                condition: service_healthy
 
     frontend:
         build:
             context: ./frontend
         ports:
             - "3000:3000"
+        volumes:
+            - ./frontend:/app
+            - /app/node_modules
+            - /app/.next
         depends_on:
             - backend
 
@@ -39,7 +48,21 @@ services:
             - "27017:27017"
         volumes:
             - mongodb_data_junior_bridge:/data/db
+    
+    redis:
+        image: redis:7-alpine
+        ports:
+            - "6379:6379"
+        command: redis-server --appendonly yes
+        volumes:
+            - redis_data_junior_bridge:/data
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
 
 volumes:
     postgres_data_junior_bridge:
     mongodb_data_junior_bridge:
+    redis_data_junior_bridge:
