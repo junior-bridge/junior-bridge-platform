@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useUser } from "@/context/UserContext";
+import { useUser } from "../../../context/UserContext";
 import { Plus, X, Upload } from "lucide-react";
 import {
     getPostulationReports,
@@ -11,13 +11,10 @@ import {
     type Postulation,
 } from "@/lib/api";
 
-const riskColors: Record<string, string> = {
-    ALTA: "bg-red-100 text-red-600",
-    HIGH: "bg-red-100 text-red-600",
-    MEDIA: "bg-yellow-100 text-yellow-700",
-    MEDIUM: "bg-yellow-100 text-yellow-700",
-    BAJA: "bg-green-100 text-green-700",
-    LOW: "bg-green-100 text-green-700",
+const severityColors: Record<string, string> = {
+    high: "bg-red-100 text-red-600",
+    medium: "bg-yellow-100 text-yellow-700",
+    low: "bg-green-100 text-green-700",
 };
 
 const statusColors: Record<string, string> = {
@@ -26,13 +23,10 @@ const statusColors: Record<string, string> = {
     CLOSED: "bg-teal-100 text-teal-700",
 };
 
-const riskLabels: Record<string, string> = {
-    HIGH: "ALTA",
-    MEDIUM: "MEDIA",
-    LOW: "BAJA",
-    ALTA: "ALTA",
-    MEDIA: "MEDIA",
-    BAJA: "BAJA",
+const severityLabels: Record<string, string> = {
+    high: "ALTA",
+    medium: "MEDIA",
+    low: "BAJA",
 };
 
 const statusLabels: Record<string, string> = {
@@ -41,7 +35,11 @@ const statusLabels: Record<string, string> = {
     CLOSED: "RESUELTO",
 };
 
-type ReportFormField = "postulationId" | "title" | "description";
+type ReportFormField =
+    | "postulationId"
+    | "title"
+    | "description"
+    | "stepsToReproduce";
 type ReportFormErrors = Partial<Record<ReportFormField, string>>;
 
 function formatDate(date: string) {
@@ -68,7 +66,8 @@ export default function ReportsPage() {
     const [postulationId, setPostulationId] = useState("");
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
-    const [riskLevel, setRiskLevel] = useState("MEDIUM");
+    const [stepsToReproduce, setStepsToReproduce] = useState("");
+    const [severity, setSeverity] = useState("medium");
     const [evidenceFile, setEvidenceFile] = useState<File | null>(null);
 
     const loadReports = useCallback(async () => {
@@ -138,6 +137,7 @@ export default function ReportsPage() {
             isMounted = false;
         };
     }, [user]);
+
     async function handleCreateReport(e: React.FormEvent) {
         e.preventDefault();
         const nextErrors: ReportFormErrors = {};
@@ -151,6 +151,10 @@ export default function ReportsPage() {
         if (!description.trim()) {
             nextErrors.description = "La descripción es obligatoria.";
         }
+        if (!stepsToReproduce.trim()) {
+            nextErrors.stepsToReproduce =
+                "Los pasos para reproducir son obligatorios.";
+        }
 
         setFormErrors(nextErrors);
         if (Object.keys(nextErrors).length > 0) return;
@@ -159,19 +163,26 @@ export default function ReportsPage() {
             setSubmitting(true);
             setModalError(null);
 
+            const steps = stepsToReproduce
+                .split("\n")
+                .map((step) => step.trim())
+                .filter((step) => step.length > 0);
+                
             await createReport(Number(postulationId), {
                 title: title.trim(),
                 description: description.trim(),
-                risk_level: riskLevel,
+                severity: severity,
+                steps_to_reproduce: steps,
                 capture_evidence: evidenceFile ?? undefined,
             });
 
             setIsModalOpen(false);
             setTitle("");
             setDescription("");
+            setStepsToReproduce("");
             setPostulationId("");
             setEvidenceFile(null);
-            setRiskLevel("MEDIUM");
+            setSeverity("medium");
             setFormErrors({});
 
             await loadReports();
@@ -258,7 +269,7 @@ export default function ReportsPage() {
                                         Descripción
                                     </th>
                                     <th className="text-left px-4 py-3 font-semibold">
-                                        Riesgo
+                                        Severidad
                                     </th>
                                     <th className="text-left px-4 py-3 font-semibold">
                                         Estado
@@ -270,20 +281,20 @@ export default function ReportsPage() {
                             </thead>
                             <tbody>
                                 {reports.map((report) => {
-                                    const risk =
-                                        riskLabels[report.risk_level] ??
-                                        report.risk_level;
+                                    const severityLabel =
+                                        severityLabels[report.severity] ??
+                                        report.severity;
                                     const status =
-                                        statusLabels[report.state] ??
+                                        statusLabels[report.state ?? "PENDING"] ??
                                         report.state;
 
                                     return (
                                         <tr
-                                            key={report.id_report}
+                                            key={report._id}
                                             className="border-b border-gray-50 last:border-0 hover:bg-gray-50 cursor-pointer"
                                         >
                                             <td className="px-4 py-3 text-gray-500 font-medium text-xs">
-                                                #BUG-{report.id_report}
+                                                #{report._id.slice(-8)}
                                             </td>
                                             <td className="px-4 py-3 text-gray-600 text-xs">
                                                 #{report.id_postulation}
@@ -299,20 +310,21 @@ export default function ReportsPage() {
                                             <td className="px-4 py-3">
                                                 <span
                                                     className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                                                        riskColors[
-                                                            report.risk_level
+                                                        severityColors[
+                                                            report.severity
                                                         ] ??
                                                         "bg-gray-100 text-gray-600"
                                                     }`}
                                                 >
-                                                    {risk}
+                                                    {severityLabel}
                                                 </span>
                                             </td>
                                             <td className="px-4 py-3">
                                                 <span
                                                     className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
                                                         statusColors[
-                                                            report.state
+                                                            report.state ??
+                                                                "PENDING"
                                                         ] ??
                                                         "bg-gray-100 text-gray-600"
                                                     }`}
@@ -379,7 +391,9 @@ export default function ReportsPage() {
                                             postulationId: undefined,
                                         }));
                                     }}
-                                    aria-invalid={Boolean(formErrors.postulationId)}
+                                    aria-invalid={Boolean(
+                                        formErrors.postulationId
+                                    )}
                                     aria-describedby={
                                         formErrors.postulationId
                                             ? "postulation-error"
@@ -411,7 +425,8 @@ export default function ReportsPage() {
                                 )}
                                 {!formErrors.postulationId && (
                                     <p className="mt-1 text-xs text-gray-500">
-                                        Elegí el proyecto en el que encontraste el problema.
+                                        Elegí el proyecto en el que encontraste
+                                        el problema.
                                     </p>
                                 )}
                             </div>
@@ -450,25 +465,24 @@ export default function ReportsPage() {
                                 )}
                                 {!formErrors.title && (
                                     <p className="mt-1 text-xs text-gray-500">
-                                        Resumí el problema en una frase concreta.
+                                        Resumí el problema en una frase
+                                        concreta.
                                     </p>
                                 )}
                             </div>
 
                             <div>
                                 <label className="block text-xs font-semibold text-gray-700 mb-1">
-                                    Nivel de Riesgo
+                                    Severidad
                                 </label>
                                 <select
-                                    value={riskLevel}
-                                    onChange={(e) =>
-                                        setRiskLevel(e.target.value)
-                                    }
+                                    value={severity}
+                                    onChange={(e) => setSeverity(e.target.value)}
                                     className="w-full text-xs rounded-lg border border-gray-200 px-3 py-2 outline-none focus:border-orange-500"
                                 >
-                                    <option value="LOW">Baja</option>
-                                    <option value="MEDIUM">Media</option>
-                                    <option value="HIGH">Alta</option>
+                                    <option value="low">Baja</option>
+                                    <option value="medium">Media</option>
+                                    <option value="high">Alta</option>
                                 </select>
                             </div>
 
@@ -487,13 +501,15 @@ export default function ReportsPage() {
                                             description: undefined,
                                         }));
                                     }}
-                                    aria-invalid={Boolean(formErrors.description)}
+                                    aria-invalid={Boolean(
+                                        formErrors.description
+                                    )}
                                     aria-describedby={
                                         formErrors.description
                                             ? "description-error"
                                             : undefined
                                     }
-                                    placeholder="Describe los pasos para reproducir la falla..."
+                                    placeholder="Describe qué ocurrió, qué esperabas y cómo lo reproducimos..."
                                     className={`w-full text-xs rounded-lg border px-3 py-2 outline-none focus:border-orange-500 resize-none ${formErrors.description ? "border-red-400" : "border-gray-200"}`}
                                 />
                                 {formErrors.description && (
@@ -506,7 +522,49 @@ export default function ReportsPage() {
                                 )}
                                 {!formErrors.description && (
                                     <p className="mt-1 text-xs text-gray-500">
-                                        Contá qué hiciste, qué esperabas y qué ocurrió.
+                                        Contá qué hiciste, qué esperabas y qué
+                                        ocurrió.
+                                    </p>
+                                )}
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                                    Pasos para Reproducir *
+                                </label>
+                                <textarea
+                                    required
+                                    rows={3}
+                                    value={stepsToReproduce}
+                                    onChange={(e) => {
+                                        setStepsToReproduce(e.target.value);
+                                        setFormErrors((current) => ({
+                                            ...current,
+                                            stepsToReproduce: undefined,
+                                        }));
+                                    }}
+                                    aria-invalid={Boolean(
+                                        formErrors.stepsToReproduce
+                                    )}
+                                    aria-describedby={
+                                        formErrors.stepsToReproduce
+                                            ? "steps-error"
+                                            : undefined
+                                    }
+                                    placeholder="1. Entrar a dashboard&#10;2. Hacer clic en botón X&#10;3. Esperar respuesta"
+                                    className={`w-full text-xs rounded-lg border px-3 py-2 outline-none focus:border-orange-500 resize-none ${formErrors.stepsToReproduce ? "border-red-400" : "border-gray-200"}`}
+                                />
+                                {formErrors.stepsToReproduce && (
+                                    <p
+                                        id="steps-error"
+                                        className="mt-1 text-xs text-red-500"
+                                    >
+                                        {formErrors.stepsToReproduce}
+                                    </p>
+                                )}
+                                {!formErrors.stepsToReproduce && (
+                                    <p className="mt-1 text-xs text-gray-500">
+                                        Numerá cada paso en una línea separada.
                                     </p>
                                 )}
                             </div>
