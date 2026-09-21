@@ -34,6 +34,10 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+
+    "daphne",
+    "channels",
+
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -57,6 +61,8 @@ INSTALLED_APPS = [
     "apps.reports",
     "apps.projects",
     "apps.rating",
+    "apps.admin_dashboard",
+    "apps.notifications",
 
 ]
 
@@ -94,14 +100,15 @@ TEMPLATES = [
     },
 ]
 
+# WebSockets con Channels
+ASGI_APPLICATION = "config.asgi.application"
 
 WSGI_APPLICATION = "config.wsgi.application"
-
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DATABASES = {
+DATABASES = { 
     "default": {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": os.environ["POSTGRES_DB"],
@@ -150,29 +157,9 @@ ACCOUNT_SIGNUP_FIELDS = [
 SOCIALACCOUNT_ADAPTER = "apps.users.adapter.JuniorBridgeSocialAccountAdapter"
 SOCIALACCOUNT_EMAIL_AUTHENTICATION = False
 SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
-
-
-SOCIALACCOUNT_PROVIDERS = {
-    'google': {
-        'SCOPE': ['profile', 'email'],
-        'AUTH_PARAMS': {'access_type': 'online'},
-        'APP': {
-            'client_id': os.getenv('GOOGLE_CLIENT_ID'),
-            'secret': os.getenv('GOOGLE_CLIENT_SECRET'),
-            'key': ''
-        }
-    },
-    'github': {
-        'SCOPE': ['user', 'user:email'],
-        'APP': {
-            'client_id': os.getenv('GITHUB_CLIENT_ID'),
-            'secret': os.getenv('GITHUB_CLIENT_SECRET'),
-            'key': ''
-        }
-    }
-}
-
 SOCIALACCOUNT_LOGIN_ON_GET = False
+
+
 
 SITE_ID = 1
 
@@ -210,6 +197,7 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": True,
 }
 
+AUTH_COOKIE_NAME = "access_token"
 
 # CORS
 
@@ -277,3 +265,18 @@ MONGODB_DATABASE = os.getenv(
     "MONGODB_DATABASE",
     "junior_bridge"
 )
+
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("redis", 6379)], 
+        },
+    },
+}
+
+# Configuración de WebSocket
+WEBSOCKET_ACCEPT_ALL = False  # Requerir autenticación
+WEBSOCKET_TIMEOUT = 300  # 5 minutos de inactividad
+

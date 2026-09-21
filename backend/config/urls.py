@@ -16,7 +16,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from apps.notifications.views import NotificationViewSet
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
+from rest_framework.routers import SimpleRouter
+
+
+router=SimpleRouter()
+router.register('notifications', NotificationViewSet, basename='notifications')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -28,6 +34,9 @@ urlpatterns = [
     path("accounts/", include("allauth.urls")),
     path("api/rating/", include("apps.rating.urls")),
     path("api/reports/", include("apps.reports.urls")),
+    path("api/admin/", include("apps.admin_dashboard.urls")),
+
+    path('api/', include(router.urls)),
 
 
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),

@@ -95,6 +95,13 @@ async function apiFetch<T>(
         } catch {}
 
         if (
+            Array.isArray(error.non_field_errors) &&
+            typeof error.non_field_errors[0] === "string"
+        ) {
+            throw new Error(error.non_field_errors[0]);
+        }
+
+        if (
             Array.isArray(error.email) &&
             error.email.some(
                 (message) =>
@@ -355,21 +362,23 @@ export async function deletePostulation(id: number): Promise<void> {
 // =============================================================================
 
 export type Report = {
-    id_report: number;
+    _id: string;
     id_postulation: number;
     title: string;
     description: string;
-    risk_level: string;
-    capture_evidence: string | null;
-    state: "PENDING" | "REVIEW" | "CLOSED";
+    severity: "low" | "medium" | "high" | "critical";
+    steps_to_reproduce: string[];
+    capture_evidence?: string | null;
     created_at: string;
-    updated_at: string;
+    state?: "PENDING" | "REVIEW" | "CLOSED";
+    updated_at?: string;
 };
 
 export type CreateReportData = {
     title: string;
     description: string;
-    risk_level: string;
+    severity: "low" | "medium" | "high" | "critical";
+    steps_to_reproduce: string[];
     capture_evidence?: File;
 };
 
@@ -388,7 +397,8 @@ export async function createReport(
 
     formData.append("title", data.title);
     formData.append("description", data.description);
-    formData.append("risk_level", data.risk_level);
+    formData.append("severity", data.severity);
+    formData.append("steps_to_reproduce", JSON.stringify(data.steps_to_reproduce));
 
     if (data.capture_evidence) {
         formData.append("capture_evidence", data.capture_evidence);
@@ -534,4 +544,49 @@ export async function updateProjectStatus(
             body: JSON.stringify({ state }),
         },
     );
+}
+// ADMIN STATS
+
+export type BugsByMonth = {
+  month: string;
+  year: number;
+  bugs: number;
+};
+
+export type RoleDistribution = {
+  testers: number;
+  clients: number;
+  admins: number;
+};
+
+export type TopTester = {
+  rank: number;
+  id: number;
+  name: string;
+  reputation: number;
+};
+
+export type AdminStats = {
+  // Dashboard principal
+  registered_users: number;
+  active_projects: number;
+  reported_bugs: number;
+  active_testers: number;
+
+  // Estadísticas
+  resolved_bugs: number;
+  resolution_rate: number;
+
+  // Gráfico de bugs por mes
+  bugs_by_month: BugsByMonth[];
+
+  // Distribución de usuarios por rol
+  role_distribution: RoleDistribution;
+
+  // Ranking de testers
+  top_testers: TopTester[];
+};
+
+export async function getAdminStats(): Promise<AdminStats> {
+  return apiFetch<AdminStats>("/api/admin/stats/");
 }

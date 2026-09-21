@@ -1,13 +1,11 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useUser } from "@/context/UserContext";
 import StatCard from "@/components/dashboard/StatCard";
+import { getAdminStats, type AdminStats } from "@/lib/api";
 
-const monthlyData = [
-  { month: "Mar", bugs: 28 }, { month: "Abr", bugs: 45 }, { month: "May", bugs: 62 },
-  { month: "Jun", bugs: 89 }, { month: "Jul", bugs: 134 }, { month: "Ago", bugs: 312 },
-];
-const maxBugs = Math.max(...monthlyData.map(d => d.bugs));
+
 
 const topTesters = [
   { name: "Roxana Pop", bugs: 48, projects: 6, avg: "4.9" },
@@ -17,7 +15,50 @@ const topTesters = [
 
 export default function StatsPage() {
   const { user } = useUser();
-  if (!user || user.role !== "ADMIN") return <div className="px-6 py-6"><p className="text-gray-500">Acceso restringido.</p></div>;
+
+  const [stats, setStats] = useState<AdminStats | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user || user.role !== "ADMIN") {
+      setLoading(false);
+      return;
+    }
+
+    async function loadStats() {
+      try {
+        const data = await getAdminStats();
+        setStats(data);
+      } catch (error) {
+        console.error("Error al cargar estadísticas:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadStats();
+  }, [user]);
+
+  if (!user || user.role !== "ADMIN") {
+    return (
+      <div className="px-6 py-6">
+        <p className="text-gray-500">Acceso restringido.</p>
+      </div>
+    );
+  }
+  const monthlyData = stats?.bugs_by_month ?? [];
+
+  const maxBugs = Math.max(
+    ...monthlyData.map((d) => d.bugs),
+    1
+  );
+  const roleDistribution = stats?.role_distribution;
+
+  const totalRoles = roleDistribution
+    ? roleDistribution.testers +
+      roleDistribution.clients +
+      roleDistribution.admins
+    : 0;
 
   return (
     <div className="px-6 py-6">
@@ -26,21 +67,34 @@ export default function StatsPage() {
         <p className="text-gray-500 text-sm mt-1">Métricas generales de la plataforma</p>
       </div>
 
-      <div className="grid grid-cols-4 gap-4 mb-6">
-        {[
-          { label: "Total Usuarios", value: 148 },
-          { label: "Proyectos Activos", value: 23 },
-          { label: "Bugs Resueltos", value: 289 },
-          { label: "Tasa de Resolución", value: "92%" },
-        ].map(s => <StatCard key={s.label} label={s.label} value={s.value} />)}
-      </div>
+  <div className="grid grid-cols-4 gap-4 mb-6">
+    <StatCard
+      label="Total Usuarios"
+      value={loading ? "..." : stats?.registered_users ?? 0}
+    />
+
+    <StatCard
+      label="Proyectos Activos"
+      value={loading ? "..." : stats?.active_projects ?? 0}
+    />
+
+    <StatCard
+      label="Bugs Resueltos"
+      value={loading ? "..." : stats?.resolved_bugs ?? 0}
+    />
+
+    <StatCard
+      label="Tasa de Resolución"
+      value={loading ? "..." : `${stats?.resolution_rate ?? 0}%`}
+    />
+  </div>
 
       <div className="flex gap-4 mb-4">
         <div className="flex-1 bg-white rounded-xl p-5 shadow-sm">
           <h2 className="font-bold text-gray-800 mb-4">Bugs reportados por mes</h2>
           <div className="flex items-end gap-3 h-40">
             {monthlyData.map((d) => (
-              <div key={d.month} className="flex-1 flex flex-col items-center gap-1">
+              <div key={`${d.year}-${d.month}`} className="flex-1 flex flex-col items-center gap-1">
                 <span className="text-[10px] text-gray-400">{d.bugs}</span>
                 <div className="w-full rounded-t-md" style={{ height: `${(d.bugs / maxBugs) * 120}px`, backgroundColor: "#2d6a4f" }} />
                 <span className="text-[10px] text-gray-400">{d.month}</span>
@@ -52,12 +106,33 @@ export default function StatsPage() {
         <div className="w-56 bg-white rounded-xl p-4 shadow-sm">
           <h3 className="font-bold text-gray-800 text-sm mb-3">Distribución de roles</h3>
           {[
-            { label: "Testers", pct: 60, color: "#2d6a4f" },
-            { label: "Emprendedores", pct: 37, color: "#e07b39" },
-            { label: "Admins", pct: 3, color: "#9ca3af" },
+            {
+              label: "Testers",
+              count: roleDistribution?.testers ?? 0,
+              pct: totalRoles
+                ? Math.round((roleDistribution!.testers / totalRoles) * 100)
+                : 0,
+              color: "#2d6a4f",
+            },
+            {
+              label: "Emprendedores",
+              count: roleDistribution?.clients ?? 0,
+              pct: totalRoles
+                ? Math.round((roleDistribution!.clients / totalRoles) * 100)
+                : 0,
+              color: "#e07b39",
+            },
+            {
+              label: "Admins",
+              count: roleDistribution?.admins ?? 0,
+              pct: totalRoles
+                ? Math.round((roleDistribution!.admins / totalRoles) * 100)
+                : 0,
+              color: "#9ca3af",
+            },
           ].map((r) => (
             <div key={r.label} className="mb-2">
-              <div className="flex justify-between text-xs text-gray-500 mb-0.5"><span>{r.label}</span><span>{r.pct}%</span></div>
+              <div className="flex justify-between text-xs text-gray-500 mb-0.5"><span>{r.label}</span><span>{r.count} ({r.pct}%)</span></div>
               <div className="w-full bg-gray-100 rounded-full h-1.5">
                 <div className="h-1.5 rounded-full" style={{ width: `${r.pct}%`, backgroundColor: r.color }} />
               </div>

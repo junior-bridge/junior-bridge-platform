@@ -6,6 +6,7 @@ import { Search, Bell } from "lucide-react";
 import { useUser } from "@/context/UserContext";
 import type { User } from "@/lib/api";
 import Sidebar from "@/components/dashboard/Sidebar";
+import {NotificationBell} from "../../components/NotificationBell";
 
 export default function DashboardLayout({
     children,
@@ -66,7 +67,7 @@ export default function DashboardLayout({
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <Bell size={20} className="text-gray-500" />
+                        <NotificationBell />
 
                         <div className="w-px h-6 bg-gray-300" />
 

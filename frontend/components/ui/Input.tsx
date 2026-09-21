@@ -4,11 +4,13 @@ interface InputProps
   extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
   error?: string;
+  helperText?: string;
 }
 
 export default function Input({
   label,
   error,
+  helperText,
   id,
   className = "",
   ...props
@@ -31,11 +33,9 @@ export default function Input({
           ${className}`}
       />
 
-      {error && (
-        <span className="text-xs text-red-500">
-          {error}
-        </span>
-      )}
+      <span className={error ? "text-xs text-red-500" : "text-xs text-gray-500"}>
+        {error || helperText}
+      </span>
     </div>
   );
 }
