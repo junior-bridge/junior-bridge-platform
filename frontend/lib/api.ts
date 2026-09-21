@@ -95,6 +95,13 @@ async function apiFetch<T>(
         } catch {}
 
         if (
+            Array.isArray(error.non_field_errors) &&
+            typeof error.non_field_errors[0] === "string"
+        ) {
+            throw new Error(error.non_field_errors[0]);
+        }
+
+        if (
             Array.isArray(error.email) &&
             error.email.some(
                 (message) =>
