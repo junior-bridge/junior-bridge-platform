@@ -20,17 +20,13 @@ export function useNotifications() {
 
       if (response.ok) {
         const data = await response.json();
-        console.log('📦 RESPUESTA DEL API:', data); // ✅ LOG AQUÍ
         
         const results = data.results || data;
-        console.log('📋 NOTIFICACIONES PARSEADAS:', results); // ✅ LOG AQUÍ
         
         setNotifications(results);
         
         const unread = results.filter((n) => !n.is_read).length;
         setUnreadCount(unread);
-        
-        console.log(`✅ ${results.length} notificaciones cargadas, ${unread} sin leer`);
       }
     } catch (error) {
       console.error('❌ Error cargando notificaciones:', error);
