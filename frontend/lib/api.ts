@@ -362,21 +362,23 @@ export async function deletePostulation(id: number): Promise<void> {
 // =============================================================================
 
 export type Report = {
-    id_report: number;
+    _id: string;
     id_postulation: number;
     title: string;
     description: string;
-    risk_level: string;
-    capture_evidence: string | null;
-    state: "PENDING" | "REVIEW" | "CLOSED";
+    severity: "low" | "medium" | "high" | "critical";
+    steps_to_reproduce: string[];
+    capture_evidence?: string | null;
     created_at: string;
-    updated_at: string;
+    state?: "PENDING" | "REVIEW" | "CLOSED";
+    updated_at?: string;
 };
 
 export type CreateReportData = {
     title: string;
     description: string;
-    risk_level: string;
+    severity: "low" | "medium" | "high" | "critical";
+    steps_to_reproduce: string[];
     capture_evidence?: File;
 };
 
@@ -395,7 +397,8 @@ export async function createReport(
 
     formData.append("title", data.title);
     formData.append("description", data.description);
-    formData.append("risk_level", data.risk_level);
+    formData.append("severity", data.severity);
+    formData.append("steps_to_reproduce", JSON.stringify(data.steps_to_reproduce));
 
     if (data.capture_evidence) {
         formData.append("capture_evidence", data.capture_evidence);
