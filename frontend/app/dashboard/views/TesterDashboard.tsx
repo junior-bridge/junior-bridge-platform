@@ -1,108 +1,32 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { ChevronRight, Star } from "lucide-react";
 import StatCard from "@/components/dashboard/StatCard";
-import {
-    getProjects,
-    getUserPostulations,
-    applyToProject,
-    type Project,
-    type Postulation,
-} from "@/lib/api";
 import { useUser } from "@/context/UserContext";
-
-const stateColor: Record<string, string> = {
-    OPEN: "bg-green-100 text-green-700",
-    IN_PROGRESS: "bg-blue-100 text-blue-700",
-    IN_REVIEW: "bg-orange-100 text-orange-600",
-    COMPLETED: "bg-teal-100 text-teal-700",
-    PENDING: "bg-gray-100 text-gray-500",
-    REJECTED: "bg-red-100 text-red-600",
-};
-
-function StarDisplay({ stars }: { stars: number }) {
-    return (
-        <div className="flex gap-0.5">
-            {[1, 2, 3, 4, 5].map((i) => (
-                <Star
-                    key={i}
-                    size={12}
-                    fill={i <= stars ? "#f97316" : "none"}
-                    stroke={i <= stars ? "#f97316" : "#d1d5db"}
-                />
-            ))}
-        </div>
-    );
-}
+import { useDashboardTesterView } from "@/hooks/dashboard/views/useDashboardTesterView";
+import StarDisplay from "@/components/dashboard/StarDisplay";
 
 interface Props {
     userName: string;
 }
 
 export default function TesterDashboard({ userName }: Props) {
-    const router = useRouter();
     const { user } = useUser();
-    const [availableProjects, setAvailableProjects] = useState<Project[]>([]);
-    const [myPostulations, setMyPostulations] = useState<Postulation[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [applying, setApplying] = useState<number | null>(null);
 
-    useEffect(() => {
-        async function load() {
-            try {
-                const [projs, posts] = await Promise.all([
-                    getProjects(),
-                    getUserPostulations(),
-                ]);
-                setAvailableProjects(
-                    projs.filter(
-                        (p) => p.state === "OPEN" || p.state === "IN_PROGRESS",
-                    ),
-                );
-                setMyPostulations(posts);
-            } catch {
-            } finally {
-                setLoading(false);
-            }
-        }
-        load();
-    }, []);
+    const {
+        stateColor,
+        router,
+        availableProjects,
+        myPostulations,
+        loading,
+        applying,
+        activePostulations,
+        stats,
+        appliedProjectIds,
+        handleApply,
+    }=useDashboardTesterView();
 
-    const activePostulations = myPostulations.filter(
-        (p) => p.status === "accepted",
-    );
-    const pendingPostulations = myPostulations.filter(
-        (p) => p.status === "pending",
-    );
-
-    const stats = [
-        {
-            label: "Proyectos Completados",
-            value: myPostulations.filter((p) => p.status === "accepted").length,
-        },
-        { label: "Bugs Reportados", value: "—" },
-        {
-            label: "Reputación",
-            value: user?.reputation ? `${user.reputation} ★` : "—",
-        },
-        { label: "Postulaciones Activas", value: pendingPostulations.length },
-    ];
-
-    const appliedProjectIds = new Set(myPostulations.map((p) => p.id_project));
-
-    async function handleApply(projectId: number) {
-        setApplying(projectId);
-        try {
-            const newPost = await applyToProject(projectId);
-            setMyPostulations((prev) => [...prev, newPost]);
-        } catch (err) {
-            alert(err instanceof Error ? err.message : "Error al postularse");
-        } finally {
-            setApplying(null);
-        }
-    }
+  
 
     return (
         <main className="flex-1 overflow-y-auto px-6 py-6">

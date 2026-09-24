@@ -1,206 +1,33 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
 import { useUser } from "../../../context/UserContext";
 import { Plus, X, Upload } from "lucide-react";
-import {
-    getPostulationReports,
-    createReport,
-    getUserPostulations,
-    type Report,
-    type Postulation,
-} from "@/lib/api";
+import { useDashboardReports } from "@/hooks/dashboard/useDashboardReports";
 
-const severityColors: Record<string, string> = {
-    high: "bg-red-100 text-red-600",
-    medium: "bg-yellow-100 text-yellow-700",
-    low: "bg-green-100 text-green-700",
-};
-
-const statusColors: Record<string, string> = {
-    PENDING: "bg-blue-100 text-blue-700",
-    REVIEW: "bg-orange-100 text-orange-600",
-    CLOSED: "bg-teal-100 text-teal-700",
-};
-
-const severityLabels: Record<string, string> = {
-    high: "ALTA",
-    medium: "MEDIA",
-    low: "BAJA",
-};
-
-const statusLabels: Record<string, string> = {
-    PENDING: "ABIERTO",
-    REVIEW: "EN REVISIÓN",
-    CLOSED: "RESUELTO",
-};
-
-type ReportFormField =
-    | "postulationId"
-    | "title"
-    | "description"
-    | "stepsToReproduce";
-type ReportFormErrors = Partial<Record<ReportFormField, string>>;
-
-function formatDate(date: string) {
-    return new Date(date).toLocaleDateString("es-AR", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-    });
-}
 
 export default function ReportsPage() {
     const { user } = useUser();
 
-    const [reports, setReports] = useState<Report[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const { severityColors,
+        statusColors,
+        severityLabels,
+        statusLabels,
+        reports,
+        loading,
+        error,
+        isModalOpen,
+        setIsModalOpen,
+        submitting,
+        modalError,
+        formErrors,
+        setFormErrors,
+        userPostulations,
+        formatDate,
+        form,
+        setForm,
+        handleCreateReport,
+    } = useDashboardReports( user);
 
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [submitting, setSubmitting] = useState(false);
-    const [modalError, setModalError] = useState<string | null>(null);
-    const [formErrors, setFormErrors] = useState<ReportFormErrors>({});
-    const [userPostulations, setUserPostulations] = useState<Postulation[]>([]);
-
-    const [postulationId, setPostulationId] = useState("");
-    const [title, setTitle] = useState("");
-    const [description, setDescription] = useState("");
-    const [stepsToReproduce, setStepsToReproduce] = useState("");
-    const [severity, setSeverity] = useState("medium");
-    const [evidenceFile, setEvidenceFile] = useState<File | null>(null);
-
-    const loadReports = useCallback(async () => {
-        try {
-            setError(null);
-            setLoading(true);
-
-            const postulations = await getUserPostulations();
-            setUserPostulations(postulations);
-
-            const reportsPromises = postulations.map((p) =>
-                getPostulationReports(p.id_postulation).catch(() => []),
-            );
-            const reportsNested = await Promise.all(reportsPromises);
-
-            setReports(reportsNested.flat());
-        } catch (err) {
-            console.error("Error cargando reportes:", err);
-            setError(
-                err instanceof Error
-                    ? err.message
-                    : "No se pudieron cargar los reportes.",
-            );
-        } finally {
-            setLoading(false);
-        }
-    }, []);
-
-    useEffect(() => {
-        let isMounted = true;
-
-        if (!user) return;
-
-        async function initFetch() {
-            try {
-                setError(null);
-                const postulations = await getUserPostulations();
-
-                if (!isMounted) return;
-                setUserPostulations(postulations);
-
-                const reportsPromises = postulations.map((p) =>
-                    getPostulationReports(p.id_postulation).catch(() => []),
-                );
-                const reportsNested = await Promise.all(reportsPromises);
-
-                if (!isMounted) return;
-                setReports(reportsNested.flat());
-            } catch (err) {
-                if (!isMounted) return;
-                console.error("Error cargando reportes:", err);
-                setError(
-                    err instanceof Error
-                        ? err.message
-                        : "No se pudieron cargar los reportes.",
-                );
-            } finally {
-                if (isMounted) {
-                    setLoading(false);
-                }
-            }
-        }
-
-        initFetch();
-
-        return () => {
-            isMounted = false;
-        };
-    }, [user]);
-
-    async function handleCreateReport(e: React.FormEvent) {
-        e.preventDefault();
-        const nextErrors: ReportFormErrors = {};
-
-        if (!postulationId) {
-            nextErrors.postulationId = "Seleccioná una postulación.";
-        }
-        if (!title.trim()) {
-            nextErrors.title = "El título del bug es obligatorio.";
-        }
-        if (!description.trim()) {
-            nextErrors.description = "La descripción es obligatoria.";
-        }
-        if (!stepsToReproduce.trim()) {
-            nextErrors.stepsToReproduce =
-                "Los pasos para reproducir son obligatorios.";
-        }
-
-        setFormErrors(nextErrors);
-        if (Object.keys(nextErrors).length > 0) return;
-
-        try {
-            setSubmitting(true);
-            setModalError(null);
-
-            const steps = stepsToReproduce
-                .split("\n")
-                .map((step) => step.trim())
-                .filter((step) => step.length > 0);
-                
-            await createReport(Number(postulationId), {
-                title: title.trim(),
-                description: description.trim(),
-                severity: severity,
-                steps_to_reproduce: steps,
-                capture_evidence: evidenceFile ?? undefined,
-            });
-
-            setIsModalOpen(false);
-            setTitle("");
-            setDescription("");
-            setStepsToReproduce("");
-            setPostulationId("");
-            setEvidenceFile(null);
-            setSeverity("medium");
-            setFormErrors({});
-
-            await loadReports();
-        } catch (err) {
-            console.error("Error al crear reporte:", err);
-            const message = err instanceof Error ? err.message : "";
-
-            if (message.includes("No Postulation matches")) {
-                setModalError(
-                    "La postulación elegida no existe o no tienes acceso a ella.",
-                );
-            } else {
-                setModalError(message || "No se pudo crear el reporte.");
-            }
-        } finally {
-            setSubmitting(false);
-        }
-    }
 
     if (!user) {
         return null;
@@ -383,9 +210,13 @@ export default function ReportsPage() {
                                 </label>
                                 <select
                                     required
-                                    value={postulationId}
+                                    value={form.postulationId}
                                     onChange={(e) => {
                                         setPostulationId(e.target.value);
+                                        setForm((current) => ({
+                                            ...current,
+                                            postulationId: e.target.value,
+                                        }));
                                         setFormErrors((current) => ({
                                             ...current,
                                             postulationId: undefined,
@@ -438,9 +269,12 @@ export default function ReportsPage() {
                                 <input
                                     type="text"
                                     required
-                                    value={title}
+                                    value={form.title}
                                     onChange={(e) => {
-                                        setTitle(e.target.value);
+                                        setForm((current) => ({
+                                            ...current,
+                                            title: e.target.value,
+                                        }));
                                         setFormErrors((current) => ({
                                             ...current,
                                             title: undefined,
@@ -476,8 +310,11 @@ export default function ReportsPage() {
                                     Severidad
                                 </label>
                                 <select
-                                    value={severity}
-                                    onChange={(e) => setSeverity(e.target.value)}
+                                    value={form.severity}
+                                    onChange={(e) => setForm((current) => ({
+                                        ...current,
+                                        severity: e.target.value,
+                                    }))}
                                     className="w-full text-xs rounded-lg border border-gray-200 px-3 py-2 outline-none focus:border-orange-500"
                                 >
                                     <option value="low">Baja</option>
@@ -493,9 +330,12 @@ export default function ReportsPage() {
                                 <textarea
                                     required
                                     rows={3}
-                                    value={description}
+                                    value={form.description}
                                     onChange={(e) => {
-                                        setDescription(e.target.value);
+                                        setForm((current) => ({
+                                            ...current,
+                                            description: e.target.value,
+                                        }));
                                         setFormErrors((current) => ({
                                             ...current,
                                             description: undefined,
@@ -535,9 +375,12 @@ export default function ReportsPage() {
                                 <textarea
                                     required
                                     rows={3}
-                                    value={stepsToReproduce}
+                                    value={form.stepsToReproduce}
                                     onChange={(e) => {
-                                        setStepsToReproduce(e.target.value);
+                                        setForm((current) => ({
+                                            ...current,
+                                            stepsToReproduce: e.target.value,
+                                        }));
                                         setFormErrors((current) => ({
                                             ...current,
                                             stepsToReproduce: undefined,
@@ -582,9 +425,10 @@ export default function ReportsPage() {
                                             accept="image/*"
                                             className="hidden"
                                             onChange={(e) =>
-                                                setEvidenceFile(
-                                                    e.target.files?.[0] ?? null,
-                                                )
+                                                setForm((current) => ({
+                                                    ...current,
+                                                    evidenceFile: e.target.files?.[0] ?? null,
+                                                }))
                                             }
                                         />
                                     </label>

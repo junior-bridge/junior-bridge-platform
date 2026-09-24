@@ -2,90 +2,26 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
 
 import Input from "@/components/ui/Input";
 import { useUser } from "@/context/UserContext";
-import { loginUser, startOAuth } from "@/lib/api";
-
-type LoginErrors = Partial<Record<"email" | "password", string>>;
+import { useLogin } from "@/hooks/useLogin";
 
 export default function LoginPage() {
-    const router = useRouter();
+    
     const { setUser } = useUser();
 
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [fieldErrors, setFieldErrors] = useState<LoginErrors>({});
-    const [error, setError] = useState("");
-    const [loading, setLoading] = useState(false);
-    const [oauthLoading, setOauthLoading] = useState<
-        "google" | "github" | null
-    >(null);
-
-    async function handleLogin(event: React.SyntheticEvent<HTMLFormElement>) {
-        event.preventDefault();
-
-        setError("");
-        const nextErrors: LoginErrors = {};
-        const normalizedEmail = email.trim();
-
-        if (!normalizedEmail) {
-            nextErrors.email = "El correo electrónico es obligatorio.";
-        } else if (!/^\S+@\S+\.\S+$/.test(normalizedEmail)) {
-            nextErrors.email = "Ingresá un correo electrónico válido.";
-        }
-
-        if (!password) {
-            nextErrors.password = "La contraseña es obligatoria.";
-        }
-
-        setFieldErrors(nextErrors);
-        if (Object.keys(nextErrors).length > 0) return;
-
-        setLoading(true);
-
-        try {
-            const response = await loginUser({
-                email: normalizedEmail,
-                password,
-            });
-
-            setUser(response.user);
-            router.push("/dashboard");
-        } catch (err) {
-            if (err instanceof Error) {
-                setError(err.message);
-            } else {
-                setError("No se pudo iniciar sesión.");
-            }
-        } finally {
-            setLoading(false);
-        }
-    }
-
-    async function handleOAuthLogin(provider: "google" | "github") {
-        setError("");
-        setOauthLoading(provider);
-
-        try {
-            const response = await startOAuth(provider, "login");
-
-            const apiUrl =
-                process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
-            window.location.assign(`${apiUrl}${response.login_url}`);
-        } catch (err) {
-            if (err instanceof Error) {
-                setError(err.message);
-            } else {
-                setError("No se pudo iniciar la autenticación.");
-            }
-
-            setOauthLoading(null);
-        }
-    }
+    const {
+        form,
+        setForm,
+        fieldErrors,
+        setFieldErrors,
+        error,
+        loading,
+        oauthLoading,
+        handleLogin,
+        handleOAuthLogin
+    } = useLogin(setUser);
 
     return (
         <main className="min-h-screen flex items-center justify-center px-4">
@@ -165,9 +101,12 @@ export default function LoginPage() {
                                 label="Correo Electrónico"
                                 type="email"
                                 autoComplete="email"
-                                value={email}
+                                value={form.email}
                                 onChange={(e) => {
-                                    setEmail(e.target.value);
+                                    setForm((current) => ({
+                                        ...current,
+                                        email: e.target.value
+                                    }));
                                     setFieldErrors((current) => ({
                                         ...current,
                                         email: undefined,
@@ -186,9 +125,12 @@ export default function LoginPage() {
                                 label="Contraseña"
                                 type="password"
                                 autoComplete="current-password"
-                                value={password}
+                                value={form.password}
                                 onChange={(e) => {
-                                    setPassword(e.target.value);
+                                    setForm((current) => ({
+                                        ...current,
+                                        password: e.target.value
+                                    }));
                                     setFieldErrors((current) => ({
                                         ...current,
                                         password: undefined,
