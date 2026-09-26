@@ -26,7 +26,7 @@ export default function ReportsPage() {
         form,
         setForm,
         handleCreateReport,
-    } = useDashboardReports( user);
+    } = useDashboardReports(user);
 
 
     if (!user) {
@@ -136,25 +136,23 @@ export default function ReportsPage() {
                                             </td>
                                             <td className="px-4 py-3">
                                                 <span
-                                                    className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                                                        severityColors[
-                                                            report.severity
-                                                        ] ??
+                                                    className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${severityColors[
+                                                        report.severity
+                                                    ] ??
                                                         "bg-gray-100 text-gray-600"
-                                                    }`}
+                                                        }`}
                                                 >
                                                     {severityLabel}
                                                 </span>
                                             </td>
                                             <td className="px-4 py-3">
                                                 <span
-                                                    className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                                                        statusColors[
-                                                            report.state ??
-                                                                "PENDING"
-                                                        ] ??
+                                                    className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${statusColors[
+                                                        report.state ??
+                                                        "PENDING"
+                                                    ] ??
                                                         "bg-gray-100 text-gray-600"
-                                                    }`}
+                                                        }`}
                                                 >
                                                     {status}
                                                 </span>
@@ -212,7 +210,6 @@ export default function ReportsPage() {
                                     required
                                     value={form.postulationId}
                                     onChange={(e) => {
-                                        setPostulationId(e.target.value);
                                         setForm((current) => ({
                                             ...current,
                                             postulationId: e.target.value,
@@ -433,8 +430,8 @@ export default function ReportsPage() {
                                         />
                                     </label>
                                     <span className="text-xs text-gray-400 truncate max-w-45">
-                                        {evidenceFile
-                                            ? evidenceFile.name
+                                        {form.evidenceFile
+                                            ? form.evidenceFile.name
                                             : "Sin archivo"}
                                     </span>
                                 </div>

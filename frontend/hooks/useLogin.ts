@@ -5,17 +5,17 @@ import { User } from "@/types";
 import { loginUser } from "@/services/login.service";
 import { startOAuth } from "@/services/auth.service";
 
-export const useLogin=(setUser: (user: User | null) => void)=>{
+export const useLogin = (setUser: (user: User | null) => void) => {
     const router = useRouter();
-      const [form,setForm] = useState({
-            email:"",
-            password:""
-        })
+    const [form, setForm] = useState({
+        email: "",
+        password: ""
+    })
     const [fieldErrors, setFieldErrors] = useState<LoginErrors>({});
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
-    
+
     const [oauthLoading, setOauthLoading] = useState<"google" | "github" | null>(null);
 
     async function handleLogin(event: React.SyntheticEvent<HTMLFormElement>) {
@@ -65,11 +65,8 @@ export const useLogin=(setUser: (user: User | null) => void)=>{
 
         try {
             const response = await startOAuth(provider, "login");
-
-            const apiUrl =
-                process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
-            window.location.assign(`${apiUrl}${response.login_url}`);
+            const apiUrl = process.env.NEXT_PUBLIC_API_BASE;
+            window.location.href = `${apiUrl}${response.login_url}`;
         } catch (err) {
             if (err instanceof Error) {
                 setError(err.message);

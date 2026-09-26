@@ -1,3 +1,4 @@
+import { Star } from "lucide-react";
 export default function StarDisplay({ stars }: { stars: number }) {
     return (
         <div className="flex gap-0.5">

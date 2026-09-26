@@ -20,7 +20,8 @@ export function getCookie(name: string): string | null {
 }
 
 export async function getCsrfToken(): Promise<void> {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/csrf/`, {
+    const url = `${process.env.NEXT_PUBLIC_API_BASE}/api/auth/csrf/`;
+    const response = await fetch(url, {
         method: "GET",
         credentials: "include",
     });

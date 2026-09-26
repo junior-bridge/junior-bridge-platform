@@ -22,8 +22,7 @@ export async function apiFetch<T>(
 
         headers.set("X-CSRFToken", csrfToken);
     }
-
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}${endpoint}`, {
         ...options,
         headers,
         credentials: "include",
@@ -36,7 +35,7 @@ export async function apiFetch<T>(
 
         try {
             error = await response.json();
-        } catch {}
+        } catch { }
 
         if (
             Array.isArray(error.non_field_errors) &&

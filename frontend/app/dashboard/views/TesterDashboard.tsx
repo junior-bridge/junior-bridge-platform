@@ -24,9 +24,9 @@ export default function TesterDashboard({ userName }: Props) {
         stats,
         appliedProjectIds,
         handleApply,
-    }=useDashboardTesterView();
+    } = useDashboardTesterView(user);
 
-  
+
 
     return (
         <main className="flex-1 overflow-y-auto px-6 py-6">

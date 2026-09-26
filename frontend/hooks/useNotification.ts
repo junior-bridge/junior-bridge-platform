@@ -3,8 +3,7 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 
-const API_BASE = process.env.API_BASE || 'http://localhost:8000/api';
-
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 export function useNotifications() {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -20,11 +19,11 @@ export function useNotifications() {
 
       if (response.ok) {
         const data = await response.json();
-        
+
         const results = data.results || data;
-        
+
         setNotifications(results);
-        
+
         const unread = results.filter((n) => !n.is_read).length;
         setUnreadCount(unread);
       }

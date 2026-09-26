@@ -1,6 +1,7 @@
 import { AuthResponse } from "@/types/authTypes";
 import { RegisterData } from "@/types/registerTypes";
 import { getCsrfToken } from "./auth.service";
+import { apiFetch } from "./index.service";
 
 export async function registerUser(data: RegisterData): Promise<AuthResponse> {
     await getCsrfToken();

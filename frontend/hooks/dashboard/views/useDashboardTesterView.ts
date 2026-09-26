@@ -4,8 +4,9 @@ import { Project } from "@/types/projectTypes";
 import { Postulation } from "@/types/postulationTypes";
 import { getProjects } from "@/services/project.service";
 import { applyToProject, getUserPostulations } from "@/services/postulation.service";
+import { User } from "@/types";
 
-export const useDashboardTesterView = () => {
+export const useDashboardTesterView = (user: User) => {
 
     const stateColor: Record<string, string> = {
         OPEN: "bg-green-100 text-green-700",
@@ -20,7 +21,7 @@ export const useDashboardTesterView = () => {
     const [myPostulations, setMyPostulations] = useState<Postulation[]>([]);
     const [loading, setLoading] = useState(true);
     const [applying, setApplying] = useState<number | null>(null);
-    
+
     useEffect(() => {
         async function load() {
             try {
@@ -49,32 +50,32 @@ export const useDashboardTesterView = () => {
         (p) => p.status === "pending",
     );
 
-    
+
     const stats = [
-            {
-                label: "Proyectos Completados",
-                value: myPostulations.filter((p) => p.status === "accepted").length,
-            },
-            { label: "Bugs Reportados", value: "—" },
-            {
-                label: "Reputación",
-                value: user?.reputation ? `${user.reputation} ★` : "—",
-            },
-            { label: "Postulaciones Activas", value: pendingPostulations.length },
+        {
+            label: "Proyectos Completados",
+            value: myPostulations.filter((p) => p.status === "accepted").length,
+        },
+        { label: "Bugs Reportados", value: "—" },
+        {
+            label: "Reputación",
+            value: user?.reputation ? `${user?.reputation} ★` : "—",
+        },
+        { label: "Postulaciones Activas", value: pendingPostulations.length },
     ];
-    
+
     const appliedProjectIds = new Set(myPostulations.map((p) => p.id_project));
-    
+
     async function handleApply(projectId: number) {
-            setApplying(projectId);
-            try {
-                const newPost = await applyToProject(projectId);
-                setMyPostulations((prev) => [...prev, newPost]);
-            } catch (err) {
-                alert(err instanceof Error ? err.message : "Error al postularse");
-            } finally {
-                setApplying(null);
-            }
+        setApplying(projectId);
+        try {
+            const newPost = await applyToProject(projectId);
+            setMyPostulations((prev) => [...prev, newPost]);
+        } catch (err) {
+            alert(err instanceof Error ? err.message : "Error al postularse");
+        } finally {
+            setApplying(null);
+        }
     }
 
     return {

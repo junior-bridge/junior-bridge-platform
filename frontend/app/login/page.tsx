@@ -8,9 +8,8 @@ import { useUser } from "@/context/UserContext";
 import { useLogin } from "@/hooks/useLogin";
 
 export default function LoginPage() {
-    
-    const { setUser } = useUser();
 
+    const { setUser } = useUser();
     const {
         form,
         setForm,

@@ -25,7 +25,7 @@ export async function createReport(
     }
 
     const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/postulations/${postulationId}/reports/`,
+        `${process.env.NEXT_PUBLIC_API_BASE}/api/postulations/${postulationId}/reports/`,
         {
             method: "POST",
             headers: {
