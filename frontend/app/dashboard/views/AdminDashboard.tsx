@@ -1,48 +1,22 @@
 "use client";
-
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { ChevronRight, Users, FolderOpen, Bug, Star } from "lucide-react";
 import StatCard from "@/components/dashboard/StatCard";
-import { getProjects, type Project } from "@/lib/api";
+import { useDashboardAdminView } from "@/hooks/dashboard/views/useDashboardAdminView";
 
-const stateColor: Record<string, string> = {
-    PENDING: "bg-gray-100 text-gray-500",
-    OPEN: "bg-blue-100 text-blue-700",
-    IN_PROGRESS: "bg-green-100 text-green-700",
-    IN_REVIEW: "bg-orange-100 text-orange-600",
-    COMPLETED: "bg-teal-100 text-teal-700",
-    REJECTED: "bg-red-100 text-red-600",
-};
 
 interface Props {
     userName: string;
 }
 
 export default function AdminDashboard({ userName }: Props) {
-    const router = useRouter();
-    const [projects, setProjects] = useState<Project[]>([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        getProjects()
-            .then(setProjects)
-            .catch(() => {})
-            .finally(() => setLoading(false));
-    }, []);
-
-    const stats = [
-        { label: "Usuarios Registrados", value: "—" },
-        {
-            label: "Proyectos Activos",
-            value: projects.filter(
-                (p) => p.state === "OPEN" || p.state === "IN_PROGRESS",
-            ).length,
-        },
-        { label: "Bugs Reportados", value: "—" },
-        { label: "Proyectos Totales", value: projects.length },
-    ];
-
+    const {
+        stateColor,
+        router,
+        projects,
+        loading,
+        stats
+    }=useDashboardAdminView();
+    
     return (
         <main className="flex-1 overflow-y-auto px-6 py-6">
             <div className="mb-6">

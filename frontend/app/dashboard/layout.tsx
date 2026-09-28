@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { Search, Bell } from "lucide-react";
 import { useUser } from "@/context/UserContext";
-import type { User } from "@/lib/api";
 import Sidebar from "@/components/dashboard/Sidebar";
 import {NotificationBell} from "../../components/NotificationBell";
+import { useDashboard } from "@/hooks/useDashboard";
+import { User } from "@/types";
 
 export default function DashboardLayout({
     children,
@@ -15,36 +14,12 @@ export default function DashboardLayout({
 }) {
     const { user, logout, isAuthenticated, isLoading } = useUser();
 
-    const router = useRouter();
-
-    useEffect(() => {
-        if (!isLoading && !isAuthenticated) {
-            router.push("/login");
-        }
-    }, [isAuthenticated, isLoading, router]);
+    const {router, handleLogout, displayName, avatarInitials, roleLabel}=useDashboard({isLoading, isAuthenticated,logout,user});
 
     if (isLoading) return null;
     if (!user) return null;
 
-    async function handleLogout() {
-        await logout();
-        router.push("/login");
-    }
-
-    const displayName =
-        user.name?.trim() || user.email?.split("@")[0] || "Usuario";
-
-    const avatarInitials = (
-        user.name?.trim()?.[0] ||
-        user.email?.trim()?.[0] ||
-        "?"
-    ).toUpperCase();
-
-    const roleLabel: Record<string, string> = {
-        CLIENT: "Emprendedor",
-        TESTER: "Tester",
-        ADMIN: "Admin",
-    };
+    
 
     return (
         <div className="flex h-screen bg-[#f5f0eb] overflow-hidden">

@@ -16,7 +16,7 @@ import {
     BarChart2,
     Bug,
 } from "lucide-react";
-import type { User as ApiUser } from "@/lib/api";
+import {User as ApiUser} from "@/types/index";
 
 type UserRole = ApiUser["role"];
 
