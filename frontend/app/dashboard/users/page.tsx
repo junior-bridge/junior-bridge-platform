@@ -40,7 +40,7 @@ export default function UsersPage() {
                     </p>
                 </div>
                 <button
-                    className="flex items-center gap-2 rounded-full px-5 py-2.5 text-white text-sm font-semibold hover:opacity-90"
+                    className="flex items-center gap-2 rounded-full px-5 py-2.5 text-white text-sm font-semibold hover:opacity-90 disabled:opacity-60" disabled
                     style={{ backgroundColor: "#e07b39" }}
                 >
                     <UserPlus size={15} /> Invitar usuario
@@ -70,11 +70,10 @@ export default function UsersPage() {
                         <button
                             key={filterRole}
                             onClick={() => setRoleFilter(filterRole)}
-                            className={`px-4 py-2 rounded-full text-xs font-medium border transition ${
-                                isActive
-                                    ? "bg-[#2d6a4f] text-white border-[#2d6a4f]"
-                                    : "bg-white text-gray-500 border-gray-200 hover:border-teal-300"
-                            }`}
+                            className={`px-4 py-2 rounded-full text-xs font-medium border transition cursor-pointer ${isActive
+                                ? "bg-[#2d6a4f] text-white border-[#2d6a4f]"
+                                : "bg-white text-gray-500 border-gray-200 hover:border-teal-300"
+                                }`}
                         >
                             {labelMap[filterRole]}
                         </button>
@@ -164,7 +163,7 @@ export default function UsersPage() {
                                         </td>
                                         <td className="px-4 py-3 text-orange-500 text-xs font-medium">
                                             {u.reputation &&
-                                            u.reputation !== "-"
+                                                u.reputation !== "-"
                                                 ? `${u.reputation} ★`
                                                 : "-"}
                                         </td>

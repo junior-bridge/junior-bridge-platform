@@ -15,8 +15,8 @@ export default function AdminDashboard({ userName }: Props) {
         projects,
         loading,
         stats
-    }=useDashboardAdminView();
-    
+    } = useDashboardAdminView();
+
     return (
         <main className="flex-1 overflow-y-auto px-6 py-6">
             <div className="mb-6">
@@ -53,7 +53,7 @@ export default function AdminDashboard({ userName }: Props) {
                                 onClick={() =>
                                     router.push("/dashboard/projects")
                                 }
-                                className="text-xs text-[#2d6a4f] font-medium hover:underline flex items-center gap-1"
+                                className="text-xs text-[#2d6a4f] font-medium hover:underline flex items-center gap-1 cursor-pointer"
                             >
                                 Ver Todo <ChevronRight size={12} />
                             </button>
@@ -134,7 +134,7 @@ export default function AdminDashboard({ userName }: Props) {
                             </h2>
                             <button
                                 onClick={() => router.push("/dashboard/users")}
-                                className="text-xs text-[#2d6a4f] font-medium hover:underline flex items-center gap-1"
+                                className="text-xs text-[#2d6a4f] font-medium hover:underline flex items-center gap-1 cursor-pointer"
                             >
                                 Ver Todo <ChevronRight size={12} />
                             </button>

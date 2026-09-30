@@ -15,7 +15,7 @@ export default function StatCard({ label, value, onDetailClick }: StatCardProps)
       <p className="text-3xl font-bold text-gray-800 mb-3">{value}</p>
       <button
         onClick={onDetailClick}
-        className="text-xs text-[#2d6a4f] font-medium hover:underline flex items-center gap-1"
+        className="text-xs text-[#2d6a4f] font-medium hover:underline flex items-center gap-1 cursor-pointer"
       >
         Ver Detalle <ChevronRight size={12} />
       </button>

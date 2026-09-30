@@ -46,7 +46,7 @@ export default function LoginPage() {
                             type="button"
                             onClick={() => handleOAuthLogin("google")}
                             disabled={oauthLoading !== null}
-                            className="flex items-center justify-center gap-2 w-full border border-gray-300 rounded-full py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex items-center cursor-pointer justify-center gap-2 w-full border border-gray-300 rounded-full py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <Image
                                 src="/google.png"
@@ -65,7 +65,7 @@ export default function LoginPage() {
                             type="button"
                             onClick={() => handleOAuthLogin("github")}
                             disabled={oauthLoading !== null}
-                            className="flex items-center justify-center gap-2 w-full border border-gray-300 rounded-full py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex items-center cursor-pointer justify-center gap-2 w-full border border-gray-300 rounded-full py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <Image
                                 src="/github.png"
@@ -159,7 +159,7 @@ export default function LoginPage() {
                         <button
                             type="submit"
                             disabled={loading || oauthLoading !== null}
-                            className="w-full rounded-full py-2.5 text-white text-sm font-semibold transition hover:opacity-90 mt-1 disabled:opacity-60"
+                            className="w-full rounded-full py-2.5 text-white cursor-pointer text-sm font-semibold transition hover:opacity-90 mt-1 disabled:opacity-60"
                             style={{ backgroundColor: "#e07b39" }}
                         >
                             {loading ? "Ingresando..." : "Iniciar sesión"}

@@ -18,11 +18,11 @@ export default function NewProjectPage() {
         handleChange,
         handleSubmit,
         getControlClassName,
-    }=useDashboardNewProjects({user, isClient});
+    } = useDashboardNewProjects({ user, isClient });
 
-    
 
-   
+
+
 
     if (!user || !isClient) return null;
 
@@ -194,14 +194,14 @@ export default function NewProjectPage() {
                     </div>
                     <Link
                         href="/dashboard/projects"
-                        className="rounded-full px-5 py-2.5 text-sm font-semibold text-gray-600 border border-gray-200 hover:bg-gray-50 transition"
+                        className="rounded-full px-5 cursor-pointer py-2.5 text-sm font-semibold text-gray-600 border border-gray-200 hover:bg-gray-50 transition"
                     >
                         Cancelar
                     </Link>
                     <button
                         type="submit"
                         disabled={isSubmitting || Boolean(successMessage)}
-                        className="rounded-full px-5 py-2.5 text-white text-sm font-semibold hover:opacity-90 transition disabled:opacity-60 disabled:cursor-not-allowed"
+                        className="rounded-full cursor-pointer px-5 py-2.5 text-white text-sm font-semibold hover:opacity-90 transition disabled:opacity-60 disabled:cursor-not-allowed"
                         style={{ backgroundColor: "#e07b39" }}
                     >
                         Publicar proyecto

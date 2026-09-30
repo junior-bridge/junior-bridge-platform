@@ -16,7 +16,7 @@ import {
     BarChart2,
     Bug,
 } from "lucide-react";
-import {User as ApiUser} from "@/types/index";
+import { User as ApiUser } from "@/types/index";
 
 type UserRole = ApiUser["role"];
 
@@ -117,11 +117,10 @@ export default function Sidebar({
                             <Link
                                 key={label}
                                 href={href}
-                                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition ${
-                                    isActive
+                                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition ${isActive
                                         ? "bg-green-700 text-white font-semibold"
                                         : "text-green-100 hover:bg-green-700"
-                                }`}
+                                    }`}
                             >
                                 <Icon size={16} />
                                 {label}
@@ -160,7 +159,7 @@ export default function Sidebar({
 
                 <button
                     onClick={onLogout}
-                    className="flex items-center gap-3 px-3 py-2 rounded-lg text-green-100 hover:bg-green-700 text-sm transition text-left w-full"
+                    className="flex items-center gap-3 px-3 py-2 rounded-lg text-green-100 hover:bg-green-700 text-sm transition text-left w-full cursor-pointer"
                 >
                     <LogOut size={16} /> Cerrar Sesión
                 </button>
