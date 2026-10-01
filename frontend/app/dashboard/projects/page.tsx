@@ -19,7 +19,7 @@ export default function ProjectsPage() {
         handleStatusChange,
         appliedProjectIds,
         filteredProjects
-    }=useDashboardProjects({user,isClient,isTester,isAdmin});
+    } = useDashboardProjects({ user, isClient, isTester, isAdmin });
 
     if (!user) return null;
 
@@ -179,7 +179,7 @@ export default function ProjectsPage() {
                                                     disabled={
                                                         applyingId === p.id
                                                     }
-                                                    className="ml-4 shrink-0 rounded-lg px-4 py-2 text-white text-xs font-semibold hover:opacity-90 transition disabled:opacity-60"
+                                                    className="ml-4 shrink-0 rounded-lg cursor-pointer px-4 py-2 text-white text-xs font-semibold hover:opacity-90 transition disabled:opacity-60"
                                                     style={{
                                                         backgroundColor:
                                                             "#2d6a4f",

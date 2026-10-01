@@ -54,7 +54,7 @@ export default function ReportsPage() {
                     <button
                         type="button"
                         onClick={() => setIsModalOpen(true)}
-                        className="flex items-center gap-2 rounded-full px-5 py-2.5 text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+                        className="flex items-center gap-2 rounded-full px-5 py-2.5 text-white text-sm font-semibold hover:opacity-90 transition-opacity cursor-pointer"
                         style={{ backgroundColor: "#e07b39" }}
                     >
                         <Plus size={15} />
@@ -441,14 +441,14 @@ export default function ReportsPage() {
                                 <button
                                     type="button"
                                     onClick={() => setIsModalOpen(false)}
-                                    className="px-4 py-2 rounded-full border border-gray-200 text-xs text-gray-600 hover:bg-gray-50 font-medium"
+                                    className="px-4 py-2 rounded-full border border-gray-200 text-xs text-gray-600 hover:bg-gray-50 font-medium cursor-pointer"
                                 >
                                     Cancelar
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={submitting}
-                                    className="px-5 py-2 rounded-full text-xs text-white font-semibold disabled:opacity-50"
+                                    className="px-5 py-2 rounded-full text-xs text-white font-semibold disabled:opacity-50 cursor-pointer"
                                     style={{ backgroundColor: "#e07b39" }}
                                 >
                                     {submitting

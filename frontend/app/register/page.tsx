@@ -17,7 +17,7 @@ export default function RegisterPage() {
         form,
         setForm,
         selectedRole,
-        setSelectedRole ,
+        setSelectedRole,
         acceptedTerms,
         setAcceptedTerms,
         fieldErrors,
@@ -29,8 +29,8 @@ export default function RegisterPage() {
         isEntrepreneur,
         handleRegister,
         handleOAuth
-    }=useRegister(setUser)
-   
+    } = useRegister(setUser)
+
 
     return (
         <AuthCard
@@ -42,7 +42,7 @@ export default function RegisterPage() {
                     type="button"
                     onClick={() => handleOAuth("google")}
                     disabled={oauthLoading !== null}
-                    className="flex items-center justify-center gap-2 w-full border border-gray-300 rounded-full py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center justify-center gap-2 w-full border border-gray-300 rounded-full py-2.5 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <Image
                         src="/google.png"
@@ -60,7 +60,7 @@ export default function RegisterPage() {
                     type="button"
                     onClick={() => handleOAuth("github")}
                     disabled={oauthLoading !== null}
-                    className="flex items-center justify-center gap-2 w-full border border-gray-300 rounded-full py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center justify-center gap-2 w-full border border-gray-300 rounded-full py-2.5 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <Image
                         src="/github.png"
@@ -218,7 +218,7 @@ export default function RegisterPage() {
                                 onChange={(event) =>
                                     setAcceptedTerms(event.target.checked)
                                 }
-                                className="mt-0.5"
+                                className="mt-0.5 cursor-pointer"
                             />
 
                             <span>
@@ -233,7 +233,7 @@ export default function RegisterPage() {
                             </p>
                         )}
 
-                        <Button type="submit" loading={loading}>
+                        <Button type="submit" loading={loading} className="w-full mt-1 cursor-pointer" disabled={!acceptedTerms}>
                             Crear cuenta
                         </Button>
                     </form>

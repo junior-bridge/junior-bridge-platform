@@ -11,8 +11,8 @@ interface Props {
 }
 
 export default function EmprendedorDashboard({ userName }: Props) {
-    
-    const{
+
+    const {
         stateColor,
         stateProgress,
         router,
@@ -23,7 +23,7 @@ export default function EmprendedorDashboard({ userName }: Props) {
         activeCount,
         pendingPostulations,
         stats
-    }=useDashboardEmprendedorView();
+    } = useDashboardEmprendedorView();
     return (
         <main className="flex-1 overflow-y-auto px-6 py-6">
             <div className="flex items-start justify-between mb-6">
@@ -35,15 +35,11 @@ export default function EmprendedorDashboard({ userName }: Props) {
                     <p className="text-gray-500 text-sm mt-1">
                         {loading
                             ? "Cargando tu información..."
-                            : `Tenés ${activeCount} proyecto${
-                                  activeCount !== 1 ? "s" : ""
-                              } activo${
-                                  activeCount !== 1 ? "s" : ""
-                              } y ${pendingPostulations} postulacion${
-                                  pendingPostulations !== 1 ? "es" : ""
-                              } nueva${
-                                  pendingPostulations !== 1 ? "s" : ""
-                              } hoy.`}
+                            : `Tenés ${activeCount} proyecto${activeCount !== 1 ? "s" : ""
+                            } activo${activeCount !== 1 ? "s" : ""
+                            } y ${pendingPostulations} postulacion${pendingPostulations !== 1 ? "es" : ""
+                            } nueva${pendingPostulations !== 1 ? "s" : ""
+                            } hoy.`}
                     </p>
                 </div>
 
@@ -78,7 +74,7 @@ export default function EmprendedorDashboard({ userName }: Props) {
                                 onClick={() =>
                                     router.push("/dashboard/projects")
                                 }
-                                className="text-xs text-[#2d6a4f] font-medium hover:underline flex items-center gap-1"
+                                className="text-xs text-[#2d6a4f] font-medium hover:underline flex items-center gap-1 cursor-pointer"
                             >
                                 Ver Todo <ChevronRight size={12} />
                             </button>
@@ -169,20 +165,19 @@ export default function EmprendedorDashboard({ userName }: Props) {
                                             </div>
 
                                             <span
-                                                className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-medium ${
-                                                    report.state === "PENDING"
-                                                        ? "bg-yellow-100 text-yellow-700"
-                                                        : report.state ===
-                                                            "REVIEW"
-                                                          ? "bg-orange-100 text-orange-700"
-                                                          : "bg-green-100 text-green-700"
-                                                }`}
+                                                className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-medium ${report.state === "PENDING"
+                                                    ? "bg-yellow-100 text-yellow-700"
+                                                    : report.state ===
+                                                        "REVIEW"
+                                                        ? "bg-orange-100 text-orange-700"
+                                                        : "bg-green-100 text-green-700"
+                                                    }`}
                                             >
                                                 {report.state === "PENDING"
                                                     ? "Pendiente"
                                                     : report.state === "REVIEW"
-                                                      ? "En revisión"
-                                                      : "Cerrado"}
+                                                        ? "En revisión"
+                                                        : "Cerrado"}
                                             </span>
                                         </div>
                                     </div>
@@ -203,7 +198,7 @@ export default function EmprendedorDashboard({ userName }: Props) {
                                 onClick={() =>
                                     router.push("/dashboard/postulations")
                                 }
-                                className="text-xs text-[#2d6a4f] font-medium hover:underline"
+                                className="text-xs text-[#2d6a4f] font-medium hover:underline cursor-pointer"
                             >
                                 Ver
                             </button>
@@ -231,8 +226,8 @@ export default function EmprendedorDashboard({ userName }: Props) {
                                     stars={
                                         p.tester_reputation
                                             ? Math.round(
-                                                  Number(p.tester_reputation),
-                                              )
+                                                Number(p.tester_reputation),
+                                            )
                                             : 0
                                     }
                                     onView={() =>

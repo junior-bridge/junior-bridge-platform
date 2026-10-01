@@ -32,7 +32,7 @@ export default function ProfilePage() {
                     </div>
                     <button
                         onClick={() => setEditing(!editing)}
-                        className="ml-auto text-sm font-medium text-[#2d6a4f] hover:underline"
+                        className="ml-auto text-sm font-medium text-[#2d6a4f] hover:underline cursor-pointer"
                     >
                         {editing ? "Cancelar" : "Editar perfil"}
                     </button>
@@ -114,7 +114,7 @@ export default function ProfilePage() {
                         </div>
                     ))}
                     <button
-                        className="mt-2 rounded-full py-2.5 text-white text-sm font-semibold hover:opacity-90"
+                        className="mt-2 rounded-full py-2.5 text-white text-sm font-semibold hover:opacity-90 cursor-pointer"
                         style={{ backgroundColor: "#2d6a4f" }}
                     >
                         Actualizar contraseña

@@ -3,7 +3,7 @@
 import { Search, Bell } from "lucide-react";
 import { useUser } from "@/context/UserContext";
 import Sidebar from "@/components/dashboard/Sidebar";
-import {NotificationBell} from "../../components/NotificationBell";
+import { NotificationBell } from "../../components/NotificationBell";
 import { useDashboard } from "@/hooks/useDashboard";
 import { User } from "@/types";
 
@@ -14,12 +14,12 @@ export default function DashboardLayout({
 }) {
     const { user, logout, isAuthenticated, isLoading } = useUser();
 
-    const {router, handleLogout, displayName, avatarInitials, roleLabel}=useDashboard({isLoading, isAuthenticated,logout,user});
+    const { router, handleLogout, displayName, avatarInitials, roleLabel } = useDashboard({ isLoading, isAuthenticated, logout, user });
 
     if (isLoading) return null;
     if (!user) return null;
 
-    
+
 
     return (
         <div className="flex h-screen bg-[#f5f0eb] overflow-hidden">

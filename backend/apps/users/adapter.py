@@ -1,5 +1,6 @@
 from allauth.exceptions import ImmediateHttpResponse
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
+from allauth.socialaccount.providers.base import AuthError
 
 from django.conf import settings
 from django.shortcuts import redirect
@@ -108,4 +109,14 @@ class JuniorBridgeSocialAccountAdapter(
         return super().pre_social_login(
             request,
             sociallogin,
+        )
+    def on_authentication_error(
+        self, request, provider, error=None, exception=None, extra_context=None
+    ):
+        reason = "cancelled" if error == AuthError.CANCELLED else "provider_error"
+        raise ImmediateHttpResponse(
+            redirect(
+                f"{settings.FRONTEND_OAUTH_ERROR_URL}"
+                f"?error=oauth_failed&reason={reason}"
+            )
         )

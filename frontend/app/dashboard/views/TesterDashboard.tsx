@@ -89,7 +89,7 @@ export default function TesterDashboard({ userName }: Props) {
                                                         "/dashboard/reports",
                                                     )
                                                 }
-                                                className="mt-2 w-full rounded-lg py-1.5 text-white text-xs font-semibold hover:opacity-90 transition"
+                                                className="mt-2 w-full rounded-lg py-1.5 text-white text-xs font-semibold hover:opacity-90 transition cursor-pointer"
                                                 style={{
                                                     backgroundColor: "#e07b39",
                                                 }}
@@ -112,7 +112,7 @@ export default function TesterDashboard({ userName }: Props) {
                                 onClick={() =>
                                     router.push("/dashboard/projects")
                                 }
-                                className="text-xs text-[#2d6a4f] font-medium hover:underline flex items-center gap-1"
+                                className="text-xs text-[#2d6a4f] font-medium hover:underline flex items-center gap-1 cursor-pointer"
                             >
                                 Ver Todo <ChevronRight size={12} />
                             </button>
@@ -221,7 +221,7 @@ export default function TesterDashboard({ userName }: Props) {
                     </p>
                     <button
                         onClick={() => router.push("/dashboard/reputation")}
-                        className="mt-3 w-full text-xs text-[#2d6a4f] font-medium hover:underline"
+                        className="mt-3 w-full text-xs text-[#2d6a4f] font-medium hover:underline cursor-pointer"
                     >
                         Ver historial completo
                     </button>
