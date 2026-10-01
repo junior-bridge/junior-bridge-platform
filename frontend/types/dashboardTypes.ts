@@ -1,4 +1,4 @@
-import { AdminProject, ProjectState } from "@/lib/api";
+import { AdminProject, ProjectState } from "@/types/projectTypes";
 
 export interface UserDashboard {
     id: string;

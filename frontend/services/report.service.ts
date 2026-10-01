@@ -1,4 +1,4 @@
-import { CreateReportData } from "@/types/reportTypes";
+import { CreateReportData, Report } from "@/types/reportTypes";
 import { apiFetch } from "./index.service";
 import { getCookie, getCsrfToken } from "./auth.service";
 

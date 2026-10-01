@@ -3,6 +3,7 @@ import { getUserProjects } from "@/services/project.service";
 import { getPostulationReports } from "@/services/report.service";
 import { Postulation } from "@/types/postulationTypes";
 import { Project } from "@/types/projectTypes";
+import { Report } from "@/types/reportTypes";
 import {useRouter} from "next/navigation";
 import {useState, useEffect} from "react";
 

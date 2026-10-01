@@ -310,7 +310,7 @@ export default function ReportsPage() {
                                     value={form.severity}
                                     onChange={(e) => setForm((current) => ({
                                         ...current,
-                                        severity: e.target.value,
+                                        severity: e.target.value as "low" | "medium" | "high" | "critical",
                                     }))}
                                     className="w-full text-xs rounded-lg border border-gray-200 px-3 py-2 outline-none focus:border-orange-500"
                                 >

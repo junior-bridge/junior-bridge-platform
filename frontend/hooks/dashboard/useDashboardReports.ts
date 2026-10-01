@@ -2,6 +2,7 @@ import { useState ,useEffect ,useCallback } from "react";
 import {type ReportFormErrors} from "@/types/dashboardTypes";
 import { User } from "@/types";
 import { Postulation } from "@/types/postulationTypes";
+import { Report } from "@/types/reportTypes";
 import { getUserPostulations } from "@/services/postulation.service";
 import { createReport, getPostulationReports } from "@/services/report.service";
 
@@ -46,7 +47,7 @@ export const useDashboardReports = (user:User | null) => {
             title:"",
             description:"",
             stepsToReproduce:"",
-            severity:"medium",
+            severity: "medium" as "low" | "medium" | "high" | "critical",
             evidenceFile:null as File | null
         })
     

@@ -2,7 +2,7 @@ import { User } from "@/types";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-export const useDashboard = ({ isLoading, isAuthenticated, logout, user }: { isLoading: boolean; isAuthenticated: boolean; logout: () => Promise<void>; user: User }) => {
+export const useDashboard = ({ isLoading, isAuthenticated, logout, user }: { isLoading: boolean; isAuthenticated: boolean; logout: () => Promise<void>; user: User | null }) => {
     const router = useRouter();
 
     useEffect(() => {

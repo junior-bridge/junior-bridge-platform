@@ -1,6 +1,7 @@
+import { User } from "@/types";
+import { RegistrationRole } from "@/components/auth/RoleSelector";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { RegistrationRole } from "@/components/auth/RoleSelector";
 import { RegisterFieldErrors } from "@/types/registerTypes";
 import { startOAuth } from "@/services/auth.service";
 import { registerUser } from "@/services/register.service";

@@ -137,7 +137,7 @@ export default function EmprendedorDashboard({ userName }: Props) {
                             <div className="flex flex-col divide-y">
                                 {reports.slice(0, 3).map((report) => (
                                     <div
-                                        key={report.id_report}
+                                        key={report._id}
                                         className="py-3 first:pt-0 last:pb-0"
                                     >
                                         <div className="flex items-start justify-between gap-4">

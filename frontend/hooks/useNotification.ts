@@ -4,12 +4,22 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
+
+type Notification = {
+  notification_id: string;
+  title: string;
+  message: string;
+  is_read: boolean;
+  created_at: string;
+  type?: string;
+};
+
 export function useNotifications() {
-  const [notifications, setNotifications] = useState([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isConnected, setIsConnected] = useState(false);
-  const wsRef = useRef(null);
-  const reconnectTimeoutRef = useRef(null);
+  const wsRef = useRef<WebSocket | null>(null);
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const loadNotifications = useCallback(async () => {
     try {
@@ -24,7 +34,7 @@ export function useNotifications() {
 
         setNotifications(results);
 
-        const unread = results.filter((n) => !n.is_read).length;
+        const unread = results.filter((n: Notification) => !n.is_read).length;
         setUnreadCount(unread);
       }
     } catch (error) {
@@ -93,13 +103,13 @@ export function useNotifications() {
     }
   }, []);
 
-  const sendMessage = useCallback((message) => {
+  const sendMessage = useCallback((message: unknown) => {
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify(message));
     }
   }, []);
 
-  const markAsRead = useCallback(async (notificationId) => {
+  const markAsRead = useCallback(async (notificationId: string) => {
     try {
       const response = await fetch(
         `${API_BASE}/notifications/${notificationId}/`,
@@ -130,7 +140,7 @@ export function useNotifications() {
     }
   }, []);
 
-  const deleteNotification = useCallback(async (notificationId) => {
+  const deleteNotification = useCallback(async (notificationId: string) => {
     try {
       const response = await fetch(
         `${API_BASE}/notifications/${notificationId}/`,
