@@ -2,12 +2,17 @@ from django.urls import path
 
 from apps.postulations.views import ProjectPostulationCreateView
 
-from .views import ProjectListCreateView, ProjectStatusUpdateView, UserProjectsListView
+from .views import ProjectDetailView, ProjectListCreateView, ProjectStatusUpdateView, UserProjectsListView
 
 
 urlpatterns = [
     path('', ProjectListCreateView.as_view(), name='project-create'),
     path('user-active/', UserProjectsListView.as_view(), name='project-user-active'),
+    path(
+        '<int:pk>/',
+        ProjectDetailView.as_view(),
+        name='project-detail',
+    ),
     path(
         '<int:id_project>/postulations/',
         ProjectPostulationCreateView.as_view(),

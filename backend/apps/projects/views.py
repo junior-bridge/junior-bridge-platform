@@ -7,6 +7,7 @@ from drf_spectacular.utils import OpenApiResponse, extend_schema
 from apps.users.permissions import IsAdmin, IsClient
 
 from .models import Project
+from .permissions import IsProjectOwner
 from .serializers import (
     AdminProjectSerializer,
     ProjectSerializer,
@@ -71,6 +72,46 @@ class UserProjectsListView(generics.ListAPIView):
     def get_queryset(self):
         return Project.objects.filter(client=self.request.user).order_by('-created_at')
 
+@extend_schema(tags=['Projects'])
+class ProjectDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Project.objects.select_related('client')
+    serializer_class = ProjectSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = 'pk'
+
+    def get_permissions(self):
+        return [IsAuthenticated(), IsProjectOwner()]
+
+    @extend_schema(
+        summary="Get project detail",
+        description=(
+            "Returns a project owned by the authenticated client "
+            "or any project for an administrator."
+        ),
+        responses={
+            200: ProjectSerializer,
+            403: OpenApiResponse(description="You do not have access to this project."),
+            404: OpenApiResponse(description="Project not found."),
+        },
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    def perform_update(self, serializer):
+        if self.get_object().state != 'PENDING':
+            raise ValidationError(
+                {'state': 'Only pending projects can be updated.'}
+            )
+
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        if instance.state != 'PENDING':
+            raise ValidationError(
+                {'state': 'Only pending projects can be deleted.'}
+            )
+
+        instance.delete()
 
 @extend_schema(tags=['Projects'])
 class ProjectStatusUpdateView(generics.UpdateAPIView):

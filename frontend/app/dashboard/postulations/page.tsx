@@ -67,8 +67,7 @@ export default function PostulationsPage() {
                                 </thead>
                                 <tbody>
                                     {postulations.map((p) => {
-                                        const testerInitial = (p.tester_name ??
-                                            "T")[0].toUpperCase();
+                                        const testerInitial = p.tester_name?.trim()?.[0]?.toUpperCase() ?? "T";
                                         const repNumber = p.tester_reputation
                                             ? Number(p.tester_reputation)
                                             : 0;
@@ -84,7 +83,7 @@ export default function PostulationsPage() {
                                                         </div>
                                                         <div>
                                                             <p className="text-gray-700 font-medium text-xs">
-                                                                {p.tester_name ??
+                                                                {p.tester_name?.trim() ||
                                                                     `Tester #${p.id_tester}`}
                                                             </p>
                                                             <p className="text-gray-400 text-[10px]">
