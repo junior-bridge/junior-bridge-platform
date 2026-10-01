@@ -6,7 +6,7 @@ import { getProjects } from "@/services/project.service";
 import { applyToProject, getUserPostulations } from "@/services/postulation.service";
 import { User } from "@/types";
 
-export const useDashboardTesterView = (user: User) => {
+export const useDashboardTesterView = (user: User | null) => {
 
     const stateColor: Record<string, string> = {
         OPEN: "bg-green-100 text-green-700",
