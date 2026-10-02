@@ -6,6 +6,7 @@ import Link from "next/link";
 import Input from "@/components/ui/Input";
 import { useUser } from "@/context/UserContext";
 import { useLogin } from "@/hooks/useLogin";
+import Loader from "@/components/ui/Loader";
 
 export default function LoginPage() {
 
@@ -161,7 +162,7 @@ export default function LoginPage() {
                             disabled={loading || oauthLoading !== null}
                             className="btn-primary w-full mt-1"
                         >
-                            {loading ? "Ingresando..." : "Iniciar sesión"}
+                            {loading && <Loader size={14} color="#ffffff" />}
                         </button>
                     </form>
 

@@ -3,6 +3,7 @@
 import { useUser } from "../../../context/UserContext";
 import { Plus, X, Upload } from "lucide-react";
 import { useDashboardReports } from "@/hooks/dashboard/useDashboardReports";
+import Loader from "@/components/ui/Loader";
 
 
 export default function ReportsPage() {
@@ -448,12 +449,10 @@ export default function ReportsPage() {
                                 <button
                                     type="submit"
                                     disabled={submitting}
-                                    className="px-5 py-2 rounded-full text-xs text-white font-semibold disabled:opacity-50 cursor-pointer"
-                                    
+                                    className="btn-primary px-5 py-2 rounded-full text-xs disabled:opacity-50 flex items-center gap-2"
                                 >
-                                    {submitting
-                                        ? "Enviando..."
-                                        : "Crear Reporte"}
+                                    {submitting && <Loader size={14} color="#ffffff" />}
+                                    {submitting ? "Enviando..." : "Crear Reporte"}
                                 </button>
                             </div>
                         </form>
