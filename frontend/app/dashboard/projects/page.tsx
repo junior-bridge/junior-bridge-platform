@@ -24,8 +24,8 @@ export default function ProjectsPage() {
     if (!user) return null;
 
     return (
-        <div className="px-6 py-6">
-            <div className="flex items-center justify-between mb-6">
+        <div className="px-4 sm:px-6 py-4 sm:py-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-800">
                         Proyectos
@@ -39,15 +39,15 @@ export default function ProjectsPage() {
                 {isClient && (
                     <Link
                         href="/dashboard/projects/new"
-                        className="flex items-center gap-2 rounded-full px-5 py-2.5 text-white text-sm font-semibold hover:opacity-90 transition"
-                        style={{ backgroundColor: "#e07b39" }}
+                        className="flex items-center gap-2 btn-primary"
+                        
                     >
                         <Plus size={15} /> Nuevo Proyecto
                     </Link>
                 )}
             </div>
 
-            <div className="flex items-center gap-2 bg-white rounded-full px-4 py-2 w-72 border border-gray-200 mb-6">
+            <div className="flex items-center gap-2 bg-white rounded-full px-4 py-2 w-full sm:w-72 border border-gray-200 mb-6">
                 <Search size={15} className="text-gray-400" />
                 <input
                     type="text"
@@ -173,21 +173,11 @@ export default function ProjectsPage() {
                                                 </span>
                                             ) : (
                                                 <button
-                                                    onClick={() =>
-                                                        handleApply(p.id)
-                                                    }
-                                                    disabled={
-                                                        applyingId === p.id
-                                                    }
-                                                    className="ml-4 shrink-0 rounded-lg cursor-pointer px-4 py-2 text-white text-xs font-semibold hover:opacity-90 transition disabled:opacity-60"
-                                                    style={{
-                                                        backgroundColor:
-                                                            "#2d6a4f",
-                                                    }}
+                                                    onClick={() => handleApply(p.id)}
+                                                    disabled={applyingId === p.id}
+                                                    className="ml-4 shrink-0 btn-green-sm disabled:opacity-60"
                                                 >
-                                                    {applyingId === p.id
-                                                        ? "Postulando..."
-                                                        : "Postularme"}
+                                                    {applyingId === p.id ? "Postulando..." : "Postularme"}
                                                 </button>
                                             ))}
                                     </div>
@@ -249,24 +239,14 @@ export default function ProjectsPage() {
                                                 {p.state === "PENDING" && (
                                                     <div className="flex gap-2">
                                                         <button
-                                                            onClick={() =>
-                                                                handleStatusChange(
-                                                                    p.id,
-                                                                    "OPEN",
-                                                                )
-                                                            }
-                                                            className="text-[10px] font-semibold px-2 py-1 rounded bg-green-600 text-white hover:opacity-90"
+                                                            onClick={() => handleStatusChange(p.id, "OPEN")}
+                                                            className="text-[10px] font-semibold px-2 py-1 rounded bg-green-600 hover:bg-green-700 text-white transition-colors"
                                                         >
                                                             Aprobar
                                                         </button>
                                                         <button
-                                                            onClick={() =>
-                                                                handleStatusChange(
-                                                                    p.id,
-                                                                    "REJECTED",
-                                                                )
-                                                            }
-                                                            className="text-[10px] font-semibold px-2 py-1 rounded bg-red-100 text-red-600 hover:opacity-90"
+                                                            onClick={() => handleStatusChange(p.id, "REJECTED")}
+                                                            className="text-[10px] font-semibold px-2 py-1 rounded bg-red-100 hover:bg-red-200 text-red-600 transition-colors"
                                                         >
                                                             Rechazar
                                                         </button>

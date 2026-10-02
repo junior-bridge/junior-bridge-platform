@@ -30,7 +30,7 @@ export default function NewProjectPage() {
         <main className="px-6 py-6 max-w-3xl">
             <Link
                 href="/dashboard/projects"
-                className="inline-flex items-center gap-1 text-sm font-medium text-[#2d6a4f] hover:underline mb-5"
+                className="inline-flex items-center gap-1 text-sm font-medium text-brand-green hover:underline mb-5"
             >
                 <ArrowLeft size={16} /> Volver a proyectos
             </Link>
@@ -202,7 +202,7 @@ export default function NewProjectPage() {
                         type="submit"
                         disabled={isSubmitting || Boolean(successMessage)}
                         className="rounded-full cursor-pointer px-5 py-2.5 text-white text-sm font-semibold hover:opacity-90 transition disabled:opacity-60 disabled:cursor-not-allowed"
-                        style={{ backgroundColor: "#e07b39" }}
+                        
                     >
                         Publicar proyecto
                     </button>

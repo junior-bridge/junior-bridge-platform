@@ -9,7 +9,7 @@ export default function ProfilePage() {
     if (!user) return null;
 
     return (
-        <div className="px-6 py-6 max-w-2xl">
+        <div className="px-4 sm:px-6 py-4 sm:py-6 max-w-2xl">
             <div className="mb-6">
                 <h1 className="text-2xl font-bold text-gray-800">Mi Perfil</h1>
                 <p className="text-gray-500 text-sm mt-1">
@@ -32,7 +32,7 @@ export default function ProfilePage() {
                     </div>
                     <button
                         onClick={() => setEditing(!editing)}
-                        className="ml-auto text-sm font-medium text-[#2d6a4f] hover:underline cursor-pointer"
+                        className="ml-auto text-sm font-medium text-brand-green hover:underline cursor-pointer"
                     >
                         {editing ? "Cancelar" : "Editar perfil"}
                     </button>
@@ -85,8 +85,8 @@ export default function ProfilePage() {
                 </div>
                 {editing && (
                     <button
-                        className="mt-5 w-full rounded-full py-2.5 text-white text-sm font-semibold hover:opacity-90"
-                        style={{ backgroundColor: "#e07b39" }}
+                        className="mt-5 w-full btn-primary"
+                        
                     >
                         Guardar cambios
                     </button>
@@ -114,8 +114,8 @@ export default function ProfilePage() {
                         </div>
                     ))}
                     <button
-                        className="mt-2 rounded-full py-2.5 text-white text-sm font-semibold hover:opacity-90 cursor-pointer"
-                        style={{ backgroundColor: "#2d6a4f" }}
+                        className="mt-2 w-full btn-secondary cursor-pointer"
+                        
                     >
                         Actualizar contraseña
                     </button>

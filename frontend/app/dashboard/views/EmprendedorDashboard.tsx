@@ -25,8 +25,8 @@ export default function EmprendedorDashboard({ userName }: Props) {
         stats
     } = useDashboardEmprendedorView();
     return (
-        <main className="flex-1 overflow-y-auto px-6 py-6">
-            <div className="flex items-start justify-between mb-6">
+        <main className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-6">
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-6 gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-800">
                         Hola, {userName}
@@ -45,14 +45,14 @@ export default function EmprendedorDashboard({ userName }: Props) {
 
                 <button
                     onClick={() => router.push("/dashboard/projects/new")}
-                    className="rounded-full px-5 py-2.5 text-white text-sm font-semibold hover:opacity-90 transition"
-                    style={{ backgroundColor: "#e07b39" }}
+                    className="btn-primary"
+                    
                 >
                     Publicar proyecto
                 </button>
             </div>
 
-            <div className="grid grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
                 {stats.map((stat) => (
                     <StatCard
                         key={stat.label}
@@ -62,7 +62,7 @@ export default function EmprendedorDashboard({ userName }: Props) {
                 ))}
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex flex-col lg:flex-row gap-4">
                 <div className="flex-1 flex flex-col gap-4">
                     <div className="bg-white rounded-xl p-4 shadow-sm">
                         <div className="flex items-center justify-between mb-4">
@@ -74,7 +74,7 @@ export default function EmprendedorDashboard({ userName }: Props) {
                                 onClick={() =>
                                     router.push("/dashboard/projects")
                                 }
-                                className="text-xs text-[#2d6a4f] font-medium hover:underline flex items-center gap-1 cursor-pointer"
+                                className="text-xs text-brand-green font-medium hover:underline flex items-center gap-1 cursor-pointer"
                             >
                                 Ver Todo <ChevronRight size={12} />
                             </button>
@@ -118,7 +118,7 @@ export default function EmprendedorDashboard({ userName }: Props) {
                                     onClick={() =>
                                         router.push("/dashboard/reports")
                                     }
-                                    className="text-xs text-[#2d6a4f] font-medium hover:underline flex items-center gap-1"
+                                    className="text-xs text-brand-green font-medium hover:underline flex items-center gap-1"
                                 >
                                     Ver Todo <ChevronRight size={12} />
                                 </button>
@@ -187,7 +187,7 @@ export default function EmprendedorDashboard({ userName }: Props) {
                     </div>
                 </div>
 
-                <div className="w-52 bg-white rounded-xl p-4 shadow-sm">
+                <div className="lg:w-52 bg-white rounded-xl p-4 shadow-sm">
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="font-bold text-gray-800">
                             Postulaciones
@@ -198,7 +198,7 @@ export default function EmprendedorDashboard({ userName }: Props) {
                                 onClick={() =>
                                     router.push("/dashboard/postulations")
                                 }
-                                className="text-xs text-[#2d6a4f] font-medium hover:underline cursor-pointer"
+                                className="text-xs text-brand-green font-medium hover:underline cursor-pointer"
                             >
                                 Ver
                             </button>

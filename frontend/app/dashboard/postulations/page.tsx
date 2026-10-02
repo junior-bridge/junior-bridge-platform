@@ -19,7 +19,7 @@ export default function PostulationsPage() {
     if (!user) return null;
 
     return (
-        <div className="px-6 py-6">
+        <div className="px-4 sm:px-6 py-4 sm:py-6">
             <div className="mb-6">
                 <h1 className="text-2xl font-bold text-gray-800">
                     Postulaciones
@@ -44,7 +44,7 @@ export default function PostulationsPage() {
             ) : (
                 <>
                     {user.role === "CLIENT" && (
-                        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+                        <div className="bg-white rounded-xl shadow-sm overflow-x-auto">
                             <table className="w-full text-sm">
                                 <thead>
                                     <tr className="text-[10px] text-gray-400 uppercase tracking-wide border-b border-gray-100 bg-gray-50">
