@@ -97,7 +97,7 @@ export default function RegisterPage() {
                         className="flex flex-col gap-4"
                         onSubmit={handleRegister}
                     >
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <Input
                                 id="name"
                                 name="name"

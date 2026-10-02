@@ -27,7 +27,7 @@ export default function StatsPage() {
 
   if (!user || user.role !== "ADMIN") {
     return (
-      <div className="px-6 py-6">
+      <div className="px-4 sm:px-6 py-4 sm:py-6">
         <p className="text-gray-500">Acceso restringido.</p>
       </div>
     );
@@ -35,13 +35,13 @@ export default function StatsPage() {
  
 
   return (
-    <div className="px-6 py-6">
+    <div className="px-4 sm:px-6 py-4 sm:py-6">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Estadísticas</h1>
         <p className="text-gray-500 text-sm mt-1">Métricas generales de la plataforma</p>
       </div>
 
-  <div className="grid grid-cols-4 gap-4 mb-6">
+  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
     <StatCard
       label="Total Usuarios"
       value={loading ? "..." : stats?.registered_users ?? 0}
@@ -63,7 +63,7 @@ export default function StatsPage() {
     />
   </div>
 
-      <div className="flex gap-4 mb-4">
+      <div className="flex flex-col lg:flex-row gap-4 mb-4">
         <div className="flex-1 bg-white rounded-xl p-5 shadow-sm">
           <h2 className="font-bold text-gray-800 mb-4">Bugs reportados por mes</h2>
           <div className="flex items-end gap-3 h-40">
@@ -77,7 +77,7 @@ export default function StatsPage() {
           </div>
         </div>
 
-        <div className="w-56 bg-white rounded-xl p-4 shadow-sm">
+        <div className="w-full lg:w-56 bg-white rounded-xl p-4 shadow-sm">
           <h3 className="font-bold text-gray-800 text-sm mb-3">Distribución de roles</h3>
           {[
             {

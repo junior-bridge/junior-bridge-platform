@@ -20,15 +20,15 @@ export default function UsersPage() {
 
     if (!user || user.role !== "ADMIN") {
         return (
-            <div className="px-6 py-6">
+            <div className="px-4 sm:px-6 py-4 sm:py-6">
                 <p className="text-gray-500">Acceso restringido.</p>
             </div>
         );
     }
 
     return (
-        <div className="px-6 py-6">
-            <div className="flex items-center justify-between mb-6">
+        <div className="px-4 sm:px-6 py-4 sm:py-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-800">
                         Usuarios
@@ -40,14 +40,14 @@ export default function UsersPage() {
                     </p>
                 </div>
                 <button
-                    className="flex items-center gap-2 rounded-full px-5 py-2.5 text-white text-sm font-semibold hover:opacity-90 disabled:opacity-60" disabled
-                    style={{ backgroundColor: "#e07b39" }}
+                    className="flex items-center gap-2 btn-secondary disabled:opacity-60" disabled
+                    
                 >
                     <UserPlus size={15} /> Invitar usuario
                 </button>
             </div>
-            <div className="flex gap-3 mb-5">
-                <div className="flex items-center gap-2 bg-white rounded-full px-4 py-2 w-64 border border-gray-200">
+            <div className="flex flex-wrap gap-3 mb-5">
+                <div className="flex items-center gap-2 bg-white rounded-full px-4 py-2 w-full sm:w-64 border border-gray-200">
                     <Search size={14} className="text-gray-400" />
                     <input
                         type="text"
@@ -71,7 +71,7 @@ export default function UsersPage() {
                             key={filterRole}
                             onClick={() => setRoleFilter(filterRole)}
                             className={`px-4 py-2 rounded-full text-xs font-medium border transition cursor-pointer ${isActive
-                                ? "bg-[#2d6a4f] text-white border-[#2d6a4f]"
+                                ? "bg-brand-green text-white border-brand-green"
                                 : "bg-white text-gray-500 border-gray-200 hover:border-teal-300"
                                 }`}
                         >

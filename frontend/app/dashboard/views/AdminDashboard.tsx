@@ -18,7 +18,7 @@ export default function AdminDashboard({ userName }: Props) {
     } = useDashboardAdminView();
 
     return (
-        <main className="flex-1 overflow-y-auto px-6 py-6">
+        <main className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-6">
             <div className="mb-6">
                 <h1 className="text-2xl font-bold text-gray-800">
                     Hola, {userName}
@@ -28,7 +28,7 @@ export default function AdminDashboard({ userName }: Props) {
                 </p>
             </div>
 
-            <div className="grid grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
                 {stats.map((stat) => (
                     <StatCard
                         key={stat.label}
@@ -38,14 +38,14 @@ export default function AdminDashboard({ userName }: Props) {
                 ))}
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex flex-col lg:flex-row gap-4">
                 <div className="flex-1 flex flex-col gap-4">
                     <div className="bg-white rounded-xl p-4 shadow-sm">
                         <div className="flex items-center justify-between mb-4">
                             <h2 className="font-bold text-gray-800 flex items-center gap-2">
                                 <FolderOpen
                                     size={16}
-                                    className="text-[#2d6a4f]"
+                                    className="text-brand-green"
                                 />{" "}
                                 Proyectos Recientes
                             </h2>
@@ -53,7 +53,7 @@ export default function AdminDashboard({ userName }: Props) {
                                 onClick={() =>
                                     router.push("/dashboard/projects")
                                 }
-                                className="text-xs text-[#2d6a4f] font-medium hover:underline flex items-center gap-1 cursor-pointer"
+                                className="text-xs text-brand-green font-medium hover:underline flex items-center gap-1 cursor-pointer"
                             >
                                 Ver Todo <ChevronRight size={12} />
                             </button>
@@ -129,12 +129,12 @@ export default function AdminDashboard({ userName }: Props) {
                     <div className="bg-white rounded-xl p-4 shadow-sm">
                         <div className="flex items-center justify-between mb-4">
                             <h2 className="font-bold text-gray-800 flex items-center gap-2">
-                                <Users size={16} className="text-[#2d6a4f]" />{" "}
+                                <Users size={16} className="text-brand-green" />{" "}
                                 Usuarios Recientes
                             </h2>
                             <button
                                 onClick={() => router.push("/dashboard/users")}
-                                className="text-xs text-[#2d6a4f] font-medium hover:underline flex items-center gap-1 cursor-pointer"
+                                className="text-xs text-brand-green font-medium hover:underline flex items-center gap-1 cursor-pointer"
                             >
                                 Ver Todo <ChevronRight size={12} />
                             </button>
@@ -148,7 +148,7 @@ export default function AdminDashboard({ userName }: Props) {
                     </div>
                 </div>
 
-                <div className="w-52 flex flex-col gap-4">
+                <div className="lg:w-52 flex flex-col gap-4">
                     <div className="bg-white rounded-xl p-4 shadow-sm">
                         <h2 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
                             <Bug size={15} className="text-red-400" /> Bugs

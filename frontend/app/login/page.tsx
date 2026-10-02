@@ -23,9 +23,9 @@ export default function LoginPage() {
     } = useLogin(setUser);
 
     return (
-        <main className="min-h-screen flex items-center justify-center px-4">
-            <div className="bg-[#dde8e5] rounded-3xl border-2 border-[#71A398] p-8 w-full max-w-lg shadow-xl">
-                <div className="bg-white rounded-2xl px-10 py-10">
+        <main className="min-h-screen flex items-center justify-center px-4 py-8">
+            <div className="bg-[#dde8e5] rounded-3xl border-2 border-[#71A398] p-4 sm:p-8 w-full max-w-lg shadow-xl">
+                <div className="bg-white rounded-2xl px-6 sm:px-10 py-8 sm:py-10">
                     <div className="flex flex-col items-center mb-6">
                         <Image
                             src="/logo.png"
@@ -159,8 +159,7 @@ export default function LoginPage() {
                         <button
                             type="submit"
                             disabled={loading || oauthLoading !== null}
-                            className="w-full rounded-full py-2.5 text-white cursor-pointer text-sm font-semibold transition hover:opacity-90 mt-1 disabled:opacity-60"
-                            style={{ backgroundColor: "#e07b39" }}
+                            className="btn-primary w-full mt-1"
                         >
                             {loading ? "Ingresando..." : "Iniciar sesión"}
                         </button>

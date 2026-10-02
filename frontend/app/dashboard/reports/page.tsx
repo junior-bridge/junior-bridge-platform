@@ -34,8 +34,8 @@ export default function ReportsPage() {
     }
 
     return (
-        <div className="px-6 py-6">
-            <div className="flex items-center justify-between mb-6">
+        <div className="px-4 sm:px-6 py-4 sm:py-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-800">
                         Reportes
@@ -54,8 +54,8 @@ export default function ReportsPage() {
                     <button
                         type="button"
                         onClick={() => setIsModalOpen(true)}
-                        className="flex items-center gap-2 rounded-full px-5 py-2.5 text-white text-sm font-semibold hover:opacity-90 transition-opacity cursor-pointer"
-                        style={{ backgroundColor: "#e07b39" }}
+                        className="flex items-center gap-2 btn-primary-opacity cursor-pointer"
+                        
                     >
                         <Plus size={15} />
                         Nuevo Reporte
@@ -449,7 +449,7 @@ export default function ReportsPage() {
                                     type="submit"
                                     disabled={submitting}
                                     className="px-5 py-2 rounded-full text-xs text-white font-semibold disabled:opacity-50 cursor-pointer"
-                                    style={{ backgroundColor: "#e07b39" }}
+                                    
                                 >
                                     {submitting
                                         ? "Enviando..."
