@@ -10,6 +10,17 @@ export interface UserDashboard {
     projects: number;
     reputation: string;
 }
+export interface AdminUser {
+    id: number;
+    name: string;
+    surname: string;
+    email: string;
+    role: "TESTER" | "CLIENT" | "ADMIN";
+    is_active: boolean;
+    created_at: string;
+    projects_count: number;
+    reputation: string;
+}
 
 type ReportFormField ="postulationId"| "title"| "description"| "stepsToReproduce";
 export type ReportFormErrors = Partial<Record<ReportFormField, string>>;
