@@ -1,4 +1,4 @@
-import { applyToProject, getUserPostulations } from "@/services/postulation.service";
+import { applyToProject, deletePostulation, getUserPostulations } from "@/services/postulation.service";
 import { getProjects, getUserProjects, updateProjectState } from "@/services/project.service";
 import { User } from "@/types";
 import { Postulation } from "@/types/postulationTypes";
@@ -29,6 +29,10 @@ export const useDashboardProjects=({user,isClient,isTester,isAdmin}  :{ user: Us
     const [searchTerm, setSearchTerm] = useState("");
     const [loading, setLoading] = useState(true);
     const [applyingId, setApplyingId] = useState<number | null>(null);
+    const [postulationToWithdraw, setPostulationToWithdraw] = useState<Postulation | null>(null);
+    const [withdrawingId, setWithdrawingId] = useState<number | null>(null);
+    const [message, setMessage] = useState("");
+    const [messageError, setMessageError] = useState(false);
     
     useEffect(() => {
             async function loadData() {
@@ -58,7 +62,9 @@ export const useDashboardProjects=({user,isClient,isTester,isAdmin}  :{ user: Us
             }
     }, [user, isClient, isTester, isAdmin]);
     
-    const appliedProjectIds = new Set(postulations.map((p) => p.id_project));
+    const postulationsByProject = new Map(
+        postulations.map((postulation) => [postulation.id_project, postulation]),
+    );
     
     const filteredProjects = projects.filter(
             (p) =>
@@ -69,6 +75,8 @@ export const useDashboardProjects=({user,isClient,isTester,isAdmin}  :{ user: Us
     
     async function handleApply(projectId: number) {
             setApplyingId(projectId);
+            setMessage("");
+            setMessageError(false);
             try {
                 const newPost = await applyToProject(projectId);
                 setMyPostulations((prev) => [...prev, newPost]);
@@ -77,6 +85,36 @@ export const useDashboardProjects=({user,isClient,isTester,isAdmin}  :{ user: Us
             } finally {
                 setApplyingId(null);
             }
+    }
+
+    async function handleWithdraw() {
+        if (!postulationToWithdraw) return;
+
+        setWithdrawingId(postulationToWithdraw.id_postulation);
+        setMessage("");
+        setMessageError(false);
+
+        try {
+            await deletePostulation(postulationToWithdraw.id_postulation);
+            setMyPostulations((prev) =>
+                prev.filter(
+                    (postulation) =>
+                        postulation.id_postulation !==
+                        postulationToWithdraw.id_postulation,
+                ),
+            );
+            setPostulationToWithdraw(null);
+            setMessage("Postulación retirada correctamente.");
+        } catch (err) {
+            setMessageError(true);
+            setMessage(
+                err instanceof Error
+                    ? err.message
+                    : "No se pudo retirar la postulación.",
+            );
+        } finally {
+            setWithdrawingId(null);
+        }
     }
     
     async function handleStatusChange(
@@ -106,7 +144,13 @@ export const useDashboardProjects=({user,isClient,isTester,isAdmin}  :{ user: Us
         applyingId,
         handleApply,
         handleStatusChange,
-        appliedProjectIds,
+        postulationsByProject,
         filteredProjects,
+        postulationToWithdraw,
+        setPostulationToWithdraw,
+        withdrawingId,
+        handleWithdraw,
+        message,
+        messageError,
     }
 }

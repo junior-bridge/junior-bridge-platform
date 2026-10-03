@@ -17,8 +17,14 @@ export default function ProjectsPage() {
         applyingId,
         handleApply,
         handleStatusChange,
-        appliedProjectIds,
-        filteredProjects
+        postulationsByProject,
+        filteredProjects,
+        postulationToWithdraw,
+        setPostulationToWithdraw,
+        withdrawingId,
+        handleWithdraw,
+        message,
+        messageError,
     } = useDashboardProjects({ user, isClient, isTester, isAdmin });
 
     if (!user) return null;
@@ -57,6 +63,14 @@ export default function ProjectsPage() {
                     className="bg-transparent text-sm outline-none w-full placeholder-gray-400"
                 />
             </div>
+
+            {message && (
+                <p
+                    className={`text-sm mb-4 ${messageError ? "text-red-600" : "text-brand-green"}`}
+                >
+                    {message}
+                </p>
+            )}
 
             {loading ? (
                 <p className="text-sm text-gray-400 py-8 text-center">
@@ -126,9 +140,7 @@ export default function ProjectsPage() {
                     {isTester && (
                         <div className="flex flex-col gap-4">
                             {filteredProjects.map((p) => {
-                                const alreadyApplied = appliedProjectIds.has(
-                                    p.id,
-                                );
+                                const postulation = postulationsByProject.get(p.id);
                                 return (
                                     <div
                                         key={p.id}
@@ -165,21 +177,54 @@ export default function ProjectsPage() {
                                                 {p.modality.toLowerCase()}
                                             </p>
                                         </div>
-                                        {(p.state === "OPEN" ||
-                                            p.state === "IN_PROGRESS") &&
-                                            (alreadyApplied ? (
-                                                <span className="ml-4 shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg bg-gray-100 text-gray-500">
-                                                    Ya postulado
-                                                </span>
-                                            ) : (
-                                                <button
-                                                    onClick={() => handleApply(p.id)}
-                                                    disabled={applyingId === p.id}
-                                                    className="ml-4 shrink-0 btn-green-sm disabled:opacity-60"
+                                        {postulation ? (
+                                            <div className="ml-4 shrink-0 flex flex-col items-end gap-2">
+                                                <span
+                                                    className={`text-xs font-semibold px-3 py-1.5 rounded-lg ${
+                                                        postulation.status === "accepted"
+                                                            ? "bg-green-100 text-green-700"
+                                                            : postulation.status === "rejected"
+                                                              ? "bg-red-100 text-red-600"
+                                                              : "bg-yellow-100 text-yellow-700"
+                                                    }`}
                                                 >
-                                                    {applyingId === p.id ? "Postulando..." : "Postularme"}
-                                                </button>
-                                            ))}
+                                                    {postulation.status === "accepted"
+                                                        ? "Postulación aceptada"
+                                                        : postulation.status === "rejected"
+                                                          ? "Postulación rechazada"
+                                                          : "Postulación pendiente"}
+                                                </span>
+                                                {postulation.status === "pending" && (
+                                                    <button
+                                                        onClick={() =>
+                                                            setPostulationToWithdraw(
+                                                                postulation,
+                                                            )
+                                                        }
+                                                        className="text-xs font-medium text-red-600 hover:underline cursor-pointer"
+                                                    >
+                                                        Retirar postulación
+                                                    </button>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <button
+                                                onClick={() => handleApply(p.id)}
+                                                disabled={
+                                                    p.state !== "OPEN" ||
+                                                    applyingId === p.id
+                                                }
+                                                className={
+                                                    p.state === "OPEN"
+                                                        ? "ml-4 shrink-0 btn-green-sm disabled:opacity-60"
+                                                        : "ml-4 shrink-0 rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-400 cursor-not-allowed"
+                                                }
+                                            >
+                                                {applyingId === p.id
+                                                    ? "Postulando..."
+                                                    : "Postularme"}
+                                            </button>
+                                        )}
                                     </div>
                                 );
                             })}
@@ -260,6 +305,43 @@ export default function ProjectsPage() {
                         </div>
                     )}
                 </>
+            )}
+
+            {postulationToWithdraw && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+                    <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl">
+                        <h2 className="text-lg font-bold text-gray-800">
+                            Retirar postulación
+                        </h2>
+                        <p className="mt-2 text-sm text-gray-500">
+                            ¿Confirmás que querés retirar tu postulación? Esta
+                            acción no se puede deshacer.
+                        </p>
+                        {message && messageError && (
+                            <p className="mt-3 text-sm text-red-600">
+                                {message}
+                            </p>
+                        )}
+                        <div className="mt-6 flex justify-end gap-3">
+                            <button
+                                onClick={() => setPostulationToWithdraw(null)}
+                                disabled={withdrawingId !== null}
+                                className="rounded-full border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-60"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={handleWithdraw}
+                                disabled={withdrawingId !== null}
+                                className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-60"
+                            >
+                                {withdrawingId !== null
+                                    ? "Retirando..."
+                                    : "Retirar"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );
