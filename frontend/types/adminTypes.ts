@@ -16,6 +16,8 @@ export type TopTester = {
   id: number;
   name: string;
   reputation: number;
+  bugs: number;
+  projects: number;
 };
 
 export type AdminStats = {

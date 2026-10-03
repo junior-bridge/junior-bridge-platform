@@ -6,11 +6,7 @@ import { useDashboardStats } from "@/hooks/dashboard/useDashboardStats";
 
 
 
-const topTesters = [
-  { name: "Roxana Pop", bugs: 48, projects: 6, avg: "4.9" },
-  { name: "Trevor Guy", bugs: 35, projects: 5, avg: "4.7" },
-  { name: "Ringo Star", bugs: 29, projects: 4, avg: "4.5" },
-];
+
 
 export default function StatsPage() {
   const { user } = useUser();
@@ -124,18 +120,18 @@ export default function StatsPage() {
             </tr>
           </thead>
           <tbody>
-            {topTesters.map((t, i) => (
+            {stats?.top_testers?.map((t) => (
               <tr key={t.name} className="border-b border-gray-50 last:border-0">
                 <td className="py-2.5">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-400 w-4">{i+1}.</span>
+                    <span className="text-xs text-gray-400 w-4">{t.rank}.</span>
                     <div className="w-6 h-6 rounded-full bg-orange-300 flex items-center justify-center text-white text-[10px] font-bold">{t.name[0]}</div>
                     <span className="text-gray-700 text-xs font-medium">{t.name}</span>
                   </div>
                 </td>
                 <td className="py-2.5 text-gray-600 text-xs">{t.bugs}</td>
                 <td className="py-2.5 text-gray-600 text-xs">{t.projects}</td>
-                <td className="py-2.5 text-orange-500 text-xs font-medium">{t.avg} ★</td>
+                <td className="py-2.5 text-orange-500 text-xs font-medium">{t.reputation} ★</td>
               </tr>
             ))}
           </tbody>
