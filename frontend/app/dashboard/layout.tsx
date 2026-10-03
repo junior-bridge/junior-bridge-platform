@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Menu, X } from "lucide-react";
+import { Search, Menu } from "lucide-react";
 import { useUser } from "@/context/UserContext";
 import Sidebar from "@/components/dashboard/Sidebar";
 import { NotificationBell } from "../../components/NotificationBell";
 import { useDashboard } from "@/hooks/useDashboard";
 import { User } from "@/types";
+import Loader from "@/components/ui/Loader";
 
 export default function DashboardLayout({
     children,
@@ -19,7 +20,11 @@ export default function DashboardLayout({
     const { router, handleLogout, displayName, avatarInitials, roleLabel } =
         useDashboard({ isLoading, isAuthenticated, logout, user });
 
-    if (isLoading) return null;
+    if (isLoading) return (
+        <div className="min-h-screen flex items-center justify-center bg-[#f5f0eb]">
+            <Loader size={40} color="#e07b39" label="Cargando..." />
+        </div>
+    );
     if (!user) return null;
 
     return (

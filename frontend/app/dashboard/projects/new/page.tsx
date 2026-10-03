@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import Input from "@/components/ui/Input";
 import { useUser } from "@/context/UserContext";
 import { useDashboardNewProjects } from "@/hooks/dashboard/useDashboardNewProjects";
+import Loader from "@/components/ui/Loader";
 
 
 export default function NewProjectPage() {
@@ -201,10 +202,10 @@ export default function NewProjectPage() {
                     <button
                         type="submit"
                         disabled={isSubmitting || Boolean(successMessage)}
-                        className="rounded-full cursor-pointer px-5 py-2.5 text-white text-sm font-semibold hover:opacity-90 transition disabled:opacity-60 disabled:cursor-not-allowed"
-                        
+                        className="btn-primary flex items-center gap-2 disabled:cursor-not-allowed"
                     >
-                        Publicar proyecto
+                        {isSubmitting && <Loader size={14} color="#ffffff" />}
+                        {isSubmitting ? "Publicando..." : "Publicar proyecto"}
                     </button>
                 </div>
             </form>
