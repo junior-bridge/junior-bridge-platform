@@ -1,5 +1,6 @@
 import { User } from "@/types";
 import { UserDashboard } from "@/types/dashboardTypes";
+import { getAdminUsers } from "@/services/user.service";
 import { useState , useEffect , useMemo } from "react";
 
 
@@ -33,32 +34,36 @@ export const useDashboardUsers = (user : User | null) => {
         });
     }, [users, searchTerm, roleFilter]);
 
-       useEffect(() => {
-        async function fetchUsers() {
-            try {
-                setLoading(true);
+useEffect(() => {
+    async function fetchUsers() {
+        try {
+            setLoading(true);
 
-                const response = await fetch("/api/users/", {
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                });
+            const data = await getAdminUsers();
 
-                if (!response.ok) throw new Error("Error al obtener usuarios");
+            const dashboardUsers: UserDashboard[] = data.map((u) => ({
+                id: String(u.id),
+                name: `${u.name} ${u.surname}`,
+                email: u.email,
+                role: u.role,
+                status: u.is_active ? "activo" : "suspendido",
+                joined: new Date(u.created_at).toLocaleDateString("es-AR"),
+                projects: u.projects_count,
+                reputation: u.reputation,
+            }));
 
-                const data = await response.json();
-                setUsers(data);
-            } catch (error) {
-                console.error("Error cargando usuarios:", error);
-            } finally {
-                setLoading(false);
-            }
+            setUsers(dashboardUsers);
+        } catch (error) {
+            console.error("Error cargando usuarios:", error);
+        } finally {
+            setLoading(false);
         }
+    }
 
-        if (user?.role === "ADMIN") {
-            fetchUsers();
-        }
-    }, [user]);
+    if (user?.role === "ADMIN") {
+        fetchUsers();
+    }
+}, [user]);
 
     return{
         roleColors,
