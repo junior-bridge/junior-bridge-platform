@@ -2,6 +2,10 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Project } from "@/types/projectTypes";
 import { getProjects } from "@/services/project.service";
+import { getAdminStats } from "@/services/admin.service";
+import { AdminStats } from "@/types/adminTypes";
+import { getAdminUsers } from "@/services/user.service";
+import { AdminUser } from "@/types/dashboardTypes";
 
 export const useDashboardAdminView = () => {
     const stateColor: Record<string, string> = {
@@ -16,23 +20,37 @@ export const useDashboardAdminView = () => {
     const router = useRouter();
     const [projects, setProjects] = useState<Project[]>([]);
     const [loading, setLoading] = useState(true);
+    const [adminStats, setAdminStats] = useState<AdminStats | null>(null);
+    const [users, setUsers] = useState<AdminUser[]>([]);
 
     useEffect(() => {
         getProjects()
             .then(setProjects)
             .catch(() => {})
             .finally(() => setLoading(false));
+        getAdminStats()
+            .then(setAdminStats)
+            .catch(() => {});
+        getAdminUsers()
+            .then(setUsers)
+            .catch(() => {});        
     }, []);
 
      const stats = [
-        { label: "Usuarios Registrados", value: "—" },
+        { 
+            label: "Usuarios Registrados", 
+            value:  adminStats?.registered_users ?? 0, 
+        },
         {
             label: "Proyectos Activos",
             value: projects.filter(
                 (p) => p.state === "OPEN" || p.state === "IN_PROGRESS",
             ).length,
         },
-        { label: "Bugs Reportados", value: "—" },
+        { 
+            label: "Bugs Reportados", 
+            value: adminStats?.reported_bugs ?? 0, 
+        },
         { label: "Proyectos Totales", value: projects.length },
     ];
 
@@ -40,6 +58,7 @@ export const useDashboardAdminView = () => {
         stateColor,
         router,
         projects,
+        users,
         loading,
         stats
     }
