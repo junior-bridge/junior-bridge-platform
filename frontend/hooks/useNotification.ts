@@ -14,27 +14,61 @@ type Notification = {
   type?: string;
 };
 
+type ApiNotification = {
+  id_notification: number;
+  type: string;
+  message: string;
+  is_read: boolean;
+  created_at: string;
+};
+
+function getNotificationTitle(notification: ApiNotification): string {
+  const message = notification.message.toLowerCase();
+
+  if (notification.type === 'postulation') {
+    return 'Nueva postulación';
+  }
+
+  if (message.includes('aceptada')) {
+    return 'Postulación aceptada';
+  }
+
+  if (message.includes('rechazada')) {
+    return 'Postulación rechazada';
+  }
+
+  return 'Notificación';
+}
+
 export function useNotifications() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isConnected, setIsConnected] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const NOTIFICATIONS_API = `${API_BASE}/api/notifications`;
 
   const loadNotifications = useCallback(async () => {
     try {
-      const response = await fetch(`${API_BASE}/notifications/`, {
+      const response = await fetch(`${NOTIFICATIONS_API}/`, {
         credentials: 'include',
       });
 
       if (response.ok) {
         const data = await response.json();
+        const results: ApiNotification[] = data.results || data;
 
-        const results = data.results || data;
+        const normalized: Notification[] = results.map((notification) => ({
+          notification_id: String(notification.id_notification),
+          title: getNotificationTitle(notification),
+          message: notification.message,
+          is_read: notification.is_read,
+          created_at: notification.created_at,
+          type: notification.type,
+        }));
+        setNotifications(normalized);
 
-        setNotifications(results);
-
-        const unread = results.filter((n: Notification) => !n.is_read).length;
+        const unread = normalized.filter((notification) => !notification.is_read).length;
         setUnreadCount(unread);
       }
     } catch (error) {
@@ -112,7 +146,7 @@ export function useNotifications() {
   const markAsRead = useCallback(async (notificationId: string) => {
     try {
       const response = await fetch(
-        `${API_BASE}/notifications/${notificationId}/`,
+        `${NOTIFICATIONS_API}/${notificationId}/`,
         {
           method: 'PATCH',
           headers: {
@@ -143,7 +177,7 @@ export function useNotifications() {
   const deleteNotification = useCallback(async (notificationId: string) => {
     try {
       const response = await fetch(
-        `${API_BASE}/notifications/${notificationId}/`,
+        `${NOTIFICATIONS_API}/${notificationId}/`,
         {
           method: 'DELETE',
           credentials: 'include',

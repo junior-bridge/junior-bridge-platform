@@ -281,3 +281,6 @@ CHANNEL_LAYERS = {
 WEBSOCKET_ACCEPT_ALL = False  # Requerir autenticación
 WEBSOCKET_TIMEOUT = 300  # 5 minutos de inactividad
 
+# Email settings
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = "noreply@juniorbridge.com"
