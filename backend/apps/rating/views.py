@@ -78,7 +78,16 @@ class PostulationRatingView(APIView):
                 {"detail": "Postulation not found."},
                 status=status.HTTP_404_NOT_FOUND,
             )
-
+        if request.user != postulation.id_project.client:
+            return Response(
+                {"detail": "Only the project owner can rate this postulation."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        if postulation.id_project.state != "COMPLETED":
+            return Response(
+                {"detail": "Only completed projects can be rated."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         if Rating.objects.filter(
             id_postulation=postulation
         ).exists():
@@ -132,6 +141,11 @@ class RatingUpdateView(APIView):
                 {"detail": "Rating not found."},
                 status=status.HTTP_404_NOT_FOUND,
             )
+        if request.user != rating.id_postulation.id_project.client:
+            return Response(
+                {"detail": "Only the project owner can update this rating."},
+                status=status.HTTP_403_FORBIDDEN,
+            )        
 
         serializer = RatingSerializer(
             rating,

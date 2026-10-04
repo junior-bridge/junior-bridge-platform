@@ -101,6 +101,10 @@ class PostulationAcceptView(APIView):
         postulation.status = Postulation.State.ACCEPTED
         postulation.save()
 
+        project = postulation.id_project
+        project.state = "IN_PROGRESS"
+        project.save(update_fields=["state"])
+
         serializer = PostulationSerializer(postulation)
 
         return Response(

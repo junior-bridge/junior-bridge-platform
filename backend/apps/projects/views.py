@@ -1,12 +1,15 @@
-from rest_framework import generics
+from rest_framework import generics, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from django.utils import timezone
 
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 
 from apps.users.permissions import IsAdmin, IsClient
 
 from .models import Project
+from apps.users.models import User
 from .permissions import IsProjectOwner
 from .serializers import (
     AdminProjectSerializer,
@@ -145,3 +148,80 @@ class ProjectStatusUpdateView(generics.UpdateAPIView):
             )
 
         serializer.save()
+
+class ProjectFinishDeliveryView(generics.GenericAPIView):
+    queryset = Project.objects.all()
+    permission_classes = [IsAuthenticated]
+    http_method_names = ['post', 'options']
+
+    def post(self, request, pk):
+        project = self.get_object()
+
+        if request.user.role != User.Role.TESTER:
+            return Response(
+                {"detail": "Only the assigned tester can finish the delivery."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        postulation = project.postulations.filter(
+            id_tester=request.user,
+            status="accepted"
+        ).first()
+
+        if postulation is None:
+            return Response(
+                {"detail": "You are not the assigned tester for this project."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        if project.state != "IN_PROGRESS":
+            return Response(
+                {"detail": "Only projects in progress can have their delivery finished."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        project.state = "IN_REVIEW"
+        project.save(update_fields=["state"])
+
+        return Response(
+            {"detail": "Delivery finished successfully.", "state": project.state},
+            status=status.HTTP_200_OK
+        )
+
+class ProjectCompleteView(generics.GenericAPIView):
+    queryset = Project.objects.all()
+    permission_classes = [IsAuthenticated]
+    http_method_names = ['post', 'options']
+
+    def post(self, request, pk):
+        project = self.get_object()
+
+        if request.user != project.client:
+            return Response(
+                {"detail": "Only the project owner can complete the project."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        if project.state not in ["IN_PROGRESS", "IN_REVIEW"]:
+            return Response(
+                {
+                    "detail": (
+                        "Only projects in progress or under review "
+                        "can be completed."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        project.state = "COMPLETED"
+        project.finalized_at = timezone.now()
+        project.save(update_fields=["state", "finalized_at"])
+
+        return Response(
+            {
+                "detail": "Project completed successfully.",
+                "state": project.state,
+                "finalized_at": project.finalized_at,
+            },
+            status=status.HTTP_200_OK
+        )
