@@ -7,6 +7,7 @@ from apps.postulations.models import Postulation
 
 from .models import Rating
 from .serializers import RatingSerializer
+from .services import update_tester_reputation
 
 from drf_spectacular.utils import extend_schema, OpenApiResponse
 
@@ -96,6 +97,8 @@ class PostulationRatingView(APIView):
             id_postulation=postulation
         )
 
+        update_tester_reputation(postulation.id_tester)
+
         return Response(
             RatingSerializer(rating).data,
             status=status.HTTP_201_CREATED,
@@ -138,6 +141,9 @@ class RatingUpdateView(APIView):
         serializer.is_valid(raise_exception=True)
         rating = serializer.save()
 
+        update_tester_reputation(
+            rating.id_postulation.id_tester
+        )
         return Response(
             RatingSerializer(rating).data,
             status=status.HTTP_200_OK,
