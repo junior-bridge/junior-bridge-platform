@@ -4,19 +4,27 @@ import Link from "next/link";
 import { useUser } from "@/context/UserContext";
 import { Plus, Search } from "lucide-react";
 import { useDashboardProjects } from "@/hooks/dashboard/useDashboardProjects";
+import { useState } from "react";
 
 
 
 export default function ProjectsPage() {
     const { user, isClient, isTester, isAdmin } = useUser();
+    const [ratingProjectId, setRatingProjectId] = useState<number | null>(null);
+    const [ratingStars, setRatingStars] = useState(0);
+    const [ratingComment, setRatingComment] = useState("");
     const {
         statusColors,
         searchTerm,
         setSearchTerm,
         loading,
+        ratingsByProject,
         applyingId,
         handleApply,
         handleStatusChange,
+        handleCompleteProject,
+        handleFinishDelivery,
+        handleCreateRating,
         postulationsByProject,
         filteredProjects,
         postulationToWithdraw,
@@ -132,6 +140,66 @@ export default function ProjectsPage() {
                                             ).toLocaleDateString("es-AR")}
                                         </span>
                                     </div>
+                                    {(p.state === "IN_PROGRESS" || p.state === "IN_REVIEW") && (
+                                        <div className="flex justify-end mt-4 pt-3 border-t border-gray-50">
+                                            <button
+                                                onClick={() => handleCompleteProject(p.id)}
+                                                className="rounded-lg bg-teal-600 px-4 py-2 text-xs font-semibold text-white hover:bg-teal-700 transition-colors"
+                                            >
+                                                Dar por completado
+                                            </button>
+                                        </div>
+                                    )}
+                                    {p.state === "COMPLETED" && (
+                                        <div className="mt-3">
+                                            {ratingsByProject[p.id]?.rating ? (
+                                                <div className="text-sm">
+                                                    <p className="font-medium text-gray-700">
+                                                        Tu calificación
+                                                    </p>
+
+                                                    <div className="mt-1 flex items-center gap-1">
+                                                        {Array.from({ length: 5 }, (_, index) => (
+                                                            <span
+                                                                key={index}
+                                                                className={
+                                                                    index <
+                                                                    ratingsByProject[p.id].rating!.stars
+                                                                        ? "text-yellow-400"
+                                                                        : "text-gray-300"
+                                                                }
+                                                            >
+                                                                ★
+                                                            </span>
+                                                        ))}
+                                                    </div>
+
+                                                    {ratingsByProject[p.id].rating!.comment && (
+                                                        <p className="mt-1 text-xs text-gray-500">
+                                                            {ratingsByProject[p.id].rating!.comment}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center justify-between">
+                                                    <p className="text-sm text-gray-500">
+                                                        Sin calificación
+                                                    </p>
+
+                                                    <button
+                                                        onClick={() => {
+                                                            setRatingProjectId(p.id);
+                                                            setRatingStars(0);
+                                                            setRatingComment("");
+                                                        }}
+                                                        className="rounded-lg bg-teal-600 px-4 py-2 text-xs font-semibold text-white hover:bg-teal-700 transition-colors"
+                                                    >
+                                                        Calificar proyecto
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </div>
@@ -194,6 +262,15 @@ export default function ProjectsPage() {
                                                           ? "Postulación rechazada"
                                                           : "Postulación pendiente"}
                                                 </span>
+                                                {postulation.status === "accepted" && p.state === "IN_PROGRESS" && (
+                                                    <button
+                                                        onClick={() => handleFinishDelivery(p.id)}
+                                                        className="rounded-lg bg-orange-500 px-4 py-2 text-xs font-semibold text-white hover:bg-orange-600 transition-colors"
+                                                    >
+                                                        Finalizar entrega
+                                                    </button>
+                                                )}
+
                                                 {postulation.status === "pending" && (
                                                     <button
                                                         onClick={() =>
@@ -343,6 +420,103 @@ export default function ProjectsPage() {
                     </div>
                 </div>
             )}
+
+            {ratingProjectId !== null && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+                    <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+                        <h2 className="text-lg font-bold text-gray-800">
+                            Calificar proyecto
+                        </h2>
+
+                        <p className="mt-2 text-sm text-gray-500">
+                            ¿Cómo fue tu experiencia con este proyecto?
+                        </p>
+
+                        <div className="mt-5">
+                            <p className="text-sm font-medium text-gray-700">
+                                Calificación
+                            </p>
+
+                            <div className="mt-2 flex gap-1">
+                                {Array.from({ length: 5 }, (_, index) => {
+                                    const star = index + 1;
+
+                                    return (
+                                        <button
+                                            key={star}
+                                            type="button"
+                                            onClick={() => setRatingStars(star)}
+                                            className={`text-3xl transition-colors ${
+                                                star <= ratingStars
+                                                    ? "text-yellow-400"
+                                                    : "text-gray-300"
+                                            }`}
+                                        >
+                                            ★
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        <div className="mt-5">
+                            <label
+                                htmlFor="rating-comment"
+                                className="text-sm font-medium text-gray-700"
+                            >
+                                Comentario
+                            </label>
+
+                            <textarea
+                                id="rating-comment"
+                                value={ratingComment}
+                                onChange={(e) => setRatingComment(e.target.value)}
+                                placeholder="Escribí un comentario sobre el trabajo..."
+                                maxLength={500}
+                                rows={4}
+                                className="mt-2 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-teal-500"
+                            />
+
+                            <p className="mt-1 text-right text-xs text-gray-400">
+                                {ratingComment.length}/500
+                            </p>
+                        </div>
+
+                        <div className="mt-6 flex justify-end gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setRatingProjectId(null)}
+                                className="rounded-full border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-50"
+                            >
+                                Cancelar
+                            </button>
+
+                            <button
+                                type="button"
+                                disabled={ratingStars === 0}
+                                onClick={async () => {
+                                    if (ratingProjectId === null || ratingStars === 0) {
+                                        return;
+                                    }
+
+                                    await handleCreateRating(
+                                        ratingProjectId,
+                                        ratingStars,
+                                        ratingComment,
+                                    );
+
+                                    setRatingProjectId(null);
+                                    setRatingStars(0);
+                                    setRatingComment("");
+                                }}
+                                className="rounded-full bg-teal-600 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                Guardar calificación
+                            </button>                            
+                        </div>
+                    </div>
+                </div>
+            )}            
         </div>
     );
 }

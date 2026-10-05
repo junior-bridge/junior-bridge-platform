@@ -68,4 +68,32 @@ export async function updateProjectStatus(
         },
     );
 }
+
+//Finalizacion del proyecto por parte del cliente
+export async function completeProject(
+    id: number,
+): Promise<{ state: Project["state"]; finalized_at: string }> {
+    await getCsrfToken();
+
+    return apiFetch<{ state: Project["state"]; finalized_at: string }>(
+        `/api/projects/${id}/complete/`,
+        {
+            method: "POST",
+        },
+    );
+}
+
+// Entrega por parte del tester
+export async function finishProjectDelivery(
+    id: number,
+): Promise<{ state: Project["state"] }> {
+    await getCsrfToken();
+
+    return apiFetch<{ state: Project["state"] }>(
+        `/api/projects/${id}/finish-delivery/`,
+        {
+            method: "POST",
+        },
+    );
+}
 // 

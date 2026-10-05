@@ -1,8 +1,10 @@
-import { applyToProject, deletePostulation, getUserPostulations } from "@/services/postulation.service";
-import { getProjects, getUserProjects, updateProjectState } from "@/services/project.service";
+import { applyToProject, deletePostulation, getProjectPostulations, getUserPostulations } from "@/services/postulation.service";
+import { completeProject, finishProjectDelivery, getProjects, getUserProjects, updateProjectState } from "@/services/project.service";
+import { createRating, getRating } from "@/services/rating.service";
 import { User } from "@/types";
 import { Postulation } from "@/types/postulationTypes";
 import { Project, ProjectState } from "@/types/projectTypes";
+import { Rating } from "@/types/ratingTypes";
 import { useState, useEffect } from "react";
 
 export const useDashboardProjects=({user,isClient,isTester,isAdmin}  :{ user: User | null; isClient: boolean; isTester: boolean; isAdmin: boolean })=>{
@@ -33,14 +35,66 @@ export const useDashboardProjects=({user,isClient,isTester,isAdmin}  :{ user: Us
     const [withdrawingId, setWithdrawingId] = useState<number | null>(null);
     const [message, setMessage] = useState("");
     const [messageError, setMessageError] = useState(false);
+    const [ratingsByProject, setRatingsByProject] = useState<
+        Record<number, { postulationId: number; rating: Rating | null }>
+    >({});
     
     useEffect(() => {
             async function loadData() {
                 try {
-                    if (isClient) {
-                        const projs = await getUserProjects();
-                        setProjects(projs);
-                    } else if (isTester) {
+                if (isClient) {
+                    const projs = await getUserProjects();
+                    setProjects(projs);
+
+                    const completedProjects = projs.filter(
+                        (project) => project.state === "COMPLETED",
+                    );
+
+                    const ratingsEntries = await Promise.all(
+                        completedProjects.map(async (project) => {
+                            const postulations = await getProjectPostulations(project.id);
+
+                            const acceptedPostulation = postulations.find(
+                                (postulation) => postulation.status === "accepted",
+                            );
+
+                            if (!acceptedPostulation) {
+                                return null;
+                            }
+
+                            try {
+                                const rating = await getRating(
+                                    acceptedPostulation.id_postulation,
+                                );
+
+                                return [
+                                    project.id,
+                                    {
+                                        postulationId: acceptedPostulation.id_postulation,
+                                        rating,
+                                    },
+                                ] as const;
+                            } catch {
+                                return [
+                                    project.id,
+                                    {
+                                        postulationId: acceptedPostulation.id_postulation,
+                                        rating: null,
+                                    },
+                                ] as const;
+                            }
+                        }),
+                    );
+
+                    setRatingsByProject(
+                        Object.fromEntries(
+                            ratingsEntries.filter(
+                                (entry): entry is NonNullable<typeof entry> =>
+                                    entry !== null,
+                            ),
+                        ),
+                    );
+                } else if (isTester) {
                         const [projs, posts] = await Promise.all([
                             getProjects(),
                             getUserPostulations(),
@@ -136,14 +190,107 @@ export const useDashboardProjects=({user,isClient,isTester,isAdmin}  :{ user: Us
                 );
             }
     }
+
+    async function handleCompleteProject(projectId: number) {
+        try {
+            await completeProject(projectId);
+
+            setProjects((prev) =>
+                prev.map((p) =>
+                    p.id === projectId
+                        ? { ...p, state: "COMPLETED" }
+                        : p,
+                ),
+            );
+
+            setMessage("Proyecto completado correctamente.");
+            setMessageError(false);
+        } catch (err) {
+            setMessageError(true);
+            setMessage(
+                err instanceof Error
+                    ? err.message
+                    : "No se pudo completar el proyecto.",
+            );
+        }
+    }
+
+    async function handleFinishDelivery(projectId: number) {
+        try {
+            await finishProjectDelivery(projectId);
+
+            setProjects((prev) =>
+                prev.map((p) =>
+                    p.id === projectId
+                        ? { ...p, state: "IN_REVIEW" }
+                        : p,
+                ),
+            );
+
+            setMessage("Entrega finalizada correctamente.");
+            setMessageError(false);
+        } catch (err) {
+            setMessageError(true);
+            setMessage(
+                err instanceof Error
+                    ? err.message
+                    : "No se pudo finalizar la entrega.",
+            );
+        }
+    }
+
+    async function handleCreateRating(
+        projectId: number,
+        stars: number,
+        comment: string,
+    ) {
+        const ratingData = ratingsByProject[projectId];
+
+        if (!ratingData) {
+            return;
+        }
+
+        try {
+            const rating = await createRating(
+                ratingData.postulationId,
+                {
+                    stars,
+                    comment,
+                },
+            );
+
+            setRatingsByProject((prev) => ({
+                ...prev,
+                [projectId]: {
+                    ...prev[projectId],
+                    rating,
+                },
+            }));
+
+            setMessage("Calificación guardada correctamente.");
+            setMessageError(false);
+        } catch (err) {
+            setMessageError(true);
+            setMessage(
+                err instanceof Error
+                    ? err.message
+                    : "No se pudo guardar la calificación.",
+            );
+        }
+    }    
+        
     return {
         statusColors,
         searchTerm,
         setSearchTerm,
         loading,
+        ratingsByProject,
         applyingId,
         handleApply,
         handleStatusChange,
+        handleCompleteProject,
+        handleFinishDelivery,
+        handleCreateRating,
         postulationsByProject,
         filteredProjects,
         postulationToWithdraw,
