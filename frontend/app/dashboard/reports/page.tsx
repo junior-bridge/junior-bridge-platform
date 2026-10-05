@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { useUser } from "../../../context/UserContext";
 import { Plus, X, Upload } from "lucide-react";
 import { useDashboardReports } from "@/hooks/dashboard/useDashboardReports";
@@ -18,6 +19,7 @@ export default function ReportsPage() {
         error,
         isModalOpen,
         setIsModalOpen,
+        closeReportModal,
         submitting,
         modalError,
         formErrors,
@@ -28,6 +30,8 @@ export default function ReportsPage() {
         setForm,
         handleCreateReport,
     } = useDashboardReports(user);
+
+    const backdropPointerDownRef = useRef(false);
 
 
     if (!user) {
@@ -55,7 +59,7 @@ export default function ReportsPage() {
                     <button
                         type="button"
                         onClick={() => setIsModalOpen(true)}
-                        className="flex items-center gap-2 btn-primary-opacity cursor-pointer"
+                        className="flex items-center gap-2 btn-primary cursor-pointer"
                         
                     >
                         <Plus size={15} />
@@ -179,17 +183,46 @@ export default function ReportsPage() {
             )}
 
             {isModalOpen && (
-                <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl relative">
+                <div
+                    className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
+                    onPointerDown={(event) => {
+                        backdropPointerDownRef.current =
+                            event.target === event.currentTarget;
+                    }}
+                    onPointerCancel={() => {
+                        backdropPointerDownRef.current = false;
+                    }}
+                    onClick={(event) => {
+                        const startedOnBackdrop = backdropPointerDownRef.current;
+                        backdropPointerDownRef.current = false;
+
+                        if (
+                            startedOnBackdrop &&
+                            event.target === event.currentTarget
+                        ) {
+                            closeReportModal();
+                        }
+                    }}
+                >
+                    <div
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="create-report-title"
+                        className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-xl relative"
+                    >
                         <button
                             type="button"
-                            onClick={() => setIsModalOpen(false)}
+                            onClick={closeReportModal}
+                            aria-label="Cerrar"
                             className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
                         >
                             <X size={18} />
                         </button>
 
-                        <h2 className="text-lg font-bold text-gray-800 mb-4">
+                        <h2
+                            id="create-report-title"
+                            className="text-lg font-bold text-gray-800 mb-4"
+                        >
                             Crear Nuevo Reporte de Bug
                         </h2>
 
@@ -441,7 +474,7 @@ export default function ReportsPage() {
                             <div className="flex justify-end gap-2 pt-2">
                                 <button
                                     type="button"
-                                    onClick={() => setIsModalOpen(false)}
+                                    onClick={closeReportModal}
                                     className="px-4 py-2 rounded-full border border-gray-200 text-xs text-gray-600 hover:bg-gray-50 font-medium cursor-pointer"
                                 >
                                     Cancelar
