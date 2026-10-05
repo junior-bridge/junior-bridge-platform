@@ -8,10 +8,10 @@ services:
             - "8000:8000"
         volumes:
             - ./backend:/app
-        command: sh -c "python manage.py migrate && python manage.py create_google_social_app && python manage.py create_github_social_app && daphne -b 0.0.0.0 -p 8000 config.asgi:application"
+        command: daphne -b 0.0.0.0 -p 8000 config.asgi:application
         depends_on:
             postgres:
-                condition: service_healthy
+                condition: service_started
             mongodb:
                 condition: service_started
             redis:
@@ -20,16 +20,12 @@ services:
     frontend:
         build:
             context: ./frontend
-            args:
-                - NEXT_PUBLIC_API_BASE=${NEXT_PUBLIC_API_BASE}
         ports:
             - "3000:3000"
         volumes:
             - ./frontend:/app
             - /app/node_modules
             - /app/.next
-        environment:
-            - WATCHPACK_POLLING=true
         depends_on:
             - backend
 
@@ -45,11 +41,6 @@ services:
             - "5433:5432"
         volumes:
             - postgres_data_junior_bridge:/var/lib/postgresql/data
-        healthcheck:
-            test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
-            interval: 5s
-            timeout: 5s
-            retries: 5
 
     mongodb:
         image: mongo:8
@@ -57,7 +48,7 @@ services:
             - "27017:27017"
         volumes:
             - mongodb_data_junior_bridge:/data/db
-
+    
     redis:
         image: redis:7-alpine
         ports:
@@ -66,7 +57,7 @@ services:
         volumes:
             - redis_data_junior_bridge:/data
         healthcheck:
-            test: [ "CMD", "redis-cli", "ping" ]
+            test: ["CMD", "redis-cli", "ping"]
             interval: 10s
             timeout: 5s
             retries: 5

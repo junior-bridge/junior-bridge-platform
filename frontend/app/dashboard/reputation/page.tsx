@@ -58,7 +58,7 @@ export default function ReputationPage() {
     const { user } = useUser();
     if (!user || user.role !== "TESTER")
         return (
-            <div className="px-4 sm:px-6 py-4 sm:py-6">
+            <div className="px-6 py-6">
                 <p className="text-gray-500">
                     Esta sección es solo para testers.
                 </p>
@@ -68,7 +68,7 @@ export default function ReputationPage() {
     const reputationValue = user.reputation ? Number(user.reputation) : 0;
 
     return (
-        <div className="px-4 sm:px-6 py-4 sm:py-6">
+        <div className="px-6 py-6">
             <div className="mb-6">
                 <h1 className="text-2xl font-bold text-gray-800">
                     Mi Reputación
@@ -78,7 +78,7 @@ export default function ReputationPage() {
                 </p>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
+            <div className="grid grid-cols-4 gap-4 mb-6">
                 {[
                     {
                         label: "Promedio General",

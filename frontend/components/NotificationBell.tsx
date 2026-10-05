@@ -12,10 +12,10 @@ export function NotificationBell() {
     <div className="relative">
       <button
         onClick={() => setShowDropdown(!showDropdown)}
-        className="relative text-gray-500 hover:text-gray-700 cursor-pointer transition"
+        className="relative text-gray-500 hover:text-gray-700"
       >
         <Bell size={20} />
-
+        
         {unreadCount > 0 && (
           <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
             {unreadCount}
@@ -38,8 +38,8 @@ export function NotificationBell() {
           ) : (
             <div className="divide-y divide-gray-100">
               {notifications.map((notif) => (
-                <div
-                  key={notif.notification_id}
+                <div 
+                  key={notif.notification_id} 
                   className={`p-4 flex justify-between items-start gap-3 ${!notif.is_read ? 'bg-blue-50' : 'hover:bg-gray-50'}`}
                 >
                   <div className="flex-1">
@@ -59,7 +59,7 @@ export function NotificationBell() {
                         <Check size={16} />
                       </button>
                     )}
-
+                    
                     <button
                       onClick={() => deleteNotification(notif.notification_id)}
                       className="p-1 text-red-600 hover:bg-red-100 rounded"

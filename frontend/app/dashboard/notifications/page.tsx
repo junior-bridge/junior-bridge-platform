@@ -38,20 +38,20 @@ export default function NotificationsPage() {
   const unread = notifications.filter(n => !n.read).length;
 
   return (
-    <div className="px-4 sm:px-6 py-4 sm:py-6 max-w-2xl">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
+    <div className="px-6 py-6 max-w-2xl">
+      <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">Notificaciones</h1>
           <p className="text-gray-500 text-sm mt-1">{unread} sin leer</p>
         </div>
-        <button className="flex items-center gap-1 text-xs text-brand-green font-medium hover:underline">
+        <button className="flex items-center gap-1 text-xs text-[#2d6a4f] font-medium hover:underline">
           <CheckCheck size={13} /> Marcar todas como leídas
         </button>
       </div>
 
       <div className="flex flex-col gap-3">
         {notifications.map((n) => (
-          <div key={n.id} className={`bg-white rounded-xl p-4 shadow-sm flex items-start gap-3 ${!n.read ? "border-l-4 border-brand-green" : ""}`}>
+          <div key={n.id} className={`bg-white rounded-xl p-4 shadow-sm flex items-start gap-3 ${!n.read ? "border-l-4 border-[#2d6a4f]" : ""}`}>
             <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${typeColors[n.type]}`}>
               <Bell size={14} />
             </div>
@@ -62,7 +62,7 @@ export default function NotificationsPage() {
               </div>
               <p className="text-xs text-gray-500 mt-0.5">{n.body}</p>
             </div>
-            {!n.read && <div className="w-2 h-2 rounded-full bg-brand-green mt-1 shrink-0" />}
+            {!n.read && <div className="w-2 h-2 rounded-full bg-[#2d6a4f] mt-1 shrink-0" />}
           </div>
         ))}
       </div>

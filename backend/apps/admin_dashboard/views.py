@@ -7,7 +7,6 @@ from rest_framework.views import APIView
 from apps.reports.mongodb import reports_collection
 from apps.projects.models import Project
 from apps.users.models import User
-from apps.postulations.models import Postulation
 
 
 class AdminStatsView(APIView):
@@ -158,39 +157,15 @@ class AdminStatsView(APIView):
             is_active=True,
         ).order_by("-reputation")[:3]
 
-  
         top_testers = []
 
         for index, tester in enumerate(top_testers_queryset, start=1):
-            
-            postulation_ids = list(
-                Postulation.objects.filter(
-                    id_tester=tester
-                ).values_list(
-                    "id_postulation",
-                    flat=True
-                )
-            )
-
-            bugs = reports_collection.count_documents({
-                "id_postulation": {
-                    "$in": postulation_ids
-                }
-            })
-
-            accepted_postulations = Postulation.objects.filter(
-                id_tester=tester,
-                status=Postulation.State.ACCEPTED,
-            )
-            projects = accepted_postulations.count()
 
             top_testers.append({
                 "rank": index,
                 "id": tester.id,
                 "name": f"{tester.name} {tester.surname}",
                 "reputation": float(tester.reputation),
-                "bugs": bugs,
-                "projects": projects,
             })
 
         # ---------------------------------------------------------
