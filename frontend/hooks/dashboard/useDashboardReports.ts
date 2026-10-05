@@ -5,6 +5,7 @@ import { Postulation } from "@/types/postulationTypes";
 import { Report } from "@/types/reportTypes";
 import { getUserPostulations } from "@/services/postulation.service";
 import { createReport, getPostulationReports } from "@/services/report.service";
+import Swal from "sweetalert2";
 
 // Estado inicial del formulario de reporte; se reutiliza al cerrar/cancelar y después de crear.
 const initialReportForm: {
@@ -205,6 +206,13 @@ export const useDashboardReports = (user:User | null) => {
             resetReportModal();
 
             await loadReports();
+
+            await Swal.fire({
+                title: "Reporte creado",
+                text: "El reporte de bug se creó correctamente.",
+                icon: "success",
+                confirmButtonText: "Aceptar",
+            });
         } catch (err) {
             console.error("Error al crear reporte:", err);
             const message = err instanceof Error ? err.message : "";
@@ -214,7 +222,12 @@ export const useDashboardReports = (user:User | null) => {
                     "La postulación elegida no existe o no tienes acceso a ella.",
                 );
             } else {
-                setModalError(message || "No se pudo crear el reporte.");
+                await Swal.fire({
+                    title: "No se pudo crear el reporte",
+                    text: "Ocurrió un error al crear el reporte. Intentá nuevamente.",
+                    icon: "error",
+                    confirmButtonText: "Aceptar",
+                });
             }
         } finally {
             setSubmitting(false);

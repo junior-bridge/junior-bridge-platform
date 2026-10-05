@@ -6,6 +6,7 @@ import { Postulation } from "@/types/postulationTypes";
 import { Project, ProjectState } from "@/types/projectTypes";
 import { Rating } from "@/types/ratingTypes";
 import { useState, useEffect } from "react";
+import Swal from "sweetalert2";
 
 export const useDashboardProjects=({user,isClient,isTester,isAdmin}  :{ user: User | null; isClient: boolean; isTester: boolean; isAdmin: boolean })=>{
 
@@ -31,6 +32,7 @@ export const useDashboardProjects=({user,isClient,isTester,isAdmin}  :{ user: Us
     const [searchTerm, setSearchTerm] = useState("");
     const [loading, setLoading] = useState(true);
     const [applyingId, setApplyingId] = useState<number | null>(null);
+    const [updatingProjectId, setUpdatingProjectId] = useState<number | null>(null);
     const [postulationToWithdraw, setPostulationToWithdraw] = useState<Postulation | null>(null);
     const [withdrawingId, setWithdrawingId] = useState<number | null>(null);
     const [message, setMessage] = useState("");
@@ -134,8 +136,19 @@ export const useDashboardProjects=({user,isClient,isTester,isAdmin}  :{ user: Us
             try {
                 const newPost = await applyToProject(projectId);
                 setMyPostulations((prev) => [...prev, newPost]);
-            } catch (err) {
-                alert(err instanceof Error ? err.message : "Error al postularse.");
+                await Swal.fire({
+                    title: "Postulación enviada",
+                    text: "Tu postulación se envió correctamente.",
+                    icon: "success",
+                    confirmButtonText: "Aceptar",
+                });
+            } catch {
+                await Swal.fire({
+                    title: "No se pudo enviar la postulación",
+                    text: "Ocurrió un error al enviar la postulación. Intentá nuevamente.",
+                    icon: "error",
+                    confirmButtonText: "Aceptar",
+                });
             } finally {
                 setApplyingId(null);
             }
@@ -175,6 +188,24 @@ export const useDashboardProjects=({user,isClient,isTester,isAdmin}  :{ user: Us
             projectId: number,
             newState: Project["state"],
         ) {
+            setUpdatingProjectId(projectId);
+
+            if (newState === "REJECTED") {
+                const result = await Swal.fire({
+                    title: "¿Rechazar proyecto?",
+                    text: "Esta acción cambiará el estado del proyecto.",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "Sí, rechazar",
+                    cancelButtonText: "Cancelar",
+                });
+
+                if (!result.isConfirmed) {
+                    setUpdatingProjectId(null);
+                    return;
+                }
+            }
+
             try {
                 await updateProjectState(projectId, newState);
                 setProjects((prev) =>
@@ -182,12 +213,31 @@ export const useDashboardProjects=({user,isClient,isTester,isAdmin}  :{ user: Us
                         p.id === projectId ? { ...p, state: newState } : p,
                     ),
                 );
-            } catch (err) {
-                alert(
-                    err instanceof Error
-                        ? err.message
-                        : "Error al actualizar estado.",
-                );
+
+                await Swal.fire({
+                    title:
+                        newState === "REJECTED"
+                            ? "Proyecto rechazado"
+                            : "Proyecto aprobado",
+                    text:
+                        newState === "REJECTED"
+                            ? "El proyecto fue rechazado correctamente."
+                            : "El proyecto fue aprobado correctamente.",
+                    icon: "success",
+                    confirmButtonText: "Aceptar",
+                });
+            } catch {
+                await Swal.fire({
+                    title:
+                        newState === "REJECTED"
+                            ? "No se pudo rechazar el proyecto"
+                            : "No se pudo aprobar el proyecto",
+                    text: "Ocurrió un error al actualizar el proyecto. Intentá nuevamente.",
+                    icon: "error",
+                    confirmButtonText: "Aceptar",
+                });
+            } finally {
+                setUpdatingProjectId(null);
             }
     }
 
@@ -286,6 +336,7 @@ export const useDashboardProjects=({user,isClient,isTester,isAdmin}  :{ user: Us
         loading,
         ratingsByProject,
         applyingId,
+        updatingProjectId,
         handleApply,
         handleStatusChange,
         handleCompleteProject,

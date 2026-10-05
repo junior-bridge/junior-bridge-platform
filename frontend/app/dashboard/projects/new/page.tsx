@@ -14,8 +14,6 @@ export default function NewProjectPage() {
         errors,
         form,
         isSubmitting,
-        submitError,
-        successMessage,
         handleChange,
         handleSubmit,
         getControlClassName,
@@ -181,18 +179,6 @@ export default function NewProjectPage() {
                 </div>
 
                 <div className="flex items-center justify-end gap-3 mt-7 pt-5 border-t border-gray-100">
-                    <div className="mr-auto" aria-live="polite">
-                        {submitError && (
-                            <p className="text-sm text-red-500">
-                                {submitError}
-                            </p>
-                        )}
-                        {successMessage && (
-                            <p className="text-sm text-green-700">
-                                {successMessage}
-                            </p>
-                        )}
-                    </div>
                     <Link
                         href="/dashboard/projects"
                         className="rounded-full px-5 cursor-pointer py-2.5 text-sm font-semibold text-gray-600 border border-gray-200 hover:bg-gray-50 transition"
@@ -201,7 +187,7 @@ export default function NewProjectPage() {
                     </Link>
                     <button
                         type="submit"
-                        disabled={isSubmitting || Boolean(successMessage)}
+                        disabled={isSubmitting}
                         className="btn-primary flex items-center gap-2 disabled:cursor-not-allowed"
                     >
                         {isSubmitting && <Loader size={14} color="#ffffff" />}

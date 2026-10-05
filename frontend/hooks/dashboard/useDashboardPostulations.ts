@@ -3,6 +3,7 @@ import { getUserProjects } from "@/services/project.service";
 import { User } from "@/types";
 import { Postulation } from "@/types/postulationTypes";
 import { useState, useEffect } from "react";
+import Swal from "sweetalert2";
 
 export const useDashboardPostulations = (user: User | null) => {
     
@@ -57,12 +58,19 @@ export const useDashboardPostulations = (user: User | null) => {
                         : p,
                 ),
             );
-        } catch (err) {
-            alert(
-                err instanceof Error
-                    ? err.message
-                    : "Error al aceptar postulación.",
-            );
+            await Swal.fire({
+                title: "Postulación aceptada",
+                text: "La postulación fue aceptada correctamente.",
+                icon: "success",
+                confirmButtonText: "Aceptar",
+            });
+        } catch {
+            await Swal.fire({
+                title: "No se pudo aceptar la postulación",
+                text: "Ocurrió un error al aceptar la postulación. Intentá nuevamente.",
+                icon: "error",
+                confirmButtonText: "Aceptar",
+            });
         } finally {
             setActionLoading(null);
         }
@@ -70,6 +78,21 @@ export const useDashboardPostulations = (user: User | null) => {
 
     async function handleReject(id: number) {
         setActionLoading(id);
+
+        const result = await Swal.fire({
+            title: "¿Rechazar postulación?",
+            text: "Esta acción cambiará el estado de la postulación.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Sí, rechazar",
+            cancelButtonText: "Cancelar",
+        });
+
+        if (!result.isConfirmed) {
+            setActionLoading(null);
+            return;
+        }
+
         try {
             const updated = await rejectPostulation(id);
             setPostulations((prev) =>
@@ -79,12 +102,19 @@ export const useDashboardPostulations = (user: User | null) => {
                         : p,
                 ),
             );
-        } catch (err) {
-            alert(
-                err instanceof Error
-                    ? err.message
-                    : "Error al rechazar postulación.",
-            );
+            await Swal.fire({
+                title: "Postulación rechazada",
+                text: "La postulación fue rechazada correctamente.",
+                icon: "success",
+                confirmButtonText: "Aceptar",
+            });
+        } catch {
+            await Swal.fire({
+                title: "No se pudo rechazar la postulación",
+                text: "Ocurrió un error al rechazar la postulación. Intentá nuevamente.",
+                icon: "error",
+                confirmButtonText: "Aceptar",
+            });
         } finally {
             setActionLoading(null);
         }

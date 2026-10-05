@@ -26,8 +26,6 @@ export default function PostulationDetailPage() {
         postulation,
         loading,
         actionLoading,
-        message,
-        messageError,
         error,
         handleStatusChange,
     } = useDashboardPostulationDetail(id);
@@ -91,14 +89,6 @@ export default function PostulationDetailPage() {
                     {statusLabels[postulation.status]}
                 </span>
             </div>
-
-            {message && (
-                <p
-                    className={`mb-4 text-sm ${messageError ? "text-red-600" : "text-brand-green"}`}
-                >
-                    {message}
-                </p>
-            )}
 
             <div className="grid gap-4 lg:grid-cols-2">
                 <div className="rounded-xl bg-white p-5 shadow-sm">
