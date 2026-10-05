@@ -21,10 +21,11 @@ export default function RoleSelector({
         <button
           type="button"
           onClick={() => onChange("tester")}
-          className={`rounded-md border py-2.5 text-sm font-semibold cursor-pointer transition ${value === "tester"
-            ? "bg-[#2f7f70] border-[#2f7f70] text-white"
-            : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
-            }`}
+          className={`rounded-md border py-2.5 text-sm font-semibold transition ${
+            value === "tester"
+              ? "bg-[#2f7f70] border-[#2f7f70] text-white"
+              : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+          }`}
         >
           Tester Junior
         </button>
@@ -32,10 +33,11 @@ export default function RoleSelector({
         <button
           type="button"
           onClick={() => onChange("emprendedor")}
-          className={`rounded-md border py-2.5 text-sm  cursor-pointer font-semibold transition ${value === "emprendedor"
-            ? "bg-[#2f7f70] border-[#2f7f70] text-white"
-            : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
-            }`}
+          className={`rounded-md border py-2.5 text-sm font-semibold transition ${
+            value === "emprendedor"
+              ? "bg-[#2f7f70] border-[#2f7f70] text-white"
+              : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+          }`}
         >
           Emprendedor
         </button>

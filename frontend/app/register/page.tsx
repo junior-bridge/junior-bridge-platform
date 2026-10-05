@@ -2,35 +2,147 @@
 
 import Image from "next/image";
 import Link from "next/link";
-
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 import AuthCard from "@/components/ui/AuthCard";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
-import RoleSelector from "@/components/auth/RoleSelector";
+import RoleSelector, {
+    type RegistrationRole,
+} from "@/components/auth/RoleSelector";
 import { useUser } from "@/context/UserContext";
-import { useRegister } from "@/hooks/useRegister";
+import { registerUser, startOAuth } from "@/lib/api";
+
+type RegisterField =
+    | "name"
+    | "surname"
+    | "email"
+    | "password"
+    | "confirmPassword";
+type RegisterFieldErrors = Partial<Record<RegisterField, string>>;
 
 export default function RegisterPage() {
+    const router = useRouter();
     const { setUser } = useUser();
-    const {
-        form,
-        setForm,
-        selectedRole,
-        setSelectedRole,
-        acceptedTerms,
-        setAcceptedTerms,
-        fieldErrors,
-        setFieldErrors,
-        error,
-        setError,
-        loading,
-        oauthLoading,
-        isEntrepreneur,
-        handleRegister,
-        handleOAuth
-    } = useRegister(setUser)
 
+    const [selectedRole, setSelectedRole] =
+        useState<RegistrationRole>("emprendedor");
+
+    const [name, setName] = useState("");
+    const [surname, setSurname] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+
+    const [acceptedTerms, setAcceptedTerms] = useState(false);
+    const [fieldErrors, setFieldErrors] = useState<RegisterFieldErrors>({});
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [oauthLoading, setOauthLoading] = useState<
+        "google" | "github" | null
+    >(null);
+
+    const isEntrepreneur = selectedRole === "emprendedor";
+
+    async function handleRegister(
+        event: React.SyntheticEvent<HTMLFormElement>,
+    ) {
+        event.preventDefault();
+        setError("");
+
+        const nextErrors: RegisterFieldErrors = {};
+        const normalizedEmail = email.trim();
+
+        if (!name.trim()) nextErrors.name = "El nombre es obligatorio.";
+        if (!surname.trim()) nextErrors.surname = "El apellido es obligatorio.";
+        if (!normalizedEmail) {
+            nextErrors.email = "El correo electrónico es obligatorio.";
+        } else if (!/^\S+@\S+\.\S+$/.test(normalizedEmail)) {
+            nextErrors.email = "Ingresá un correo electrónico válido.";
+        }
+        if (!password) {
+            nextErrors.password = "La contraseña es obligatoria.";
+        } else if (password.length < 8) {
+            nextErrors.password =
+                "La contraseña debe tener al menos 8 caracteres.";
+        }
+        if (!confirmPassword) {
+            nextErrors.confirmPassword = "Confirmá tu contraseña.";
+        } else if (password !== confirmPassword) {
+            nextErrors.confirmPassword = "Las contraseñas no coinciden.";
+        }
+
+        setFieldErrors(nextErrors);
+        if (Object.keys(nextErrors).length > 0) return;
+
+        if (!acceptedTerms) {
+            setError(
+                "Debes aceptar los términos de servicio y la política de privacidad.",
+            );
+            return;
+        }
+
+        if (!isEntrepreneur) {
+            setError(
+                "El registro de Tester Junior se realiza mediante Google o GitHub.",
+            );
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            const response = await registerUser({
+                name: name.trim(),
+                surname: surname.trim(),
+                email: normalizedEmail,
+                password,
+            });
+
+            setUser(response.user);
+
+            router.push("/dashboard");
+        } catch (err) {
+            if (err instanceof Error) {
+                if (
+                    err.message
+                        .toLowerCase()
+                        .includes("user with this email already exists.")
+                ) {
+                    setError(
+                        "Ya existe un usuario registrado con ese correo electrónico.",
+                    );
+                } else {
+                    setError(err.message);
+                }
+            } else {
+                setError("No se pudo completar el registro.");
+            }
+        }
+    }
+
+    async function handleOAuth(provider: "google" | "github") {
+        setError("");
+
+        const flow = selectedRole === "emprendedor" ? "entrepreneur" : "tester";
+
+        setOauthLoading(provider);
+
+        try {
+            const response = await startOAuth(provider, "signup", flow);
+
+            window.location.href = `http://localhost:8000${response.login_url}`;
+        } catch (err) {
+            if (err instanceof Error) {
+                setError(err.message);
+            } else {
+                setError("No se pudo iniciar el registro con OAuth.");
+            }
+
+            setOauthLoading(null);
+        }
+    }
 
     return (
         <AuthCard
@@ -42,7 +154,7 @@ export default function RegisterPage() {
                     type="button"
                     onClick={() => handleOAuth("google")}
                     disabled={oauthLoading !== null}
-                    className="flex items-center justify-center gap-2 w-full border border-gray-300 rounded-full py-2.5 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center justify-center gap-2 w-full border border-gray-300 rounded-full py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <Image
                         src="/google.png"
@@ -60,7 +172,7 @@ export default function RegisterPage() {
                     type="button"
                     onClick={() => handleOAuth("github")}
                     disabled={oauthLoading !== null}
-                    className="flex items-center justify-center gap-2 w-full border border-gray-300 rounded-full py-2.5 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center justify-center gap-2 w-full border border-gray-300 rounded-full py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <Image
                         src="/github.png"
@@ -97,19 +209,16 @@ export default function RegisterPage() {
                         className="flex flex-col gap-4"
                         onSubmit={handleRegister}
                     >
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-4">
                             <Input
                                 id="name"
                                 name="name"
                                 label="Nombre"
                                 type="text"
                                 autoComplete="given-name"
-                                value={form.name}
+                                value={name}
                                 onChange={(event) => {
-                                    setForm((current) => ({
-                                        ...current,
-                                        name: event.target.value
-                                    }));
+                                    setName(event.target.value);
                                     setFieldErrors((current) => ({
                                         ...current,
                                         name: undefined,
@@ -126,12 +235,9 @@ export default function RegisterPage() {
                                 label="Apellido"
                                 type="text"
                                 autoComplete="family-name"
-                                value={form.surname}
+                                value={surname}
                                 onChange={(event) => {
-                                    setForm((current) => ({
-                                        ...current,
-                                        surname: event.target.value
-                                    }));
+                                    setSurname(event.target.value);
                                     setFieldErrors((current) => ({
                                         ...current,
                                         surname: undefined,
@@ -149,12 +255,9 @@ export default function RegisterPage() {
                             label="Correo electrónico"
                             type="email"
                             autoComplete="email"
-                            value={form.email}
+                            value={email}
                             onChange={(event) => {
-                                setForm((current) => ({
-                                    ...current,
-                                    email: event.target.value
-                                }));
+                                setEmail(event.target.value);
                                 setFieldErrors((current) => ({
                                     ...current,
                                     email: undefined,
@@ -171,12 +274,9 @@ export default function RegisterPage() {
                             label="Contraseña"
                             type="password"
                             autoComplete="new-password"
-                            value={form.password}
+                            value={password}
                             onChange={(event) => {
-                                setForm((current) => ({
-                                    ...current,
-                                    password: event.target.value
-                                }));
+                                setPassword(event.target.value);
                                 setFieldErrors((current) => ({
                                     ...current,
                                     password: undefined,
@@ -194,12 +294,9 @@ export default function RegisterPage() {
                             label="Confirmar contraseña"
                             type="password"
                             autoComplete="new-password"
-                            value={form.confirmPassword}
+                            value={confirmPassword}
                             onChange={(event) => {
-                                setForm((current) => ({
-                                    ...current,
-                                    confirmPassword: event.target.value
-                                }));
+                                setConfirmPassword(event.target.value);
                                 setFieldErrors((current) => ({
                                     ...current,
                                     confirmPassword: undefined,
@@ -218,7 +315,7 @@ export default function RegisterPage() {
                                 onChange={(event) =>
                                     setAcceptedTerms(event.target.checked)
                                 }
-                                className="mt-0.5 cursor-pointer"
+                                className="mt-0.5"
                             />
 
                             <span>
@@ -233,7 +330,7 @@ export default function RegisterPage() {
                             </p>
                         )}
 
-                        <Button type="submit" loading={loading} className="w-full mt-1 cursor-pointer" disabled={!acceptedTerms}>
+                        <Button type="submit" loading={loading}>
                             Crear cuenta
                         </Button>
                     </form>

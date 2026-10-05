@@ -8,9 +8,13 @@ import {
   type ReactNode,
 } from "react";
 
+import {
+  getProfile,
+  logoutUser,
+  type User,
+} from "@/lib/api";
+
 import { ROLE_LABELS } from "@/constants/roles";
-import { User } from "@/types";
-import { getProfile, logoutUser } from "@/services/user.service";
 
 export type UserRole = User["role"];
 
