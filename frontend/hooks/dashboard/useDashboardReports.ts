@@ -6,6 +6,22 @@ import { Report } from "@/types/reportTypes";
 import { getUserPostulations } from "@/services/postulation.service";
 import { createReport, getPostulationReports } from "@/services/report.service";
 
+// Estado inicial del formulario de reporte; se reutiliza al cerrar/cancelar y después de crear.
+const initialReportForm: {
+    postulationId: string;
+    title: string;
+    description: string;
+    stepsToReproduce: string;
+    severity: "low" | "medium" | "high" | "critical";
+    evidenceFile: File | null;
+} = {
+    postulationId: "",
+    title: "",
+    description: "",
+    stepsToReproduce: "",
+    severity: "medium",
+    evidenceFile: null,
+};
 
 export const useDashboardReports = (user:User | null) => {
 
@@ -42,14 +58,35 @@ export const useDashboardReports = (user:User | null) => {
     const [formErrors, setFormErrors] = useState<ReportFormErrors>({});
     const [userPostulations, setUserPostulations] = useState<Postulation[]>([]);
 
-     const [form ,setForm]=useState({
-            postulationId:"",
-            title:"",
-            description:"",
-            stepsToReproduce:"",
-            severity: "medium" as "low" | "medium" | "high" | "critical",
-            evidenceFile:null as File | null
-        })
+     const [form ,setForm]=useState(initialReportForm)
+
+    // Cierra la modal y descarta el formulario, los errores de campo y el error general.
+    const resetReportModal = useCallback(() => {
+        setIsModalOpen(false);
+        setModalError(null);
+        setFormErrors({});
+        setForm(initialReportForm);
+    }, []);
+
+    // Cierre iniciado por el usuario (X, Cancelar, backdrop, Escape).
+    // Mientras se envía el reporte no se permite cerrar, para no perder el resultado del submit.
+    const closeReportModal = useCallback(() => {
+        if (submitting) return;
+        resetReportModal();
+    }, [submitting, resetReportModal]);
+
+    useEffect(() => {
+        if (!isModalOpen) return;
+
+        function handleKeyDown(event: KeyboardEvent) {
+            if (event.key === "Escape") {
+                closeReportModal();
+            }
+        }
+
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [isModalOpen, closeReportModal]);
     
     function formatDate(date: string) {
         return new Date(date).toLocaleDateString("es-AR", {
@@ -165,17 +202,7 @@ export const useDashboardReports = (user:User | null) => {
                 capture_evidence: form.evidenceFile ?? undefined,
             });
 
-            setIsModalOpen(false);
-            setForm((current) => ({
-                ...current,
-                title: "",
-                description: "",
-                stepsToReproduce: "",
-                postulationId: "",
-                evidenceFile: null,
-                severity: "medium",
-            }));
-            setFormErrors({});
+            resetReportModal();
 
             await loadReports();
         } catch (err) {
@@ -204,6 +231,7 @@ export const useDashboardReports = (user:User | null) => {
         error,
         isModalOpen,
         setIsModalOpen,
+        closeReportModal,
         submitting,
         modalError,
         formErrors,
