@@ -47,8 +47,8 @@ export default function PostulationCard({ name, role, stars, onView }: Postulati
       <StarRating stars={stars} />
       <button
         onClick={onView}
-        className="w-full rounded-lg py-1.5 text-white text-xs font-semibold hover:opacity-90 transition mt-1"
-        style={{ backgroundColor: "#2d6a4f" }}
+        className="w-full btn-orange-sm mt-1 cursor-pointer"
+        
       >
         Ver
       </button>

@@ -7,6 +7,7 @@ from apps.postulations.models import Postulation
 
 from .models import Rating
 from .serializers import RatingSerializer
+from .services import update_tester_reputation
 
 from drf_spectacular.utils import extend_schema, OpenApiResponse
 
@@ -77,7 +78,16 @@ class PostulationRatingView(APIView):
                 {"detail": "Postulation not found."},
                 status=status.HTTP_404_NOT_FOUND,
             )
-
+        if request.user != postulation.id_project.client:
+            return Response(
+                {"detail": "Only the project owner can rate this postulation."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        if postulation.id_project.state != "COMPLETED":
+            return Response(
+                {"detail": "Only completed projects can be rated."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         if Rating.objects.filter(
             id_postulation=postulation
         ).exists():
@@ -95,6 +105,8 @@ class PostulationRatingView(APIView):
         rating = serializer.save(
             id_postulation=postulation
         )
+
+        update_tester_reputation(postulation.id_tester)
 
         return Response(
             RatingSerializer(rating).data,
@@ -129,6 +141,11 @@ class RatingUpdateView(APIView):
                 {"detail": "Rating not found."},
                 status=status.HTTP_404_NOT_FOUND,
             )
+        if request.user != rating.id_postulation.id_project.client:
+            return Response(
+                {"detail": "Only the project owner can update this rating."},
+                status=status.HTTP_403_FORBIDDEN,
+            )        
 
         serializer = RatingSerializer(
             rating,
@@ -138,6 +155,9 @@ class RatingUpdateView(APIView):
         serializer.is_valid(raise_exception=True)
         rating = serializer.save()
 
+        update_tester_reputation(
+            rating.id_postulation.id_tester
+        )
         return Response(
             RatingSerializer(rating).data,
             status=status.HTTP_200_OK,
