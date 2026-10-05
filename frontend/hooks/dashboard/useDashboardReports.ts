@@ -5,6 +5,7 @@ import { Postulation } from "@/types/postulationTypes";
 import { Report } from "@/types/reportTypes";
 import { getUserPostulations } from "@/services/postulation.service";
 import { createReport, getPostulationReports } from "@/services/report.service";
+import Swal from "sweetalert2";
 
 // Estado inicial del formulario de reporte; se reutiliza al cerrar/cancelar y después de crear.
 const initialReportForm: {
@@ -194,28 +195,51 @@ export const useDashboardReports = (user:User | null) => {
                 .map((step) => step.trim())
                 .filter((step) => step.length > 0);
                 
-            await createReport(Number(form.postulationId), {
-                title: form.title.trim(),
-                description: form.description.trim(),
-                severity: form.severity,
-                steps_to_reproduce: steps,
-                capture_evidence: form.evidenceFile ?? undefined,
-            });
+            try {
+                await createReport(Number(form.postulationId), {
+                    title: form.title.trim(),
+                    description: form.description.trim(),
+                    severity: form.severity,
+                    steps_to_reproduce: steps,
+                    capture_evidence: form.evidenceFile ?? undefined,
+                });
+            } catch (err) {
+                console.error("Error al crear reporte:", err);
+                const message = err instanceof Error ? err.message : "";
+
+                if (message.includes("No Postulation matches")) {
+                    setModalError(
+                        "La postulación elegida no existe o no tienes acceso a ella.",
+                    );
+                } else {
+                    await Swal.fire({
+                        title: "No se pudo crear el reporte",
+                        text: "Ocurrió un error al crear el reporte. Intentá nuevamente.",
+                        icon: "error",
+                        confirmButtonText: "Aceptar",
+                    });
+                }
+
+                return;
+            }
 
             resetReportModal();
 
-            await loadReports();
-        } catch (err) {
-            console.error("Error al crear reporte:", err);
-            const message = err instanceof Error ? err.message : "";
-
-            if (message.includes("No Postulation matches")) {
-                setModalError(
-                    "La postulación elegida no existe o no tienes acceso a ella.",
+            try {
+                await loadReports();
+            } catch (err) {
+                console.error(
+                    "El reporte fue creado, pero no se pudo actualizar el listado:",
+                    err,
                 );
-            } else {
-                setModalError(message || "No se pudo crear el reporte.");
             }
+
+            await Swal.fire({
+                title: "Reporte creado",
+                text: "El reporte de bug se creó correctamente.",
+                icon: "success",
+                confirmButtonText: "Aceptar",
+            });
         } finally {
             setSubmitting(false);
         }

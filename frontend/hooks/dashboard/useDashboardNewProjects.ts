@@ -4,6 +4,7 @@ import { ProjectForm, ProjectFormErrors } from "@/types/dashboardTypes";
 import { ProjectModality } from "@/types/projectTypes";
 import {useRouter} from "next/navigation";
 import {useState, useEffect} from "react";  
+import Swal from "sweetalert2";
 
 export const useDashboardNewProjects = ({user, isClient}: {user: User | null; isClient: boolean}) => {
     const initialForm: ProjectForm = {
@@ -31,8 +32,6 @@ export const useDashboardNewProjects = ({user, isClient}: {user: User | null; is
     const [form, setForm] = useState<ProjectForm>(initialForm);
     const [errors, setErrors] = useState<ProjectFormErrors>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [submitError, setSubmitError] = useState("");
-    const [successMessage, setSuccessMessage] = useState("");
 
     useEffect(() => {
         if (user && !isClient) {
@@ -92,7 +91,6 @@ export const useDashboardNewProjects = ({user, isClient}: {user: User | null; is
                 ...currentErrors,
                 [field]: undefined,
             }));
-            setSubmitError("");
     }
     
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -100,7 +98,6 @@ export const useDashboardNewProjects = ({user, isClient}: {user: User | null; is
             if (!validateForm()) return;
     
             setIsSubmitting(true);
-            setSubmitError("");
     
             try {
                 await createProject({
@@ -112,19 +109,21 @@ export const useDashboardNewProjects = ({user, isClient}: {user: User | null; is
                     modality: form.modality as ProjectModality,
                 });
     
-                setSuccessMessage(
-                    "Proyecto enviado correctamente y pendiente de revisión.",
-                );
-    
-                window.setTimeout(() => {
-                    router.push("/dashboard/projects");
-                }, 2000);
-            } catch (error) {
-                setSubmitError(
-                    error instanceof Error
-                        ? error.message
-                        : "No se pudo publicar el proyecto.",
-                );
+                await Swal.fire({
+                    title: "Proyecto creado",
+                    text: "El proyecto se creó correctamente.",
+                    icon: "success",
+                    confirmButtonText: "Aceptar",
+                });
+
+                router.push("/dashboard/projects");
+            } catch {
+                await Swal.fire({
+                    title: "No se pudo crear el proyecto",
+                    text: "Ocurrió un error al crear el proyecto. Intentá nuevamente.",
+                    icon: "error",
+                    confirmButtonText: "Aceptar",
+                });
             } finally {
                 setIsSubmitting(false);
             }
@@ -142,8 +141,6 @@ export const useDashboardNewProjects = ({user, isClient}: {user: User | null; is
         form,
         errors,
         isSubmitting,
-        submitError,
-        successMessage,
         handleChange,
         handleSubmit,
         getControlClassName,

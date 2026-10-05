@@ -5,6 +5,7 @@ import { Postulation } from "@/types/postulationTypes";
 import { getProjects } from "@/services/project.service";
 import { applyToProject, getUserPostulations } from "@/services/postulation.service";
 import { User } from "@/types";
+import Swal from "sweetalert2";
 
 export const useDashboardTesterView = (user: User | null) => {
 
@@ -71,8 +72,19 @@ export const useDashboardTesterView = (user: User | null) => {
         try {
             const newPost = await applyToProject(projectId);
             setMyPostulations((prev) => [...prev, newPost]);
-        } catch (err) {
-            alert(err instanceof Error ? err.message : "Error al postularse");
+            await Swal.fire({
+                title: "Postulación enviada",
+                text: "Tu postulación se envió correctamente.",
+                icon: "success",
+                confirmButtonText: "Aceptar",
+            });
+        } catch {
+            await Swal.fire({
+                title: "No se pudo enviar la postulación",
+                text: "Ocurrió un error al enviar la postulación. Intentá nuevamente.",
+                icon: "error",
+                confirmButtonText: "Aceptar",
+            });
         } finally {
             setApplying(null);
         }

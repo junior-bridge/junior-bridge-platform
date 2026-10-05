@@ -20,6 +20,7 @@ export default function ProjectsPage() {
         loading,
         ratingsByProject,
         applyingId,
+        updatingProjectId,
         handleApply,
         handleStatusChange,
         handleCompleteProject,
@@ -362,15 +363,17 @@ export default function ProjectsPage() {
                                                     <div className="flex gap-2">
                                                         <button
                                                             onClick={() => handleStatusChange(p.id, "OPEN")}
+                                                            disabled={updatingProjectId === p.id}
                                                             className="text-[10px] font-semibold px-2 py-1 rounded bg-green-600 hover:bg-green-700 text-white transition-colors"
                                                         >
-                                                            Aprobar
+                                                            {updatingProjectId === p.id ? "..." : "Aprobar"}
                                                         </button>
                                                         <button
                                                             onClick={() => handleStatusChange(p.id, "REJECTED")}
+                                                            disabled={updatingProjectId === p.id}
                                                             className="text-[10px] font-semibold px-2 py-1 rounded bg-red-100 hover:bg-red-200 text-red-600 transition-colors"
                                                         >
-                                                            Rechazar
+                                                            {updatingProjectId === p.id ? "..." : "Rechazar"}
                                                         </button>
                                                     </div>
                                                 )}

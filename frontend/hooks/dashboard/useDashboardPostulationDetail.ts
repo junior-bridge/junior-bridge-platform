@@ -5,13 +5,12 @@ import {
 } from "@/services/postulation.service";
 import { Postulation } from "@/types/postulationTypes";
 import { useEffect, useState } from "react";
+import Swal from "sweetalert2";
 
 export const useDashboardPostulationDetail = (id: number) => {
     const [postulation, setPostulation] = useState<Postulation | null>(null);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
-    const [message, setMessage] = useState("");
-    const [messageError, setMessageError] = useState(false);
     const [error, setError] = useState("");
 
     useEffect(() => {
@@ -46,8 +45,22 @@ export const useDashboardPostulationDetail = (id: number) => {
         if (!postulation) return;
 
         setActionLoading(true);
-        setMessage("");
-        setMessageError(false);
+
+        if (action === "reject") {
+            const result = await Swal.fire({
+                title: "¿Rechazar postulación?",
+                text: "Esta acción cambiará el estado de la postulación.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Sí, rechazar",
+                cancelButtonText: "Cancelar",
+            });
+
+            if (!result.isConfirmed) {
+                setActionLoading(false);
+                return;
+            }
+        }
 
         try {
             const updated =
@@ -56,18 +69,28 @@ export const useDashboardPostulationDetail = (id: number) => {
                     : await rejectPostulation(postulation.id_postulation);
 
             setPostulation(updated);
-            setMessage(
-                action === "accept"
-                    ? "Postulación aceptada correctamente."
-                    : "Postulación rechazada correctamente.",
-            );
-        } catch (err) {
-            setMessageError(true);
-            setMessage(
-                err instanceof Error
-                    ? err.message
-                    : "No se pudo actualizar la postulación.",
-            );
+            await Swal.fire({
+                title:
+                    action === "accept"
+                        ? "Postulación aceptada"
+                        : "Postulación rechazada",
+                text:
+                    action === "accept"
+                        ? "La postulación fue aceptada correctamente."
+                        : "La postulación fue rechazada correctamente.",
+                icon: "success",
+                confirmButtonText: "Aceptar",
+            });
+        } catch {
+            await Swal.fire({
+                title:
+                    action === "accept"
+                        ? "No se pudo aceptar la postulación"
+                        : "No se pudo rechazar la postulación",
+                text: "Ocurrió un error al actualizar la postulación. Intentá nuevamente.",
+                icon: "error",
+                confirmButtonText: "Aceptar",
+            });
         } finally {
             setActionLoading(false);
         }
@@ -77,8 +100,6 @@ export const useDashboardPostulationDetail = (id: number) => {
         postulation,
         loading,
         actionLoading,
-        message,
-        messageError,
         error,
         handleStatusChange,
     };
