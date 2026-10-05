@@ -9,7 +9,6 @@ import { useLogin } from "@/hooks/useLogin";
 import Loader from "@/components/ui/Loader";
 
 export default function LoginPage() {
-
     const { setUser } = useUser();
     const {
         form,
@@ -20,7 +19,7 @@ export default function LoginPage() {
         loading,
         oauthLoading,
         handleLogin,
-        handleOAuthLogin
+        handleOAuthLogin,
     } = useLogin(setUser);
 
     return (
@@ -105,7 +104,7 @@ export default function LoginPage() {
                                 onChange={(e) => {
                                     setForm((current) => ({
                                         ...current,
-                                        email: e.target.value
+                                        email: e.target.value,
                                     }));
                                     setFieldErrors((current) => ({
                                         ...current,
@@ -129,7 +128,7 @@ export default function LoginPage() {
                                 onChange={(e) => {
                                     setForm((current) => ({
                                         ...current,
-                                        password: e.target.value
+                                        password: e.target.value,
                                     }));
                                     setFieldErrors((current) => ({
                                         ...current,
@@ -162,6 +161,7 @@ export default function LoginPage() {
                             disabled={loading || oauthLoading !== null}
                             className="btn-primary w-full mt-1"
                         >
+                            Iniciar Sesion
                             {loading && <Loader size={14} color="#ffffff" />}
                         </button>
                     </form>
