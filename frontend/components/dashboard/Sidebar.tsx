@@ -4,44 +4,80 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-    Home, FolderOpen, ClipboardList, FileText,
-    User, Bell, Settings, LogOut, Users, BarChart2, Bug,
+    Home,
+    FolderOpen,
+    ClipboardList,
+    FileText,
+    User,
+    Bell,
+    Settings,
+    LogOut,
+    Users,
+    BarChart2,
+    Bug,
 } from "lucide-react";
 import { User as ApiUser } from "@/types/index";
 
 type UserRole = ApiUser["role"];
 
-const navByRole: Record<UserRole, { icon: React.ElementType; label: string; href: string }[]> = {
+const navByRole: Record<
+    UserRole,
+    { icon: React.ElementType; label: string; href: string }[]
+> = {
     CLIENT: [
-        { icon: Home,          label: "Inicio",             href: "/dashboard" },
-        { icon: FolderOpen,    label: "Proyectos",           href: "/dashboard/projects" },
-        { icon: ClipboardList, label: "Postulaciones",       href: "/dashboard/postulations" },
-        { icon: FileText,      label: "Reportes recibidos",  href: "/dashboard/reports" },
-        { icon: User,          label: "Mi Perfil",           href: "/dashboard/profile" },
-        { icon: Bell,          label: "Notificaciones",      href: "/dashboard/notifications" },
+        { icon: Home, label: "Inicio", href: "/dashboard" },
+        { icon: FolderOpen, label: "Proyectos", href: "/dashboard/projects" },
+        {
+            icon: ClipboardList,
+            label: "Postulaciones",
+            href: "/dashboard/postulations",
+        },
+        {
+            icon: FileText,
+            label: "Reportes recibidos",
+            href: "/dashboard/reports",
+        },
+        { icon: User, label: "Mi Perfil", href: "/dashboard/profile" },
+        {
+            icon: Bell,
+            label: "Notificaciones",
+            href: "/dashboard/notifications",
+        },
     ],
     TESTER: [
-        { icon: Home,       label: "Inicio",         href: "/dashboard" },
-        { icon: FolderOpen, label: "Proyectos",       href: "/dashboard/projects" },
-        { icon: Bug,        label: "Mis Reportes",   href: "/dashboard/reports" },
-        { icon: BarChart2,  label: "Mi Reputación",  href: "/dashboard/reputation" },
-        { icon: User,       label: "Mi Perfil",      href: "/dashboard/profile" },
-        { icon: Bell,       label: "Notificaciones", href: "/dashboard/notifications" },
+        { icon: Home, label: "Inicio", href: "/dashboard" },
+        { icon: FolderOpen, label: "Proyectos", href: "/dashboard/projects" },
+        { icon: Bug, label: "Mis Reportes", href: "/dashboard/reports" },
+        {
+            icon: BarChart2,
+            label: "Mi Reputación",
+            href: "/dashboard/reputation",
+        },
+        { icon: User, label: "Mi Perfil", href: "/dashboard/profile" },
+        {
+            icon: Bell,
+            label: "Notificaciones",
+            href: "/dashboard/notifications",
+        },
     ],
     ADMIN: [
-        { icon: Home,       label: "Inicio",         href: "/dashboard" },
-        { icon: Users,      label: "Usuarios",       href: "/dashboard/users" },
-        { icon: FolderOpen, label: "Proyectos",      href: "/dashboard/projects" },
-        { icon: Bug,        label: "Reportes",       href: "/dashboard/reports" },
-        { icon: BarChart2,  label: "Estadísticas",   href: "/dashboard/stats" },
-        { icon: Bell,       label: "Notificaciones", href: "/dashboard/notifications" },
+        { icon: Home, label: "Inicio", href: "/dashboard" },
+        { icon: Users, label: "Usuarios", href: "/dashboard/users" },
+        { icon: FolderOpen, label: "Proyectos", href: "/dashboard/projects" },
+        { icon: Bug, label: "Reportes", href: "/dashboard/reports" },
+        { icon: BarChart2, label: "Estadísticas", href: "/dashboard/stats" },
+        {
+            icon: Bell,
+            label: "Notificaciones",
+            href: "/dashboard/notifications",
+        },
     ],
 };
 
 const roleLabel: Record<UserRole, string> = {
     CLIENT: "Emprendedor",
     TESTER: "Tester",
-    ADMIN:  "Admin",
+    ADMIN: "Admin",
 };
 
 interface SidebarProps {
@@ -51,7 +87,12 @@ interface SidebarProps {
     onNavigate?: () => void;
 }
 
-export default function Sidebar({ userName, userRole, onLogout, onNavigate }: SidebarProps) {
+export default function Sidebar({
+    userName,
+    userRole,
+    onLogout,
+    onNavigate,
+}: SidebarProps) {
     const pathname = usePathname();
     const navItems = navByRole[userRole] ?? navByRole.CLIENT;
 
@@ -59,9 +100,17 @@ export default function Sidebar({ userName, userRole, onLogout, onNavigate }: Si
         <aside className="w-56 h-full bg-brand-green flex flex-col justify-between py-6 px-4 shrink-0">
             <div>
                 <div className="mb-1">
-                    <Image src="/logo.png" alt="Juniorbridge" width={130} height={40} className="h-auto brightness-0 invert" />
+                    <Image
+                        src="/logo.png"
+                        alt="Juniorbridge"
+                        width={130}
+                        height={40}
+                        className="h-auto brightness-0 invert"
+                    />
                 </div>
-                <p className="text-green-200 text-xs text-center mb-6">{roleLabel[userRole]}</p>
+                <p className="text-green-200 text-xs text-center mb-6">
+                    {roleLabel[userRole]}
+                </p>
 
                 <nav className="flex flex-col gap-1">
                     {navItems.map(({ icon: Icon, label, href }) => {
@@ -87,10 +136,15 @@ export default function Sidebar({ userName, userRole, onLogout, onNavigate }: Si
 
             <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-2 px-2 mb-2">
-                    <div className="w-9 h-9 rounded-full bg-orange-400 flex items-center justify-center text-white font-bold text-sm shrink-0">
-                        {userName[0].toUpperCase()}
+                    <div className="flex items-center gap-2 px-2 mb-2">
+                        <div className="w-9 h-9 rounded-full bg-orange-400 flex items-center justify-center">
+                            {userName?.[0]?.toUpperCase() ?? "?"}
+                        </div>
+
+                        <p className="text-green-100 text-xs font-medium truncate">
+                            {userName || "Usuario"}
+                        </p>
                     </div>
-                    <p className="text-green-100 text-xs font-medium truncate">{userName}</p>
                 </div>
 
                 {userRole === "CLIENT" && (
@@ -98,18 +152,24 @@ export default function Sidebar({ userName, userRole, onLogout, onNavigate }: Si
                         href="/dashboard/projects/new"
                         onClick={onNavigate}
                         className="w-full btn-primary text-center"
-                        
                     >
                         Publicar proyecto
                     </Link>
                 )}
 
-                <Link href="/dashboard/settings" onClick={onNavigate} className="flex items-center gap-3 px-3 py-2 rounded-lg text-green-100 hover:bg-green-700 text-sm transition">
+                <Link
+                    href="/dashboard/settings"
+                    onClick={onNavigate}
+                    className="flex items-center gap-3 px-3 py-2 rounded-lg text-green-100 hover:bg-green-700 text-sm transition"
+                >
                     <Settings size={16} /> Configuración
                 </Link>
 
                 <button
-                    onClick={() => { onLogout(); onNavigate?.(); }}
+                    onClick={() => {
+                        onLogout();
+                        onNavigate?.();
+                    }}
                     className="flex items-center gap-3 px-3 py-2 rounded-lg text-green-100 hover:bg-green-700 text-sm transition text-left w-full cursor-pointer"
                 >
                     <LogOut size={16} /> Cerrar Sesión
