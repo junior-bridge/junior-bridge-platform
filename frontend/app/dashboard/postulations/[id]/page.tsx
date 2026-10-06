@@ -22,8 +22,13 @@ export default function PostulationDetailPage() {
     const params = useParams<{ id: string }>();
     const { user } = useUser();
     const id = Number(params.id);
-    const { postulation, loading, actionLoading, error, handleStatusChange } =
-        useDashboardPostulationDetail(id);
+    const {
+        postulation,
+        loading,
+        actionLoading,
+        error,
+        handleStatusChange,
+    } = useDashboardPostulationDetail(id);
 
     if (!user) return null;
 
@@ -124,9 +129,7 @@ export default function PostulationDetailPage() {
                             />
                         ))}
                         <span className="ml-1 text-xs text-gray-500">
-                            {reputation > 0
-                                ? reputation.toFixed(1)
-                                : "Sin calificaciones"}
+                            {reputation > 0 ? reputation.toFixed(1) : "Sin calificaciones"}
                         </span>
                     </div>
                 </div>
@@ -143,24 +146,25 @@ export default function PostulationDetailPage() {
                     </strong>
                 </p>
 
-                {user.role === "CLIENT" && postulation.status === "pending" && (
-                    <div className="mt-5 flex flex-wrap gap-3 border-t border-gray-100 pt-4">
-                        <button
-                            onClick={() => handleStatusChange("accept")}
-                            disabled={actionLoading}
-                            className="btn-green-sm disabled:opacity-60"
-                        >
-                            Aceptar
-                        </button>
-                        <button
-                            onClick={() => handleStatusChange("reject")}
-                            disabled={actionLoading}
-                            className="rounded-lg bg-red-100 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-200 disabled:opacity-60"
-                        >
-                            Rechazar
-                        </button>
-                    </div>
-                )}
+                {user.role === "CLIENT" &&
+                    postulation.status === "pending" && (
+                        <div className="mt-5 flex flex-wrap gap-3 border-t border-gray-100 pt-4">
+                            <button
+                                onClick={() => handleStatusChange("accept")}
+                                disabled={actionLoading}
+                                className="btn-green-sm disabled:opacity-60"
+                            >
+                                Aceptar
+                            </button>
+                            <button
+                                onClick={() => handleStatusChange("reject")}
+                                disabled={actionLoading}
+                                className="rounded-lg bg-red-100 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-200 disabled:opacity-60"
+                            >
+                                Rechazar
+                            </button>
+                        </div>
+                    )}
             </div>
         </div>
     );

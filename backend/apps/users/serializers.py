@@ -129,3 +129,20 @@ class UserSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+class AdminUserSerializer(serializers.ModelSerializer):
+    projects_count = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = User
+        fields = [
+            'id',
+            'name',
+            'surname',
+            'email',
+            'role',
+            'is_active',
+            'created_at',
+            'projects_count',
+            'reputation',
+        ]
+        read_only_fields = fields

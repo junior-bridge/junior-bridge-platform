@@ -6,6 +6,8 @@ import { Plus, Search } from "lucide-react";
 import { useDashboardProjects } from "@/hooks/dashboard/useDashboardProjects";
 import { useState } from "react";
 
+
+
 export default function ProjectsPage() {
     const { user, isClient, isTester, isAdmin } = useUser();
     const [ratingProjectId, setRatingProjectId] = useState<number | null>(null);
@@ -53,6 +55,7 @@ export default function ProjectsPage() {
                     <Link
                         href="/dashboard/projects/new"
                         className="flex items-center gap-2 btn-primary"
+                        
                     >
                         <Plus size={15} /> Nuevo Proyecto
                     </Link>
@@ -138,13 +141,10 @@ export default function ProjectsPage() {
                                             ).toLocaleDateString("es-AR")}
                                         </span>
                                     </div>
-                                    {(p.state === "IN_PROGRESS" ||
-                                        p.state === "IN_REVIEW") && (
+                                    {(p.state === "IN_PROGRESS" || p.state === "IN_REVIEW") && (
                                         <div className="flex justify-end mt-4 pt-3 border-t border-gray-50">
                                             <button
-                                                onClick={() =>
-                                                    handleCompleteProject(p.id)
-                                                }
+                                                onClick={() => handleCompleteProject(p.id)}
                                                 className="rounded-lg bg-teal-600 px-4 py-2 text-xs font-semibold text-white hover:bg-teal-700 transition-colors"
                                             >
                                                 Dar por completado
@@ -160,37 +160,24 @@ export default function ProjectsPage() {
                                                     </p>
 
                                                     <div className="mt-1 flex items-center gap-1">
-                                                        {Array.from(
-                                                            { length: 5 },
-                                                            (_, index) => (
-                                                                <span
-                                                                    key={index}
-                                                                    className={
-                                                                        index <
-                                                                        ratingsByProject[
-                                                                            p.id
-                                                                        ]
-                                                                            .rating!
-                                                                            .stars
-                                                                            ? "text-yellow-400"
-                                                                            : "text-gray-300"
-                                                                    }
-                                                                >
-                                                                    ★
-                                                                </span>
-                                                            ),
-                                                        )}
+                                                        {Array.from({ length: 5 }, (_, index) => (
+                                                            <span
+                                                                key={index}
+                                                                className={
+                                                                    index <
+                                                                    ratingsByProject[p.id].rating!.stars
+                                                                        ? "text-yellow-400"
+                                                                        : "text-gray-300"
+                                                                }
+                                                            >
+                                                                ★
+                                                            </span>
+                                                        ))}
                                                     </div>
 
-                                                    {ratingsByProject[p.id]
-                                                        .rating!.comment && (
+                                                    {ratingsByProject[p.id].rating!.comment && (
                                                         <p className="mt-1 text-xs text-gray-500">
-                                                            {
-                                                                ratingsByProject[
-                                                                    p.id
-                                                                ].rating!
-                                                                    .comment
-                                                            }
+                                                            {ratingsByProject[p.id].rating!.comment}
                                                         </p>
                                                     )}
                                                 </div>
@@ -202,13 +189,9 @@ export default function ProjectsPage() {
 
                                                     <button
                                                         onClick={() => {
-                                                            setRatingProjectId(
-                                                                p.id,
-                                                            );
+                                                            setRatingProjectId(p.id);
                                                             setRatingStars(0);
-                                                            setRatingComment(
-                                                                "",
-                                                            );
+                                                            setRatingComment("");
                                                         }}
                                                         className="rounded-lg bg-teal-600 px-4 py-2 text-xs font-semibold text-white hover:bg-teal-700 transition-colors"
                                                     >
@@ -226,9 +209,7 @@ export default function ProjectsPage() {
                     {isTester && (
                         <div className="flex flex-col gap-4">
                             {filteredProjects.map((p) => {
-                                const postulation = postulationsByProject.get(
-                                    p.id,
-                                );
+                                const postulation = postulationsByProject.get(p.id);
                                 return (
                                     <div
                                         key={p.id}
@@ -269,41 +250,29 @@ export default function ProjectsPage() {
                                             <div className="ml-4 shrink-0 flex flex-col items-end gap-2">
                                                 <span
                                                     className={`text-xs font-semibold px-3 py-1.5 rounded-lg ${
-                                                        postulation.status ===
-                                                        "accepted"
+                                                        postulation.status === "accepted"
                                                             ? "bg-green-100 text-green-700"
-                                                            : postulation.status ===
-                                                                "rejected"
+                                                            : postulation.status === "rejected"
                                                               ? "bg-red-100 text-red-600"
                                                               : "bg-yellow-100 text-yellow-700"
                                                     }`}
                                                 >
-                                                    {postulation.status ===
-                                                    "accepted"
+                                                    {postulation.status === "accepted"
                                                         ? "Postulación aceptada"
-                                                        : postulation.status ===
-                                                            "rejected"
+                                                        : postulation.status === "rejected"
                                                           ? "Postulación rechazada"
                                                           : "Postulación pendiente"}
                                                 </span>
-                                                {postulation.status ===
-                                                    "accepted" &&
-                                                    p.state ===
-                                                        "IN_PROGRESS" && (
-                                                        <button
-                                                            onClick={() =>
-                                                                handleFinishDelivery(
-                                                                    p.id,
-                                                                )
-                                                            }
-                                                            className="rounded-lg bg-orange-500 px-4 py-2 text-xs font-semibold text-white hover:bg-orange-600 transition-colors"
-                                                        >
-                                                            Finalizar entrega
-                                                        </button>
-                                                    )}
+                                                {postulation.status === "accepted" && p.state === "IN_PROGRESS" && (
+                                                    <button
+                                                        onClick={() => handleFinishDelivery(p.id)}
+                                                        className="rounded-lg bg-orange-500 px-4 py-2 text-xs font-semibold text-white hover:bg-orange-600 transition-colors"
+                                                    >
+                                                        Finalizar entrega
+                                                    </button>
+                                                )}
 
-                                                {postulation.status ===
-                                                    "pending" && (
+                                                {postulation.status === "pending" && (
                                                     <button
                                                         onClick={() =>
                                                             setPostulationToWithdraw(
@@ -318,9 +287,7 @@ export default function ProjectsPage() {
                                             </div>
                                         ) : (
                                             <button
-                                                onClick={() =>
-                                                    handleApply(p.id)
-                                                }
+                                                onClick={() => handleApply(p.id)}
                                                 disabled={
                                                     p.state !== "OPEN" ||
                                                     applyingId === p.id
@@ -395,40 +362,18 @@ export default function ProjectsPage() {
                                                 {p.state === "PENDING" && (
                                                     <div className="flex gap-2">
                                                         <button
-                                                            onClick={() =>
-                                                                handleStatusChange(
-                                                                    p.id,
-                                                                    "OPEN",
-                                                                )
-                                                            }
-                                                            disabled={
-                                                                updatingProjectId ===
-                                                                p.id
-                                                            }
+                                                            onClick={() => handleStatusChange(p.id, "OPEN")}
+                                                            disabled={updatingProjectId === p.id}
                                                             className="text-[10px] font-semibold px-2 py-1 rounded bg-green-600 hover:bg-green-700 text-white transition-colors"
                                                         >
-                                                            {updatingProjectId ===
-                                                            p.id
-                                                                ? "..."
-                                                                : "Aprobar"}
+                                                            {updatingProjectId === p.id ? "..." : "Aprobar"}
                                                         </button>
                                                         <button
-                                                            onClick={() =>
-                                                                handleStatusChange(
-                                                                    p.id,
-                                                                    "REJECTED",
-                                                                )
-                                                            }
-                                                            disabled={
-                                                                updatingProjectId ===
-                                                                p.id
-                                                            }
+                                                            onClick={() => handleStatusChange(p.id, "REJECTED")}
+                                                            disabled={updatingProjectId === p.id}
                                                             className="text-[10px] font-semibold px-2 py-1 rounded bg-red-100 hover:bg-red-200 text-red-600 transition-colors"
                                                         >
-                                                            {updatingProjectId ===
-                                                            p.id
-                                                                ? "..."
-                                                                : "Rechazar"}
+                                                            {updatingProjectId === p.id ? "..." : "Rechazar"}
                                                         </button>
                                                     </div>
                                                 )}
@@ -528,9 +473,7 @@ export default function ProjectsPage() {
                             <textarea
                                 id="rating-comment"
                                 value={ratingComment}
-                                onChange={(e) =>
-                                    setRatingComment(e.target.value)
-                                }
+                                onChange={(e) => setRatingComment(e.target.value)}
                                 placeholder="Escribí un comentario sobre el trabajo..."
                                 maxLength={500}
                                 rows={4}
@@ -555,10 +498,7 @@ export default function ProjectsPage() {
                                 type="button"
                                 disabled={ratingStars === 0}
                                 onClick={async () => {
-                                    if (
-                                        ratingProjectId === null ||
-                                        ratingStars === 0
-                                    ) {
+                                    if (ratingProjectId === null || ratingStars === 0) {
                                         return;
                                     }
 
@@ -575,11 +515,11 @@ export default function ProjectsPage() {
                                 className="rounded-full bg-teal-600 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 Guardar calificación
-                            </button>
+                            </button>                            
                         </div>
                     </div>
                 </div>
-            )}
+            )}            
         </div>
     );
 }

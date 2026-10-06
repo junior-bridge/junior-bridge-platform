@@ -3,29 +3,72 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 
-const API_BASE = process.env.API_BASE || 'http://localhost:8000/api';
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
+
+type Notification = {
+  notification_id: string;
+  title: string;
+  message: string;
+  is_read: boolean;
+  created_at: string;
+  type?: string;
+};
+
+type ApiNotification = {
+  id_notification: number;
+  type: string;
+  message: string;
+  is_read: boolean;
+  created_at: string;
+};
+
+function getNotificationTitle(notification: ApiNotification): string {
+  const message = notification.message.toLowerCase();
+
+  if (notification.type === 'postulation') {
+    return 'Nueva postulación';
+  }
+
+  if (message.includes('aceptada')) {
+    return 'Postulación aceptada';
+  }
+
+  if (message.includes('rechazada')) {
+    return 'Postulación rechazada';
+  }
+
+  return 'Notificación';
+}
 
 export function useNotifications() {
-  const [notifications, setNotifications] = useState([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isConnected, setIsConnected] = useState(false);
-  const wsRef = useRef(null);
-  const reconnectTimeoutRef = useRef(null);
+  const wsRef = useRef<WebSocket | null>(null);
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const NOTIFICATIONS_API = `${API_BASE}/api/notifications`;
 
   const loadNotifications = useCallback(async () => {
     try {
-      const response = await fetch(`${API_BASE}/notifications/`, {
+      const response = await fetch(`${NOTIFICATIONS_API}/`, {
         credentials: 'include',
       });
 
       if (response.ok) {
         const data = await response.json();
-        
-        const results = data.results || data;
-        
-        setNotifications(results);
-        
-        const unread = results.filter((n) => !n.is_read).length;
+        const results: ApiNotification[] = data.results || data;
+
+        const normalized: Notification[] = results.map((notification) => ({
+          notification_id: String(notification.id_notification),
+          title: getNotificationTitle(notification),
+          message: notification.message,
+          is_read: notification.is_read,
+          created_at: notification.created_at,
+          type: notification.type,
+        }));
+        setNotifications(normalized);
+
+        const unread = normalized.filter((notification) => !notification.is_read).length;
         setUnreadCount(unread);
       }
     } catch (error) {
@@ -94,16 +137,16 @@ export function useNotifications() {
     }
   }, []);
 
-  const sendMessage = useCallback((message) => {
+  const sendMessage = useCallback((message: unknown) => {
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify(message));
     }
   }, []);
 
-  const markAsRead = useCallback(async (notificationId) => {
+  const markAsRead = useCallback(async (notificationId: string) => {
     try {
       const response = await fetch(
-        `${API_BASE}/notifications/${notificationId}/`,
+        `${NOTIFICATIONS_API}/${notificationId}/`,
         {
           method: 'PATCH',
           headers: {
@@ -131,10 +174,10 @@ export function useNotifications() {
     }
   }, []);
 
-  const deleteNotification = useCallback(async (notificationId) => {
+  const deleteNotification = useCallback(async (notificationId: string) => {
     try {
       const response = await fetch(
-        `${API_BASE}/notifications/${notificationId}/`,
+        `${NOTIFICATIONS_API}/${notificationId}/`,
         {
           method: 'DELETE',
           credentials: 'include',

@@ -1,111 +1,35 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { ChevronRight, Star } from "lucide-react";
 import StatCard from "@/components/dashboard/StatCard";
-import {
-    getProjects,
-    getUserPostulations,
-    applyToProject,
-    type Project,
-    type Postulation,
-} from "@/lib/api";
 import { useUser } from "@/context/UserContext";
-
-const stateColor: Record<string, string> = {
-    OPEN: "bg-green-100 text-green-700",
-    IN_PROGRESS: "bg-blue-100 text-blue-700",
-    IN_REVIEW: "bg-orange-100 text-orange-600",
-    COMPLETED: "bg-teal-100 text-teal-700",
-    PENDING: "bg-gray-100 text-gray-500",
-    REJECTED: "bg-red-100 text-red-600",
-};
-
-function StarDisplay({ stars }: { stars: number }) {
-    return (
-        <div className="flex gap-0.5">
-            {[1, 2, 3, 4, 5].map((i) => (
-                <Star
-                    key={i}
-                    size={12}
-                    fill={i <= stars ? "#f97316" : "none"}
-                    stroke={i <= stars ? "#f97316" : "#d1d5db"}
-                />
-            ))}
-        </div>
-    );
-}
+import { useDashboardTesterView } from "@/hooks/dashboard/views/useDashboardTesterView";
+import StarDisplay from "@/components/dashboard/StarDisplay";
 
 interface Props {
     userName: string;
 }
 
 export default function TesterDashboard({ userName }: Props) {
-    const router = useRouter();
     const { user } = useUser();
-    const [availableProjects, setAvailableProjects] = useState<Project[]>([]);
-    const [myPostulations, setMyPostulations] = useState<Postulation[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [applying, setApplying] = useState<number | null>(null);
 
-    useEffect(() => {
-        async function load() {
-            try {
-                const [projs, posts] = await Promise.all([
-                    getProjects(),
-                    getUserPostulations(),
-                ]);
-                setAvailableProjects(
-                    projs.filter(
-                        (p) => p.state === "OPEN" || p.state === "IN_PROGRESS",
-                    ),
-                );
-                setMyPostulations(posts);
-            } catch {
-            } finally {
-                setLoading(false);
-            }
-        }
-        load();
-    }, []);
+    const {
+        stateColor,
+        router,
+        availableProjects,
+        myPostulations,
+        loading,
+        applying,
+        activePostulations,
+        stats,
+        appliedProjectIds,
+        handleApply,
+    } = useDashboardTesterView(user);
 
-    const activePostulations = myPostulations.filter(
-        (p) => p.status === "accepted",
-    );
-    const pendingPostulations = myPostulations.filter(
-        (p) => p.status === "pending",
-    );
 
-    const stats = [
-        {
-            label: "Proyectos Completados",
-            value: myPostulations.filter((p) => p.status === "accepted").length,
-        },
-        { label: "Bugs Reportados", value: "—" },
-        {
-            label: "Reputación",
-            value: user?.reputation ? `${user.reputation} ★` : "—",
-        },
-        { label: "Postulaciones Activas", value: pendingPostulations.length },
-    ];
-
-    const appliedProjectIds = new Set(myPostulations.map((p) => p.id_project));
-
-    async function handleApply(projectId: number) {
-        setApplying(projectId);
-        try {
-            const newPost = await applyToProject(projectId);
-            setMyPostulations((prev) => [...prev, newPost]);
-        } catch (err) {
-            alert(err instanceof Error ? err.message : "Error al postularse");
-        } finally {
-            setApplying(null);
-        }
-    }
 
     return (
-        <main className="flex-1 overflow-y-auto px-6 py-6">
+        <main className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-6">
             <div className="mb-6">
                 <h1 className="text-2xl font-bold text-gray-800">
                     Hola, {userName}
@@ -117,7 +41,7 @@ export default function TesterDashboard({ userName }: Props) {
                 </p>
             </div>
 
-            <div className="grid grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
                 {stats.map((stat) => (
                     <StatCard
                         key={stat.label}
@@ -127,7 +51,7 @@ export default function TesterDashboard({ userName }: Props) {
                 ))}
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex flex-col lg:flex-row gap-4">
                 <div className="flex-1 flex flex-col gap-4">
                     {activePostulations.length > 0 && (
                         <div className="bg-white rounded-xl p-4 shadow-sm">
@@ -165,7 +89,7 @@ export default function TesterDashboard({ userName }: Props) {
                                                         "/dashboard/reports",
                                                     )
                                                 }
-                                                className="mt-2 w-full rounded-lg py-1.5 text-white text-xs font-semibold hover:opacity-90 transition"
+                                                className="mt-2 w-full btn-orange-sm"
                                                 style={{
                                                     backgroundColor: "#e07b39",
                                                 }}
@@ -188,7 +112,7 @@ export default function TesterDashboard({ userName }: Props) {
                                 onClick={() =>
                                     router.push("/dashboard/projects")
                                 }
-                                className="text-xs text-[#2d6a4f] font-medium hover:underline flex items-center gap-1"
+                                className="text-xs text-brand-green font-medium hover:underline flex items-center gap-1 cursor-pointer"
                             >
                                 Ver Todo <ChevronRight size={12} />
                             </button>
@@ -253,7 +177,7 @@ export default function TesterDashboard({ userName }: Props) {
                                                         handleApply(p.id)
                                                     }
                                                     disabled={applying === p.id}
-                                                    className="ml-4 shrink-0 rounded-lg px-3 py-1.5 text-white text-xs font-semibold hover:opacity-90 transition disabled:opacity-60"
+                                                    className="ml-4 shrink-0 btn-green-sm disabled:opacity-60"
                                                     style={{
                                                         backgroundColor:
                                                             "#2d6a4f",
@@ -272,7 +196,7 @@ export default function TesterDashboard({ userName }: Props) {
                     </div>
                 </div>
 
-                <div className="w-56 bg-white rounded-xl p-4 shadow-sm">
+                <div className="lg:w-56 bg-white rounded-xl p-4 shadow-sm">
                     <h2 className="font-bold text-gray-800 mb-1">
                         Mi Reputación
                     </h2>
@@ -297,7 +221,7 @@ export default function TesterDashboard({ userName }: Props) {
                     </p>
                     <button
                         onClick={() => router.push("/dashboard/reputation")}
-                        className="mt-3 w-full text-xs text-[#2d6a4f] font-medium hover:underline"
+                        className="mt-3 w-full text-xs text-brand-green font-medium hover:underline cursor-pointer"
                     >
                         Ver historial completo
                     </button>
