@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { Search, Bell } from "lucide-react";
+import { useState } from "react";
+import { Search, Menu } from "lucide-react";
 import { useUser } from "@/context/UserContext";
-import type { User } from "@/lib/api";
 import Sidebar from "@/components/dashboard/Sidebar";
-import {NotificationBell} from "../../components/NotificationBell";
+import { NotificationBell } from "../../components/NotificationBell";
+import { useDashboard } from "@/hooks/useDashboard";
+import { User } from "@/types";
+import Loader from "@/components/ui/Loader";
 
 export default function DashboardLayout({
     children,
@@ -14,51 +15,58 @@ export default function DashboardLayout({
     children: React.ReactNode;
 }) {
     const { user, logout, isAuthenticated, isLoading } = useUser();
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
-    const router = useRouter();
+    const { router, handleLogout, displayName, avatarInitials, roleLabel } =
+        useDashboard({ isLoading, isAuthenticated, logout, user });
 
-    useEffect(() => {
-        if (!isLoading && !isAuthenticated) {
-            router.push("/login");
-        }
-    }, [isAuthenticated, isLoading, router]);
-
-    if (isLoading) return null;
+    if (isLoading) return (
+        <div className="min-h-screen flex items-center justify-center bg-[#f5f0eb]">
+            <Loader size={40} color="#e07b39" label="Cargando..." />
+        </div>
+    );
     if (!user) return null;
-
-    async function handleLogout() {
-        await logout();
-        router.push("/login");
-    }
-
-    const displayName =
-        user.name?.trim() || user.email?.split("@")[0] || "Usuario";
-
-    const avatarInitials = (
-        user.name?.trim()?.[0] ||
-        user.email?.trim()?.[0] ||
-        "?"
-    ).toUpperCase();
-
-    const roleLabel: Record<string, string> = {
-        CLIENT: "Emprendedor",
-        TESTER: "Tester",
-        ADMIN: "Admin",
-    };
 
     return (
         <div className="flex h-screen bg-[#f5f0eb] overflow-hidden">
-            <Sidebar
-                userName={user.name}
-                userRole={user.role as User["role"]}
-                onLogout={handleLogout}
-            />
 
-            <div className="flex-1 flex flex-col overflow-hidden">
-                <header className="bg-[#f5f0eb] px-6 py-3 flex items-center justify-between border-b border-gray-200 shrink-0">
-                    <div className="flex items-center gap-2 bg-white rounded-full px-4 py-2 w-72 border border-gray-200">
-                        <Search size={15} className="text-gray-400" />
+            {sidebarOpen && (
+                <div
+                    className="fixed inset-0 z-20 bg-black/50 lg:hidden"
+                    onClick={() => setSidebarOpen(false)}
+                />
+            )}
+            <div
+                className={`fixed inset-y-0 left-0 z-30 transform transition-transform duration-200 ease-in-out lg:static lg:transform-none ${
+                    sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+                }`}
+            >
+                <Sidebar
+                    userName={user.name}
+                    userRole={user.role as User["role"]}
+                    onLogout={handleLogout}
+                    onNavigate={() => setSidebarOpen(false)}
+                />
+            </div>
 
+            
+            <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+
+                
+                <header className="bg-[#f5f0eb] px-4 sm:px-6 py-3 flex items-center justify-between border-b border-gray-200 shrink-0 gap-3">
+
+                    
+                    <button
+                        className="lg:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-200 transition shrink-0"
+                        onClick={() => setSidebarOpen(true)}
+                        aria-label="Abrir menú"
+                    >
+                        <Menu size={20} />
+                    </button>
+
+                    
+                    <div className="flex items-center gap-2 bg-white rounded-full px-4 py-2 flex-1 max-w-xs border border-gray-200">
+                        <Search size={15} className="text-gray-400 shrink-0" />
                         <input
                             type="text"
                             placeholder="Buscar..."
@@ -66,23 +74,20 @@ export default function DashboardLayout({
                         />
                     </div>
 
-                    <div className="flex items-center gap-4">
+                    
+                    <div className="flex items-center gap-3">
                         <NotificationBell />
-
-                        <div className="w-px h-6 bg-gray-300" />
-
+                        <div className="w-px h-6 bg-gray-300 hidden sm:block" />
                         <div className="flex items-center gap-2">
-                            <div className="text-right">
-                                <p className="text-sm font-semibold text-gray-800">
+                            <div className="text-right hidden sm:block">
+                                <p className="text-sm font-semibold text-gray-800 leading-tight">
                                     {displayName}
                                 </p>
-
                                 <p className="text-xs text-gray-400">
                                     {roleLabel[user.role] ?? user.role}
                                 </p>
                             </div>
-
-                            <div className="w-8 h-8 rounded-full bg-orange-400 flex items-center justify-center text-white font-bold text-sm">
+                            <div className="w-8 h-8 rounded-full bg-orange-400 flex items-center justify-center text-white font-bold text-sm shrink-0">
                                 {avatarInitials}
                             </div>
                         </div>

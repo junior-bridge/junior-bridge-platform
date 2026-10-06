@@ -7,6 +7,7 @@ import { useUser } from "@/context/UserContext";
 import { useDashboardNewProjects } from "@/hooks/dashboard/useDashboardNewProjects";
 import Loader from "@/components/ui/Loader";
 
+
 export default function NewProjectPage() {
     const { user, isClient } = useUser();
     const {
@@ -17,6 +18,10 @@ export default function NewProjectPage() {
         handleSubmit,
         getControlClassName,
     } = useDashboardNewProjects({ user, isClient });
+
+
+
+
 
     if (!user || !isClient) return null;
 

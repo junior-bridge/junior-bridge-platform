@@ -1,107 +1,25 @@
 "use client";
-
-import { useEffect, useState } from "react";
 import { useUser } from "@/context/UserContext";
 import { Star } from "lucide-react";
-import {
-    getUserProjects,
-    getProjectPostulations,
-    getUserPostulations,
-    acceptPostulation,
-    rejectPostulation,
-    type Postulation,
-} from "@/lib/api";
-
-const statusColors: Record<string, string> = {
-    pending: "bg-yellow-100 text-yellow-700",
-    accepted: "bg-green-100 text-green-700",
-    rejected: "bg-red-100 text-red-600",
-};
-
-const statusLabels: Record<string, string> = {
-    pending: "PENDIENTE",
-    accepted: "ACEPTADO",
-    rejected: "RECHAZADO",
-};
+import { useDashboardPostulations } from "@/hooks/dashboard/useDashboardPostulations";
 
 export default function PostulationsPage() {
     const { user } = useUser();
-    const [postulations, setPostulations] = useState<Postulation[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [actionLoading, setActionLoading] = useState<number | null>(null);
 
-    useEffect(() => {
-        async function loadPostulations() {
-            if (!user) return;
-            try {
-                if (user.role === "CLIENT") {
-                    const projs = await getUserProjects();
-                    const postsPromises = projs.map((p) =>
-                        getProjectPostulations(p.id).catch(() => []),
-                    );
-                    const results = await Promise.all(postsPromises);
-                    setPostulations(results.flat());
-                } else if (user.role === "TESTER") {
-                    const posts = await getUserPostulations();
-                    setPostulations(posts);
-                }
-            } catch {
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        loadPostulations();
-    }, [user]);
-
+    const {
+        actionLoading,
+        handleAccept,
+        handleReject,
+        loading,
+        postulations,
+        statusColors,
+        statusLabels,
+    }=useDashboardPostulations(user);
+   
     if (!user) return null;
 
-    async function handleAccept(id: number) {
-        setActionLoading(id);
-        try {
-            const updated = await acceptPostulation(id);
-            setPostulations((prev) =>
-                prev.map((p) =>
-                    p.id_postulation === id
-                        ? { ...p, status: updated.status }
-                        : p,
-                ),
-            );
-        } catch (err) {
-            alert(
-                err instanceof Error
-                    ? err.message
-                    : "Error al aceptar postulación.",
-            );
-        } finally {
-            setActionLoading(null);
-        }
-    }
-
-    async function handleReject(id: number) {
-        setActionLoading(id);
-        try {
-            const updated = await rejectPostulation(id);
-            setPostulations((prev) =>
-                prev.map((p) =>
-                    p.id_postulation === id
-                        ? { ...p, status: updated.status }
-                        : p,
-                ),
-            );
-        } catch (err) {
-            alert(
-                err instanceof Error
-                    ? err.message
-                    : "Error al rechazar postulación.",
-            );
-        } finally {
-            setActionLoading(null);
-        }
-    }
-
     return (
-        <div className="px-6 py-6">
+        <div className="px-4 sm:px-6 py-4 sm:py-6">
             <div className="mb-6">
                 <h1 className="text-2xl font-bold text-gray-800">
                     Postulaciones
@@ -126,7 +44,7 @@ export default function PostulationsPage() {
             ) : (
                 <>
                     {user.role === "CLIENT" && (
-                        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+                        <div className="bg-white rounded-xl shadow-sm overflow-x-auto">
                             <table className="w-full text-sm">
                                 <thead>
                                     <tr className="text-[10px] text-gray-400 uppercase tracking-wide border-b border-gray-100 bg-gray-50">
@@ -149,8 +67,7 @@ export default function PostulationsPage() {
                                 </thead>
                                 <tbody>
                                     {postulations.map((p) => {
-                                        const testerInitial = (p.tester_name ??
-                                            "T")[0].toUpperCase();
+                                        const testerInitial = p.tester_name?.trim()?.[0]?.toUpperCase() ?? "T";
                                         const repNumber = p.tester_reputation
                                             ? Number(p.tester_reputation)
                                             : 0;
@@ -166,7 +83,7 @@ export default function PostulationsPage() {
                                                         </div>
                                                         <div>
                                                             <p className="text-gray-700 font-medium text-xs">
-                                                                {p.tester_name ??
+                                                                {p.tester_name?.trim() ||
                                                                     `Tester #${p.id_tester}`}
                                                             </p>
                                                             <p className="text-gray-400 text-[10px]">

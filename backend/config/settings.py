@@ -165,7 +165,8 @@ SITE_ID = 1
 
 FRONTEND_OAUTH_SUCCESS_URL = os.environ["FRONTEND_OAUTH_SUCCESS_URL"]
 FRONTEND_OAUTH_ERROR_URL = os.environ["FRONTEND_OAUTH_ERROR_URL"]
-
+SOCIALACCOUNT_LOGIN_ON_GET = True
+SOCIALACCOUNT_ADAPTER = "apps.users.adapter.JuniorBridgeSocialAccountAdapter"
 # Django REST Framework
 
 REST_FRAMEWORK = {
@@ -280,3 +281,6 @@ CHANNEL_LAYERS = {
 WEBSOCKET_ACCEPT_ALL = False  # Requerir autenticación
 WEBSOCKET_TIMEOUT = 300  # 5 minutos de inactividad
 
+# Email settings
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = "noreply@juniorbridge.com"

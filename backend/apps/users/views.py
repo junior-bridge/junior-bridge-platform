@@ -5,7 +5,8 @@ from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import ensure_csrf_cookie
-from rest_framework import status
+from django.db.models import Count
+from rest_framework import status, generics
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -14,9 +15,11 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
+from apps.users.permissions import IsAdmin
+from .models import User
 
 from drf_spectacular.utils import extend_schema, OpenApiResponse
-from .serializers import RegisterSerializer, LoginSerializer, UserSerializer
+from .serializers import RegisterSerializer, LoginSerializer, UserSerializer, AdminUserSerializer
 from .services import (
     clear_auth_cookies,
     create_auth_redirect_response,
@@ -326,3 +329,23 @@ class ProfileView(APIView):
             serializer.data,
             status=status.HTTP_200_OK,
         )
+@extend_schema(tags=['Users'])
+class AdminUserListView(generics.ListAPIView):
+    queryset = User.objects.annotate(
+        projects_count=Count('projects_created')
+    ).order_by('-created_at')
+    serializer_class = AdminUserSerializer
+    permission_classes = [IsAdmin]
+
+    @extend_schema(
+        summary="List users",
+        description="Returns all registered users. Only administrators can access this endpoint.",
+        responses={
+            200: AdminUserSerializer(many=True),
+            403: OpenApiResponse(
+                description="Only administrators can list users."
+            ),
+        },
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)

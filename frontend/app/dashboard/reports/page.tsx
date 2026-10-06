@@ -6,11 +6,11 @@ import { Plus, X, Upload } from "lucide-react";
 import { useDashboardReports } from "@/hooks/dashboard/useDashboardReports";
 import Loader from "@/components/ui/Loader";
 
+
 export default function ReportsPage() {
     const { user } = useUser();
 
-    const {
-        severityColors,
+    const { severityColors,
         statusColors,
         severityLabels,
         statusLabels,
@@ -32,6 +32,7 @@ export default function ReportsPage() {
     } = useDashboardReports(user);
 
     const backdropPointerDownRef = useRef(false);
+
 
     if (!user) {
         return null;
@@ -59,6 +60,7 @@ export default function ReportsPage() {
                         type="button"
                         onClick={() => setIsModalOpen(true)}
                         className="flex items-center gap-2 btn-primary cursor-pointer"
+                        
                     >
                         <Plus size={15} />
                         Nuevo Reporte
@@ -115,9 +117,8 @@ export default function ReportsPage() {
                                         severityLabels[report.severity] ??
                                         report.severity;
                                     const status =
-                                        statusLabels[
-                                            report.state ?? "PENDING"
-                                        ] ?? report.state;
+                                        statusLabels[report.state ?? "PENDING"] ??
+                                        report.state;
 
                                     return (
                                         <tr
@@ -140,25 +141,23 @@ export default function ReportsPage() {
                                             </td>
                                             <td className="px-4 py-3">
                                                 <span
-                                                    className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                                                        severityColors[
-                                                            report.severity
-                                                        ] ??
+                                                    className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${severityColors[
+                                                        report.severity
+                                                    ] ??
                                                         "bg-gray-100 text-gray-600"
-                                                    }`}
+                                                        }`}
                                                 >
                                                     {severityLabel}
                                                 </span>
                                             </td>
                                             <td className="px-4 py-3">
                                                 <span
-                                                    className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                                                        statusColors[
-                                                            report.state ??
-                                                                "PENDING"
-                                                        ] ??
+                                                    className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${statusColors[
+                                                        report.state ??
+                                                        "PENDING"
+                                                    ] ??
                                                         "bg-gray-100 text-gray-600"
-                                                    }`}
+                                                        }`}
                                                 >
                                                     {status}
                                                 </span>
@@ -194,8 +193,7 @@ export default function ReportsPage() {
                         backdropPointerDownRef.current = false;
                     }}
                     onClick={(event) => {
-                        const startedOnBackdrop =
-                            backdropPointerDownRef.current;
+                        const startedOnBackdrop = backdropPointerDownRef.current;
                         backdropPointerDownRef.current = false;
 
                         if (
@@ -256,7 +254,7 @@ export default function ReportsPage() {
                                         }));
                                     }}
                                     aria-invalid={Boolean(
-                                        formErrors.postulationId,
+                                        formErrors.postulationId
                                     )}
                                     aria-describedby={
                                         formErrors.postulationId
@@ -344,16 +342,10 @@ export default function ReportsPage() {
                                 </label>
                                 <select
                                     value={form.severity}
-                                    onChange={(e) =>
-                                        setForm((current) => ({
-                                            ...current,
-                                            severity: e.target.value as
-                                                | "low"
-                                                | "medium"
-                                                | "high"
-                                                | "critical",
-                                        }))
-                                    }
+                                    onChange={(e) => setForm((current) => ({
+                                        ...current,
+                                        severity: e.target.value as "low" | "medium" | "high" | "critical",
+                                    }))}
                                     className="w-full text-xs rounded-lg border border-gray-200 px-3 py-2 outline-none focus:border-orange-500"
                                 >
                                     <option value="low">Baja</option>
@@ -381,7 +373,7 @@ export default function ReportsPage() {
                                         }));
                                     }}
                                     aria-invalid={Boolean(
-                                        formErrors.description,
+                                        formErrors.description
                                     )}
                                     aria-describedby={
                                         formErrors.description
@@ -426,7 +418,7 @@ export default function ReportsPage() {
                                         }));
                                     }}
                                     aria-invalid={Boolean(
-                                        formErrors.stepsToReproduce,
+                                        formErrors.stepsToReproduce
                                     )}
                                     aria-describedby={
                                         formErrors.stepsToReproduce
@@ -466,9 +458,7 @@ export default function ReportsPage() {
                                             onChange={(e) =>
                                                 setForm((current) => ({
                                                     ...current,
-                                                    evidenceFile:
-                                                        e.target.files?.[0] ??
-                                                        null,
+                                                    evidenceFile: e.target.files?.[0] ?? null,
                                                 }))
                                             }
                                         />
@@ -494,12 +484,8 @@ export default function ReportsPage() {
                                     disabled={submitting}
                                     className="btn-primary px-5 py-2 rounded-full text-xs disabled:opacity-50 flex items-center gap-2"
                                 >
-                                    {submitting && (
-                                        <Loader size={14} color="#ffffff" />
-                                    )}
-                                    {submitting
-                                        ? "Enviando..."
-                                        : "Crear Reporte"}
+                                    {submitting && <Loader size={14} color="#ffffff" />}
+                                    {submitting ? "Enviando..." : "Crear Reporte"}
                                 </button>
                             </div>
                         </form>
