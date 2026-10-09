@@ -12,6 +12,8 @@ from apps.projects.models import Project
 from apps.users.models import User
 from unittest.mock import MagicMock, patch
 
+from rest_framework.test import APIClient
+
 @override_settings(
     EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend'
 )
@@ -156,6 +158,23 @@ class NotificationSignalTests(TestCase):
         )
         self.assertEqual(len(mail.outbox), email_count)
 
+    def test_new_postulation_sends_email_to_project_client(self):
+        # Al crear una postulación, el cliente dueño del proyecto debe recibir
+        # una notificación y un email avisándole de la nueva postulación.
+        with self.captureOnCommitCallbacks(execute=True):
+            self.create_postulation()
+
+        notification = Notification.objects.filter(
+            id_user=self.client_user,
+            type='postulation',
+        ).first()
+
+        self.assertIsNotNone(notification)
+        self.assertIn('postulo', notification.message)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, [self.client_user.email])
+        self.assertIn('postulación', mail.outbox[0].subject.lower())
+
 @override_settings(
     CHANNEL_LAYERS={
         'default': {
@@ -261,3 +280,39 @@ class NotificationWebSocketTests(TestCase):
         connected, _ = await communicator.connect()
 
         self.assertFalse(connected)
+
+
+@override_settings(
+    EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend',
+    CHANNEL_LAYERS={
+        'default': {
+            'BACKEND': 'channels.layers.InMemoryChannelLayer',
+        }
+    },
+)
+class NotificationApiEmailTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email='api-user@example.com',
+            password='test-password',
+            name='Api',
+            surname='User',
+            role=User.Role.TESTER,
+        )
+        self.api = APIClient()
+        self.api.force_authenticate(user=self.user)
+
+    def test_api_create_notification_does_not_send_email(self):
+        # Crear una notificación por la API REST no debe disparar ningún email:
+        # el email queda reservado para los eventos de postulación.
+        response = self.api.post(
+            '/api/notifications/',
+            {'type': 'message', 'message': 'Notificación creada por la API'},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, 201)
+        self.assertTrue(
+            Notification.objects.filter(id_user=self.user).exists()
+        )
+        self.assertEqual(len(mail.outbox), 0)
