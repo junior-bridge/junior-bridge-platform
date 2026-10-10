@@ -284,3 +284,12 @@ WEBSOCKET_TIMEOUT = 300  # 5 minutos de inactividad
 # Email settings
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 DEFAULT_FROM_EMAIL = "noreply@juniorbridge.com"
+
+FRONTEND_PASSWORD_RESET_URL = os.getenv(
+    "FRONTEND_PASSWORD_RESET_URL",
+    "http://localhost:3000/reset-password",
+)
+
+PASSWORD_RESET_TIMEOUT = int(
+    os.getenv("PASSWORD_RESET_TIMEOUT", "3600")
+)
