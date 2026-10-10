@@ -1,12 +1,19 @@
+import os
+from unittest import mock
+
+from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.core import mail
-from django.test import override_settings
+from django.core.mail import get_connection
+from django.test import SimpleTestCase, override_settings
 from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
 from rest_framework import status
 from rest_framework.test import APITestCase
+
+from config.env import positive_int_env
 
 from .models import User
 
@@ -103,3 +110,36 @@ class PasswordResetTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.user.refresh_from_db()
         self.assertTrue(self.user.check_password("OldPassword123!"))
+
+
+class EmailSettingsTests(SimpleTestCase):
+    def test_smtp_connection_has_a_finite_timeout(self):
+        # Without a timeout, a slow SMTP server blocks the request forever.
+        self.assertIsNotNone(settings.EMAIL_TIMEOUT)
+        self.assertGreater(settings.EMAIL_TIMEOUT, 0)
+
+    @override_settings(
+        EMAIL_BACKEND="django.core.mail.backends.smtp.EmailBackend",
+        EMAIL_TIMEOUT=7,
+    )
+    def test_smtp_connection_uses_configured_timeout(self):
+        connection = get_connection()
+        self.assertEqual(connection.timeout, 7)
+
+
+class PositiveIntEnvTests(SimpleTestCase):
+    def read(self, value):
+        env = {} if value is None else {"TEST_TIMEOUT": value}
+        with mock.patch.dict(os.environ, env, clear=True):
+            return positive_int_env("TEST_TIMEOUT", 10)
+
+    def test_returns_default_when_variable_is_missing(self):
+        self.assertEqual(self.read(None), 10)
+
+    def test_returns_parsed_value_when_valid(self):
+        self.assertEqual(self.read("30"), 30)
+
+    def test_falls_back_to_default_for_invalid_values(self):
+        for value in ["", "  ", "abc", "0", "-5"]:
+            with self.subTest(value=value):
+                self.assertEqual(self.read(value), 10)
