@@ -1,7 +1,13 @@
+import logging
 from urllib.parse import urlencode
+
+from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
+from django.core.mail import send_mail
 from django.shortcuts import redirect
 from django.urls import reverse
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -19,7 +25,14 @@ from apps.users.permissions import IsAdmin
 from .models import User
 
 from drf_spectacular.utils import extend_schema, OpenApiResponse
-from .serializers import RegisterSerializer, LoginSerializer, UserSerializer, AdminUserSerializer
+from .serializers import (
+    AdminUserSerializer,
+    LoginSerializer,
+    PasswordResetConfirmSerializer,
+    PasswordResetRequestSerializer,
+    RegisterSerializer,
+    UserSerializer,
+)
 from .services import (
     clear_auth_cookies,
     create_auth_redirect_response,
@@ -28,6 +41,10 @@ from .services import (
     validate_oauth_flow,
     validate_oauth_process,
 )
+
+
+logger = logging.getLogger(__name__)
+
 
 @extend_schema(tags=['Authentication / Token'])
 @method_decorator(ensure_csrf_cookie, name="dispatch")
@@ -185,6 +202,90 @@ class LoginView(APIView):
                 "user": UserSerializer(user).data,
             },
             status_code=status.HTTP_200_OK,
+        )
+
+
+@extend_schema(tags=['Authentication / Password Reset'])
+class PasswordResetRequestView(APIView):
+    permission_classes = [AllowAny]
+
+    @extend_schema(
+        summary="Request password reset",
+        request=PasswordResetRequestSerializer,
+        responses={
+            200: OpenApiResponse(
+                description="Password reset request processed."
+            ),
+            400: OpenApiResponse(description="Invalid email format."),
+        },
+    )
+    def post(self, request):
+        serializer = PasswordResetRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        email = serializer.validated_data["email"].strip().lower()
+        user = User.objects.filter(email__iexact=email).first()
+
+        if user and user.is_active and user.has_usable_password():
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+            reset_url = (
+                f"{settings.FRONTEND_PASSWORD_RESET_URL}/{uid}/{token}"
+            )
+
+            try:
+                send_mail(
+                    subject="Recuperación de contraseña - JuniorBridge",
+                    message=(
+                        f"Hola {user.name},\n\n"
+                        "Recibimos una solicitud para restablecer tu "
+                        "contraseña.\n\n"
+                        f"Abrí el siguiente enlace: {reset_url}\n\n"
+                        "El enlace vence en una hora. Si no realizaste "
+                        "esta solicitud, podés ignorar este mensaje."
+                    ),
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[user.email],
+                    fail_silently=False,
+                )
+            except Exception:
+                logger.exception(
+                    "No se pudo enviar el email de recuperación."
+                )
+
+        return Response(
+            {
+                "detail": (
+                    "Si existe una cuenta asociada a ese correo, "
+                    "recibirás un enlace para restablecer tu contraseña."
+                )
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+@extend_schema(tags=['Authentication / Password Reset'])
+class PasswordResetConfirmView(APIView):
+    permission_classes = [AllowAny]
+
+    @extend_schema(
+        summary="Confirm password reset",
+        request=PasswordResetConfirmSerializer,
+        responses={
+            200: OpenApiResponse(description="Password changed."),
+            400: OpenApiResponse(
+                description="Invalid token or password."
+            ),
+        },
+    )
+    def post(self, request):
+        serializer = PasswordResetConfirmSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(
+            {"detail": "Contraseña actualizada correctamente."},
+            status=status.HTTP_200_OK,
         )
 
 
