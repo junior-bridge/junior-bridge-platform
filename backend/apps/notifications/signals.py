@@ -39,20 +39,36 @@ def notify_new_postulation(sender, instance, created, **kwargs):
 
     logger.info(f"Notificación {notification.id_notification} creada")
 
-    channel_layer = get_channel_layer()
+    def send_external_notifications():
+        channel_layer = get_channel_layer()
 
-    async_to_sync(channel_layer.group_send)(
-        f"user_{user_destinatario.id}_notifications",
-        {
-            "type": "notification_received",
-            "notification_id": notification.id_notification,
-            "title": "Nueva postulación",
-            "message": notification.message,
-            "notification_type": "postulation",
-            "username": instance.id_tester.username,
-            "created_at": str(notification.created_at),
-        }
-    )
+        async_to_sync(channel_layer.group_send)(
+            f"user_{user_destinatario.id}_notifications",
+            {
+                "type": "notification_received",
+                "notification_id": notification.id_notification,
+                "title": "Nueva postulación",
+                "message": notification.message,
+                "notification_type": "postulation",
+                "username": instance.id_tester.username,
+                "created_at": str(notification.created_at),
+            }
+        )
+
+        # Aviso por email al cliente dueño del proyecto sobre la nueva postulación.
+        send_notification_email(
+            user=user_destinatario,
+            subject="Nueva postulación a tu proyecto — JuniorBridge",
+            message=(
+                f"Hola {user_destinatario.name},\n\n"
+                f"{instance.id_tester.name} {instance.id_tester.surname} "
+                f"se postuló a tu proyecto '{instance.id_project.title}'.\n\n"
+                f"Ingresá a JuniorBridge para revisar la postulación.\n\n"
+                f"Saludos"
+            )
+        )
+
+    transaction.on_commit(send_external_notifications)
 
 @receiver(post_save, sender=Postulation)
 def notify_postulation_accepted(sender, instance, created, **kwargs):
