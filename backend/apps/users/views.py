@@ -12,7 +12,7 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.db.models import Count
-from rest_framework import status, generics
+from rest_framework import generics, serializers, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -24,7 +24,12 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from apps.users.permissions import IsAdmin
 from .models import User
 
-from drf_spectacular.utils import extend_schema, OpenApiResponse
+from drf_spectacular.utils import (
+    OpenApiParameter,
+    OpenApiResponse,
+    extend_schema,
+    inline_serializer,
+)
 from .serializers import (
     AdminUserSerializer,
     LoginSerializer,
@@ -66,11 +71,57 @@ class CsrfTokenView(APIView):
         )
 
 
+@extend_schema(tags=['Authentication / OAuth'])
 class SocialOAuthStartView(APIView):
     permission_classes = [AllowAny]
 
     ALLOWED_PROVIDERS = {"google", "github"}
 
+    @extend_schema(
+        summary="Start Social OAuth",
+        description=(
+            "Store the OAuth process (and signup flow) in the session and "
+            "return the allauth login URL the browser must navigate to. "
+            "After the provider callback, allauth redirects to the OAuth "
+            "finalize endpoint, which sets the auth cookies."
+        ),
+        parameters=[
+            OpenApiParameter(
+                name="provider",
+                type=str,
+                location=OpenApiParameter.PATH,
+                enum=["google", "github"],
+                description="OAuth provider.",
+            ),
+        ],
+        request=inline_serializer(
+            name="SocialOAuthStartRequest",
+            fields={
+                "process": serializers.ChoiceField(
+                    choices=["login", "signup"],
+                    help_text="OAuth process.",
+                ),
+                "flow": serializers.ChoiceField(
+                    choices=["tester", "entrepreneur"],
+                    required=False,
+                    help_text="Signup flow; required only when process is signup.",
+                ),
+            },
+        ),
+        responses={
+            200: inline_serializer(
+                name="SocialOAuthStartResponse",
+                fields={
+                    "login_url": serializers.CharField(
+                        help_text="Relative allauth login URL to navigate to."
+                    ),
+                },
+            ),
+            400: OpenApiResponse(
+                description="Invalid OAuth provider, process or flow."
+            ),
+        },
+    )
     def post(self, request, provider):
         if provider not in self.ALLOWED_PROVIDERS:
             return Response(
@@ -141,6 +192,7 @@ class OAuthFinalizeView(View):
         return response
     
 
+@extend_schema(tags=['Authentication'])
 class RegisterView(APIView):
 
     permission_classes = [AllowAny]
@@ -171,6 +223,7 @@ class RegisterView(APIView):
         )
 
 
+@extend_schema(tags=['Authentication'])
 class LoginView(APIView):
 
     permission_classes = [AllowAny]
@@ -289,6 +342,7 @@ class PasswordResetConfirmView(APIView):
         )
 
 
+@extend_schema(tags=['Authentication / Token'])
 class CookieTokenRefreshView(APIView):
 
     permission_classes = [AllowAny]

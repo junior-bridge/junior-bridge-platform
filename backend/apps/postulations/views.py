@@ -3,15 +3,32 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from drf_spectacular.utils import OpenApiResponse, extend_schema
+
 from apps.projects.models import Project
 from apps.users.models import User
 from .models import Postulation
 from .serializers import PostulationSerializer
 
 
+@extend_schema(tags=['Postulations'])
 class ProjectPostulationCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        summary="List Project Postulations",
+        description=(
+            "List all postulations of a project. "
+            "Only the project owner or an admin can view them."
+        ),
+        responses={
+            200: PostulationSerializer(many=True),
+            403: OpenApiResponse(
+                description="Only the project owner or an admin can view the postulations."
+            ),
+            404: OpenApiResponse(description="Project not found."),
+        },
+    )
     def get(self, request, id_project):
         try:
             project = Project.objects.get(pk=id_project)
@@ -31,6 +48,22 @@ class ProjectPostulationCreateView(APIView):
         serializer = PostulationSerializer(postulations, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @extend_schema(
+        summary="Apply To Project",
+        description=(
+            "Create a postulation of the authenticated tester to an open project. "
+            "No request body is required."
+        ),
+        request=None,
+        responses={
+            201: PostulationSerializer,
+            400: OpenApiResponse(
+                description="The project is not open or the tester already applied."
+            ),
+            403: OpenApiResponse(description="Only testers can apply to projects."),
+            404: OpenApiResponse(description="Project not found."),
+        },
+    )
     def post(self, request, id_project):
         try:
             project = Project.objects.get(pk=id_project)
@@ -74,9 +107,28 @@ class ProjectPostulationCreateView(APIView):
         )
 
 
+@extend_schema(tags=['Postulations'])
 class PostulationAcceptView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        summary="Accept Postulation",
+        description=(
+            "Accept a pending postulation and move its project to IN_PROGRESS. "
+            "Only the project owner can accept postulations."
+        ),
+        request=None,
+        responses={
+            200: PostulationSerializer,
+            400: OpenApiResponse(
+                description="Only pending postulations can be accepted."
+            ),
+            403: OpenApiResponse(
+                description="Only the client project owner can accept postulations."
+            ),
+            404: OpenApiResponse(description="Postulation not found."),
+        },
+    )
     def post(self, request, id_postulation):
         try:
             postulation = Postulation.objects.get(pk=id_postulation)
@@ -113,9 +165,28 @@ class PostulationAcceptView(APIView):
         )
 
 
+@extend_schema(tags=['Postulations'])
 class PostulationRejectView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        summary="Reject Postulation",
+        description=(
+            "Reject a pending postulation. "
+            "Only the project owner can reject postulations."
+        ),
+        request=None,
+        responses={
+            200: PostulationSerializer,
+            400: OpenApiResponse(
+                description="Only pending postulations can be rejected."
+            ),
+            403: OpenApiResponse(
+                description="Only the client project owner can reject postulations."
+            ),
+            404: OpenApiResponse(description="Postulation not found."),
+        },
+    )
     def post(self, request, id_postulation):
         try:
             postulation = Postulation.objects.get(pk=id_postulation)
@@ -148,6 +219,7 @@ class PostulationRejectView(APIView):
         )
 
 
+@extend_schema(tags=['Postulations'])
 class PostulationDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -160,6 +232,20 @@ class PostulationDetailView(APIView):
         except Postulation.DoesNotExist:
             return None
 
+    @extend_schema(
+        summary="Retrieve Postulation",
+        description=(
+            "Retrieve a postulation. Visible to its tester, "
+            "the project owner and admins."
+        ),
+        responses={
+            200: PostulationSerializer,
+            403: OpenApiResponse(
+                description="You do not have permission to view this postulation."
+            ),
+            404: OpenApiResponse(description="Postulation not found."),
+        },
+    )
     def get(self, request, id_postulation):
         postulation = self.get_postulation(id_postulation)
 
@@ -184,6 +270,23 @@ class PostulationDetailView(APIView):
         serializer = PostulationSerializer(postulation)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @extend_schema(
+        summary="Withdraw Postulation",
+        description=(
+            "Delete a pending postulation. "
+            "Only the tester who applied can withdraw it."
+        ),
+        responses={
+            204: OpenApiResponse(description="Postulation withdrawn."),
+            400: OpenApiResponse(
+                description="Only pending postulations can be withdrawn."
+            ),
+            403: OpenApiResponse(
+                description="Only the tester can withdraw this postulation."
+            ),
+            404: OpenApiResponse(description="Postulation not found."),
+        },
+    )
     def delete(self, request, id_postulation):
         postulation = self.get_postulation(id_postulation)
 
@@ -209,6 +312,11 @@ class PostulationDetailView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+@extend_schema(
+    tags=['Postulations'],
+    summary="List My Postulations",
+    description="List the postulations of the authenticated tester, newest first.",
+)
 class UserPostulationsListView(generics.ListAPIView):
     serializer_class = PostulationSerializer
     permission_classes = [IsAuthenticated]

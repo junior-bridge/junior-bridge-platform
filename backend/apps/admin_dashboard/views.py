@@ -1,5 +1,7 @@
 from datetime import datetime, timezone
 
+from drf_spectacular.utils import OpenApiResponse, extend_schema, inline_serializer
+from rest_framework import serializers
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -10,9 +12,66 @@ from apps.users.models import User
 from apps.postulations.models import Postulation
 
 
+AdminStatsResponseSerializer = inline_serializer(
+    name="AdminStatsResponse",
+    fields={
+        "registered_users": serializers.IntegerField(),
+        "active_projects": serializers.IntegerField(),
+        "reported_bugs": serializers.IntegerField(),
+        "active_testers": serializers.IntegerField(),
+        "resolved_bugs": serializers.IntegerField(),
+        "resolution_rate": serializers.IntegerField(
+            help_text="Percentage of resolved bugs, rounded (0-100)."
+        ),
+        "bugs_by_month": inline_serializer(
+            name="AdminStatsBugsByMonth",
+            many=True,
+            fields={
+                "month": serializers.CharField(help_text="Short month name."),
+                "year": serializers.IntegerField(),
+                "bugs": serializers.IntegerField(),
+            },
+        ),
+        "role_distribution": inline_serializer(
+            name="AdminStatsRoleDistribution",
+            fields={
+                "testers": serializers.IntegerField(),
+                "clients": serializers.IntegerField(),
+                "admins": serializers.IntegerField(),
+            },
+        ),
+        "top_testers": inline_serializer(
+            name="AdminStatsTopTester",
+            many=True,
+            fields={
+                "rank": serializers.IntegerField(),
+                "id": serializers.IntegerField(),
+                "name": serializers.CharField(),
+                "reputation": serializers.FloatField(),
+                "bugs": serializers.IntegerField(),
+                "projects": serializers.IntegerField(),
+            },
+        ),
+    },
+)
+
+
+@extend_schema(tags=["Admin"])
 class AdminStatsView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        summary="Get Admin Dashboard Stats",
+        description=(
+            "Aggregated platform statistics for the admin dashboard: user, "
+            "project and bug counters, bugs reported in the last 6 months, "
+            "role distribution and the top 3 testers by reputation."
+        ),
+        responses={
+            200: AdminStatsResponseSerializer,
+            401: OpenApiResponse(description="Authentication required."),
+        },
+    )
     def get(self, request):
 
         # ---------------------------------------------------------

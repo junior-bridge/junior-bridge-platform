@@ -1,10 +1,15 @@
-from rest_framework import generics, status
+from rest_framework import generics, serializers, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.utils import timezone
 
-from drf_spectacular.utils import OpenApiResponse, extend_schema
+from drf_spectacular.utils import (
+    OpenApiResponse,
+    extend_schema,
+    extend_schema_view,
+    inline_serializer,
+)
 
 from apps.users.permissions import IsAdmin, IsClient
 
@@ -71,6 +76,11 @@ class ProjectListCreateView(generics.ListCreateAPIView):
         serializer.save(client=self.request.user)
 
 
+@extend_schema(
+    tags=['Projects'],
+    summary="List My Projects",
+    description="List the projects owned by the authenticated client, newest first.",
+)
 class UserProjectsListView(generics.ListAPIView):
     serializer_class = ProjectSerializer
     permission_classes = [IsAuthenticated]
@@ -78,6 +88,20 @@ class UserProjectsListView(generics.ListAPIView):
     def get_queryset(self):
         return Project.objects.filter(client=self.request.user).order_by('-created_at')
 
+@extend_schema_view(
+    put=extend_schema(
+        summary="Update project",
+        description="Replace a PENDING project. Only its owner (or an admin) can update it.",
+    ),
+    patch=extend_schema(
+        summary="Partially update project",
+        description="Partially update a PENDING project. Only its owner (or an admin) can update it.",
+    ),
+    delete=extend_schema(
+        summary="Delete project",
+        description="Delete a PENDING project. Only its owner (or an admin) can delete it.",
+    ),
+)
 @extend_schema(tags=['Projects'])
 class ProjectDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Project.objects.select_related('client')
@@ -152,11 +176,37 @@ class ProjectStatusUpdateView(generics.UpdateAPIView):
 
         serializer.save()
 
+@extend_schema(tags=['Projects'])
 class ProjectFinishDeliveryView(generics.GenericAPIView):
     queryset = Project.objects.all()
     permission_classes = [IsAuthenticated]
     http_method_names = ['post', 'options']
 
+    @extend_schema(
+        summary="Finish Project Delivery",
+        description=(
+            "Move an IN_PROGRESS project to IN_REVIEW. "
+            "Only the tester with the accepted postulation can finish the delivery. "
+            "No request body is required."
+        ),
+        request=None,
+        responses={
+            200: inline_serializer(
+                name='ProjectFinishDeliveryResponse',
+                fields={
+                    'detail': serializers.CharField(),
+                    'state': serializers.CharField(),
+                },
+            ),
+            400: OpenApiResponse(
+                description="Only projects in progress can have their delivery finished."
+            ),
+            403: OpenApiResponse(
+                description="Only the assigned tester can finish the delivery."
+            ),
+            404: OpenApiResponse(description="Project not found."),
+        },
+    )
     def post(self, request, pk):
         project = self.get_object()
 
@@ -191,11 +241,38 @@ class ProjectFinishDeliveryView(generics.GenericAPIView):
             status=status.HTTP_200_OK
         )
 
+@extend_schema(tags=['Projects'])
 class ProjectCompleteView(generics.GenericAPIView):
     queryset = Project.objects.all()
     permission_classes = [IsAuthenticated]
     http_method_names = ['post', 'options']
 
+    @extend_schema(
+        summary="Complete Project",
+        description=(
+            "Mark an IN_PROGRESS or IN_REVIEW project as COMPLETED and set its "
+            "finalization date. Only the project owner can complete it. "
+            "No request body is required."
+        ),
+        request=None,
+        responses={
+            200: inline_serializer(
+                name='ProjectCompleteResponse',
+                fields={
+                    'detail': serializers.CharField(),
+                    'state': serializers.CharField(),
+                    'finalized_at': serializers.DateTimeField(),
+                },
+            ),
+            400: OpenApiResponse(
+                description="Only projects in progress or under review can be completed."
+            ),
+            403: OpenApiResponse(
+                description="Only the project owner can complete the project."
+            ),
+            404: OpenApiResponse(description="Project not found."),
+        },
+    )
     def post(self, request, pk):
         project = self.get_object()
 
