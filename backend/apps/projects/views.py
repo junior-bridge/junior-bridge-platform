@@ -9,10 +9,13 @@ from drf_spectacular.utils import OpenApiResponse, extend_schema
 from apps.users.permissions import IsAdmin, IsClient
 
 from .models import Project
+from .pagespeed import run_project_audit
 from apps.users.models import User
 from .permissions import IsProjectOwner
 from .serializers import (
     AdminProjectSerializer,
+    ProjectAuditRequestSerializer,
+    ProjectAuditSerializer,
     ProjectSerializer,
     ProjectStatusSerializer,
 )
@@ -225,3 +228,75 @@ class ProjectCompleteView(generics.GenericAPIView):
             },
             status=status.HTTP_200_OK
         )
+
+
+@extend_schema(tags=['Projects'])
+class ProjectAuditView(generics.GenericAPIView):
+    queryset = Project.objects.all()
+    serializer_class = ProjectAuditSerializer
+    http_method_names = ['get', 'post', 'options']
+
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            return [IsAuthenticated(), IsProjectOwner()]
+        return [IsAuthenticated()]
+
+    @extend_schema(
+        summary="Get latest PageSpeed audit",
+        description=(
+            "Returns the most recent PageSpeed Insights audit of the "
+            "project's demo URL. Available to any authenticated user."
+        ),
+        responses={
+            200: ProjectAuditSerializer,
+            404: OpenApiResponse(description="Project or audit not found."),
+        },
+    )
+    def get(self, request, pk):
+        project = self.get_object()
+        audit = project.audits.first()
+
+        if audit is None:
+            return Response(
+                {"detail": "Este proyecto aún no tiene auditorías."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        return Response(ProjectAuditSerializer(audit).data)
+
+    @extend_schema(
+        summary="Run PageSpeed audit",
+        description=(
+            "Runs a Google PageSpeed Insights audit of the project's demo URL "
+            "and stores the result. Only the project owner or an admin can "
+            "run it."
+        ),
+        request=ProjectAuditRequestSerializer,
+        responses={
+            201: ProjectAuditSerializer,
+            400: OpenApiResponse(description="Invalid strategy."),
+            403: OpenApiResponse(
+                description="Only the project owner or an admin can run audits."
+            ),
+            404: OpenApiResponse(description="Project not found."),
+            502: ProjectAuditSerializer,
+        },
+    )
+    def post(self, request, pk):
+        project = self.get_object()
+
+        request_serializer = ProjectAuditRequestSerializer(data=request.data)
+        request_serializer.is_valid(raise_exception=True)
+
+        audit = run_project_audit(
+            project,
+            request.user,
+            request_serializer.validated_data['strategy'],
+        )
+
+        response_status = (
+            status.HTTP_201_CREATED
+            if audit.status == audit.Status.SUCCESS
+            else status.HTTP_502_BAD_GATEWAY
+        )
+        return Response(ProjectAuditSerializer(audit).data, status=response_status)

@@ -2,7 +2,7 @@ from django.urls import path
 
 from apps.postulations.views import ProjectPostulationCreateView
 
-from .views import ProjectCompleteView, ProjectDetailView, ProjectListCreateView, ProjectStatusUpdateView, UserProjectsListView, ProjectFinishDeliveryView
+from .views import ProjectAuditView, ProjectCompleteView, ProjectDetailView, ProjectListCreateView, ProjectStatusUpdateView, UserProjectsListView, ProjectFinishDeliveryView
 
 
 urlpatterns = [
@@ -32,5 +32,10 @@ urlpatterns = [
         '<int:pk>/complete/',
         ProjectCompleteView.as_view(),
         name='project-complete',
+    ),
+    path(
+        '<int:pk>/audit/',
+        ProjectAuditView.as_view(),
+        name='project-audit',
     ),
 ]
