@@ -4,7 +4,9 @@ import Link from "next/link";
 import { useUser } from "@/context/UserContext";
 import { Plus, Search } from "lucide-react";
 import { useDashboardProjects } from "@/hooks/dashboard/useDashboardProjects";
-import { useState } from "react";
+import { useProjectAudit } from "@/hooks/dashboard/useProjectAudit";
+import ProjectAuditPanel from "@/components/dashboard/ProjectAuditPanel";
+import { Fragment, useState } from "react";
 
 
 
@@ -35,8 +37,24 @@ export default function ProjectsPage() {
         message,
         messageError,
     } = useDashboardProjects({ user, isClient, isTester, isAdmin });
+    const { getAuditState, toggleAudit, setAuditStrategy, handleRunAudit } =
+        useProjectAudit();
 
     if (!user) return null;
+
+    function renderAuditPanel(projectId: number, canRun: boolean) {
+        return (
+            <ProjectAuditPanel
+                state={getAuditState(projectId)}
+                canRun={canRun}
+                onToggle={() => toggleAudit(projectId)}
+                onRun={() => handleRunAudit(projectId)}
+                onStrategyChange={(strategy) =>
+                    setAuditStrategy(projectId, strategy)
+                }
+            />
+        );
+    }
 
     return (
         <div className="px-4 sm:px-6 py-4 sm:py-6">
@@ -201,6 +219,10 @@ export default function ProjectsPage() {
                                             )}
                                         </div>
                                     )}
+                                    {renderAuditPanel(
+                                        p.id,
+                                        p.client === user.id,
+                                    )}
                                 </div>
                             ))}
                         </div>
@@ -213,8 +235,9 @@ export default function ProjectsPage() {
                                 return (
                                     <div
                                         key={p.id}
-                                        className="bg-white rounded-xl p-5 shadow-sm flex items-center justify-between"
+                                        className="bg-white rounded-xl p-5 shadow-sm"
                                     >
+                                    <div className="flex items-center justify-between">
                                         <div>
                                             <div className="flex items-center gap-2 mb-1">
                                                 <h3 className="font-bold text-gray-800">
@@ -304,6 +327,8 @@ export default function ProjectsPage() {
                                             </button>
                                         )}
                                     </div>
+                                    {renderAuditPanel(p.id, false)}
+                                    </div>
                                 );
                             })}
                         </div>
@@ -333,10 +358,8 @@ export default function ProjectsPage() {
                                 </thead>
                                 <tbody>
                                     {filteredProjects.map((p) => (
-                                        <tr
-                                            key={p.id}
-                                            className="border-b border-gray-50 last:border-0 hover:bg-gray-50"
-                                        >
+                                        <Fragment key={p.id}>
+                                        <tr className="border-b border-gray-50 last:border-0 hover:bg-gray-50">
                                             <td className="px-4 py-3 text-gray-400 text-xs">
                                                 #{p.id}
                                             </td>
@@ -379,6 +402,12 @@ export default function ProjectsPage() {
                                                 )}
                                             </td>
                                         </tr>
+                                        <tr className="border-b border-gray-50 last:border-0">
+                                            <td colSpan={6} className="px-4 pb-3">
+                                                {renderAuditPanel(p.id, true)}
+                                            </td>
+                                        </tr>
+                                        </Fragment>
                                     ))}
                                 </tbody>
                             </table>
