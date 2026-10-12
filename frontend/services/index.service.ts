@@ -1,6 +1,16 @@
 import { ApiError } from "@/types";
 import { getCookie } from "./auth.service";
 
+export class ApiRequestError extends Error {
+    readonly data: ApiError;
+
+    constructor(message: string, data: ApiError) {
+        super(message);
+        this.name = "ApiRequestError";
+        this.data = data;
+    }
+}
+
 export async function apiFetch<T>(
     endpoint: string,
     options: RequestInit = {},
@@ -41,7 +51,7 @@ export async function apiFetch<T>(
             Array.isArray(error.non_field_errors) &&
             typeof error.non_field_errors[0] === "string"
         ) {
-            throw new Error(error.non_field_errors[0]);
+            throw new ApiRequestError(error.non_field_errors[0], error);
         }
 
         if (
@@ -52,15 +62,17 @@ export async function apiFetch<T>(
                     message.toLowerCase().includes("already exists"),
             )
         ) {
-            throw new Error(
+            throw new ApiRequestError(
                 "Ya existe un usuario registrado con ese correo electrónico.",
+                error,
             );
         }
 
-        throw new Error(
+        throw new ApiRequestError(
             typeof error.detail === "string"
                 ? error.detail
                 : "No se pudo completar la solicitud.",
+            error,
         );
     }
 
