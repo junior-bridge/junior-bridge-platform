@@ -21,6 +21,8 @@ export const useDashboardUsers = (user : User | null) => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [roleFilter, setRoleFilter] = useState<"Todos" | "TESTER" | "CLIENT">( "Todos",);
+    const [currentPage, setCurrentPage] = useState(1);
+    const pageSize = 10;
 
     const filteredUsers = useMemo(() => {
         return users.filter((u) => {
@@ -33,6 +35,16 @@ export const useDashboardUsers = (user : User | null) => {
             return matchesSearch && matchesRole;
         });
     }, [users, searchTerm, roleFilter]);
+    const totalPages = Math.ceil(filteredUsers.length / pageSize);
+
+    const paginatedUsers = useMemo(() => {
+        const startIndex = (currentPage - 1) * pageSize;
+
+        return filteredUsers.slice(startIndex, startIndex + pageSize);
+    }, [filteredUsers, currentPage]);
+useEffect(() => {
+    setCurrentPage(1);
+}, [searchTerm, roleFilter]);    
 
 useEffect(() => {
     async function fetchUsers() {
@@ -73,6 +85,10 @@ useEffect(() => {
         setSearchTerm,
         roleFilter,
         setRoleFilter,
-        filteredUsers
+        filteredUsers,
+        currentPage,
+        setCurrentPage,
+        totalPages,
+        paginatedUsers,
     }
 }
