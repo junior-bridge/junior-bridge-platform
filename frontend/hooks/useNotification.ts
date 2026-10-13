@@ -1,9 +1,9 @@
-// hooks/useNotifications.ts
 'use client';
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
+const NOTIFICATIONS_API = `${API_BASE}/api/notifications`;
 
 type Notification = {
   notification_id: string;
@@ -44,9 +44,13 @@ export function useNotifications() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isConnected, setIsConnected] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
   const wsRef = useRef<WebSocket | null>(null);
-  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const NOTIFICATIONS_API = `${API_BASE}/api/notifications`;
+  const reconnectTimeoutRef =
+    useRef<ReturnType<typeof setTimeout> | null>(null);
+  const connectRef = useRef<(() => void) | null>(null);
+  const shouldReconnectRef = useRef(true);
 
   const loadNotifications = useCallback(async () => {
     try {
@@ -54,59 +58,114 @@ export function useNotifications() {
         credentials: 'include',
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        const results: ApiNotification[] = data.results || data;
-
-        const normalized: Notification[] = results.map((notification) => ({
-          notification_id: String(notification.id_notification),
-          title: getNotificationTitle(notification),
-          message: notification.message,
-          is_read: notification.is_read,
-          created_at: notification.created_at,
-          type: notification.type,
-        }));
-        setNotifications(normalized);
-
-        const unread = normalized.filter((notification) => !notification.is_read).length;
-        setUnreadCount(unread);
+      if (!response.ok) {
+        console.error(
+          '❌ Error cargando notificaciones:',
+          response.status
+        );
+        return;
       }
+
+      const data: { results?: ApiNotification[] } | ApiNotification[] =
+        await response.json();
+
+      const results: ApiNotification[] = Array.isArray(data)
+        ? data
+        : data.results ?? [];
+
+      const normalized: Notification[] = results.map((notification) => ({
+        notification_id: String(notification.id_notification),
+        title: getNotificationTitle(notification),
+        message: notification.message,
+        is_read: notification.is_read,
+        created_at: notification.created_at,
+        type: notification.type,
+      }));
+
+      setNotifications(normalized);
+      setUnreadCount(
+        normalized.filter((notification) => !notification.is_read).length
+      );
     } catch (error) {
       console.error('❌ Error cargando notificaciones:', error);
+    } finally {
+      setIsLoading(false);
     }
   }, []);
+
   const connect = useCallback(() => {
-    const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+    shouldReconnectRef.current = true;
+
+    const wsProtocol =
+      window.location.protocol === 'https:' ? 'wss' : 'ws';
     const wsUrl = `${wsProtocol}://localhost:8000/ws/notifications/`;
 
     try {
       const ws = new WebSocket(wsUrl);
+      wsRef.current = ws;
 
       ws.onopen = () => {
         setIsConnected(true);
 
         if (reconnectTimeoutRef.current) {
           clearTimeout(reconnectTimeoutRef.current);
+          reconnectTimeoutRef.current = null;
         }
       };
 
       ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
+        try {
+          const data = JSON.parse(event.data);
 
-        if (data.type === 'connection_established') {
-          return;
-        }
-
-        if (data.type === 'new_notification') {
-          setNotifications((prev) => [data, ...prev]);
-          setUnreadCount((prev) => prev + 1);
-
-          if (Notification.permission === 'granted') {
-            new Notification(data.title, {
-              body: data.message,
-              icon: '/logo.png',
-            });
+          if (data.type === 'connection_established') {
+            return;
           }
+
+          if (data.type === 'new_notification') {
+            const notification: Notification = {
+              notification_id: String(data.notification_id),
+              title: data.title ?? 'Notificación',
+              message: data.message ?? '',
+              is_read: Boolean(data.is_read ?? false),
+              created_at: data.created_at ?? new Date().toISOString(),
+              type: data.notification_type,
+            };
+
+            setNotifications((prev) => [
+              notification,
+              ...prev.filter(
+                (item) =>
+                  item.notification_id !== notification.notification_id
+              ),
+            ]);
+
+            if (!notification.is_read) {
+              setUnreadCount((prev) => prev + 1);
+            }
+
+            if (
+              'Notification' in window &&
+              window.Notification.permission === 'granted'
+            ) {
+              new window.Notification(notification.title, {
+                body: notification.message,
+                icon: '/logo.png',
+              });
+            }
+          }
+
+          if (data.type === 'notification_updated') {
+            setNotifications((prev) =>
+              prev.map((notification) =>
+                notification.notification_id ===
+                String(data.notification_id)
+                  ? { ...notification, is_read: Boolean(data.is_read) }
+                  : notification
+              )
+            );
+          }
+        } catch (error) {
+          console.error('❌ Error procesando mensaje WebSocket:', error);
         }
       };
 
@@ -118,27 +177,47 @@ export function useNotifications() {
       ws.onclose = () => {
         setIsConnected(false);
 
+        if (!shouldReconnectRef.current) {
+          return;
+        }
+
         reconnectTimeoutRef.current = setTimeout(() => {
-          connect();
+          connectRef.current?.();
         }, 5000);
       };
-
-      wsRef.current = ws;
     } catch (error) {
       console.error('❌ Error conectando WebSocket:', error);
-    }
-  }, []);
-
-  const disconnect = useCallback(() => {
-    if (wsRef.current) {
-      wsRef.current.close();
-      wsRef.current = null;
       setIsConnected(false);
     }
   }, []);
 
+  useEffect(() => {
+    connectRef.current = connect;
+
+    return () => {
+      connectRef.current = null;
+    };
+  }, [connect]);
+
+  const disconnect = useCallback(() => {
+    shouldReconnectRef.current = false;
+
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = null;
+    }
+
+    if (wsRef.current) {
+      const ws = wsRef.current;
+      wsRef.current = null;
+      ws.close();
+    }
+
+    setIsConnected(false);
+  }, []);
+
   const sendMessage = useCallback((message: unknown) => {
-    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify(message));
     }
   }, []);
@@ -157,20 +236,30 @@ export function useNotifications() {
         }
       );
 
-      if (response.ok) {
-        setNotifications((prev) =>
-          prev.map((notif) =>
-            notif.notification_id === notificationId
-              ? { ...notif, is_read: true }
-              : notif
-          )
-        );
-        setUnreadCount((prev) => Math.max(0, prev - 1));
-      } else {
+      if (!response.ok) {
         console.error('❌ Error al marcar como leída:', response.status);
+        return;
       }
+
+      setNotifications((prev) => {
+        const notification = prev.find(
+          (item) => item.notification_id === notificationId
+        );
+
+        if (!notification || notification.is_read) {
+          return prev;
+        }
+
+        return prev.map((item) =>
+          item.notification_id === notificationId
+            ? { ...item, is_read: true }
+            : item
+        );
+      });
+
+      setUnreadCount((prev) => Math.max(0, prev - 1));
     } catch (error) {
-      console.error('❌ Error:', error);
+      console.error('❌ Error al marcar como leída:', error);
     }
   }, []);
 
@@ -184,15 +273,26 @@ export function useNotifications() {
         }
       );
 
-      if (response.ok || response.status === 204) {
-        setNotifications((prev) =>
-          prev.filter((notif) => notif.notification_id !== notificationId)
-        );
-      } else {
+      if (!response.ok && response.status !== 204) {
         console.error('❌ Error al eliminar:', response.status);
+        return;
       }
+
+      setNotifications((prev) => {
+        const notification = prev.find(
+          (item) => item.notification_id === notificationId
+        );
+
+        if (notification && !notification.is_read) {
+          setUnreadCount((count) => Math.max(0, count - 1));
+        }
+
+        return prev.filter(
+          (item) => item.notification_id !== notificationId
+        );
+      });
     } catch (error) {
-      console.error('❌ Error:', error);
+      console.error('❌ Error al eliminar:', error);
     }
   }, []);
 
@@ -201,16 +301,23 @@ export function useNotifications() {
   }, [sendMessage]);
 
   useEffect(() => {
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission();
+    if (
+      'Notification' in window &&
+      window.Notification.permission === 'default'
+    ) {
+      void window.Notification.requestPermission();
     }
 
-    loadNotifications();
-    connect();
+    const startupTimeout = setTimeout(() => {
+      void loadNotifications();
+      connect();
+    }, 0);
 
-    return () => disconnect();
+    return () => {
+      clearTimeout(startupTimeout);
+      disconnect();
+    };
   }, [connect, disconnect, loadNotifications]);
-
 
   useEffect(() => {
     const heartbeatInterval = setInterval(() => {
@@ -226,6 +333,8 @@ export function useNotifications() {
     notifications,
     unreadCount,
     isConnected,
+    isLoading,
+    loadNotifications,
     markAsRead,
     deleteNotification,
     sendMessage,
