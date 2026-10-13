@@ -17,6 +17,10 @@ export default function ProjectsPage() {
         statusColors,
         searchTerm,
         setSearchTerm,
+        currentPage,
+        totalPages,
+        paginatedProjects,
+        setCurrentPage,
         loading,
         ratingsByProject,
         applyingId,
@@ -95,7 +99,7 @@ export default function ProjectsPage() {
                 <>
                     {isClient && (
                         <div className="flex flex-col gap-4">
-                            {filteredProjects.map((p) => (
+                            {paginatedProjects.map((p) => (
                                 <div
                                     key={p.id}
                                     className="bg-white rounded-xl p-5 shadow-sm"
@@ -208,7 +212,7 @@ export default function ProjectsPage() {
 
                     {isTester && (
                         <div className="flex flex-col gap-4">
-                            {filteredProjects.map((p) => {
+                            {paginatedProjects.map((p) => {
                                 const postulation = postulationsByProject.get(p.id);
                                 return (
                                     <div
@@ -332,7 +336,7 @@ export default function ProjectsPage() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filteredProjects.map((p) => (
+                                    {paginatedProjects.map((p) => (
                                         <tr
                                             key={p.id}
                                             className="border-b border-gray-50 last:border-0 hover:bg-gray-50"
@@ -384,6 +388,43 @@ export default function ProjectsPage() {
                             </table>
                         </div>
                     )}
+                    
+
+                    {!loading && filteredProjects.length > 0 && (
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4">
+                            <p className="text-sm text-gray-500">
+                                Página {currentPage} de {totalPages}
+                            </p>
+
+                            <div className="flex items-center gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setCurrentPage((page) => Math.max(1, page - 1))
+                                    }
+                                    disabled={currentPage === 1}
+                                    className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                                >
+                                    Anterior
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setCurrentPage((page) =>
+                                            Math.min(totalPages, page + 1),
+                                        )
+                                    }
+                                    disabled={currentPage === totalPages}
+                                    className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                                >
+                                    Siguiente
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+
                 </>
             )}
 
