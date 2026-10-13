@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Menu } from "lucide-react";
+import { Menu } from "lucide-react";
 import { useUser } from "@/context/UserContext";
 import { NotificationsProvider } from "@/context/NotificationContext";
 import Sidebar from "@/components/dashboard/Sidebar";
@@ -66,16 +66,7 @@ export default function DashboardLayout({
                             <Menu size={20} />
                         </button>
 
-                        <div className="flex items-center gap-2 bg-white rounded-full px-4 py-2 flex-1 max-w-xs border border-gray-200">
-                            <Search size={15} className="text-gray-400 shrink-0" />
-                            <input
-                                type="text"
-                                placeholder="Buscar..."
-                                className="bg-transparent text-sm outline-none w-full text-gray-600 placeholder-gray-400"
-                            />
-                        </div>
-
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 ml-auto">
                             <NotificationBell />
 
                             <div className="w-px h-6 bg-gray-300 hidden sm:block" />
