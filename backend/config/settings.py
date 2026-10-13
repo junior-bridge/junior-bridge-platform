@@ -303,6 +303,11 @@ DEFAULT_FROM_EMAIL = "noreply@juniorbridge.com"
 # Seconds before an SMTP connection gives up, so a slow server cannot block requests.
 EMAIL_TIMEOUT = positive_int_env("EMAIL_TIMEOUT", 10)
 
+# Google PageSpeed Insights. The API key is optional (keyless requests have a
+# lower quota); the timeout is in seconds because audits can take 10-30s.
+PAGESPEED_API_KEY = os.getenv("PAGESPEED_API_KEY", "")
+PAGESPEED_TIMEOUT = positive_int_env("PAGESPEED_TIMEOUT", 120)
+
 FRONTEND_PASSWORD_RESET_URL = os.getenv(
     "FRONTEND_PASSWORD_RESET_URL",
     "http://localhost:3000/reset-password",

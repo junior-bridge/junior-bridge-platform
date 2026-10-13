@@ -49,3 +49,19 @@ export type AdminProject = CreateProjectData & {
     updated_at: string;
     finalized_at: string | null;
 };
+
+export type AuditStrategy = "MOBILE" | "DESKTOP";
+
+export type AuditStatus = "SUCCESS" | "FAILED";
+
+export type ProjectAudit = {
+    id: number;
+    strategy: AuditStrategy;
+    status: AuditStatus;
+    performance: number | null;
+    accessibility: number | null;
+    best_practices: number | null;
+    seo: number | null;
+    error_message: string;
+    created_at: string;
+};

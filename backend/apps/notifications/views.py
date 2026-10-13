@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
@@ -19,6 +20,15 @@ from apps.notifications.serializers import (
 )
 
 logger = logging.getLogger(__name__)
+@extend_schema_view(
+    list=extend_schema(summary="List my notifications", description="List the notifications of the authenticated user, newest first."),
+    create=extend_schema(summary="Create notification", description="Create a notification for the authenticated user and push it over WebSocket."),
+    retrieve=extend_schema(summary="Retrieve notification"),
+    update=extend_schema(summary="Update notification", description="Update the read state of a notification."),
+    partial_update=extend_schema(summary="Partially update notification", description="Update the read state of a notification."),
+    destroy=extend_schema(summary="Delete notification"),
+)
+@extend_schema(tags=['Notifications'])
 class NotificationViewSet(ModelViewSet):
     
     queryset = Notification.objects.all()
