@@ -50,6 +50,8 @@ export const useDashboardReports = (user:User | null) => {
         CLOSED: "RESUELTO",
     };
     const [reports, setReports] = useState<Report[]>([]);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [dateFilter, setDateFilter] = useState("");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -164,6 +166,23 @@ export const useDashboardReports = (user:User | null) => {
         }
     }, []);
 
+    const filteredReports = reports.filter((report) => {
+        const term = searchTerm.toLowerCase();
+        const severityLabel = severityLabels[report.severity] ?? report.severity;
+        const statusLabel =
+            statusLabels[report.state ?? "PENDING"] ?? report.state ?? "";
+        const matchesText =
+            report.title.toLowerCase().includes(term) ||
+            report.description.toLowerCase().includes(term) ||
+            severityLabel.toLowerCase().includes(term) ||
+            statusLabel.toLowerCase().includes(term) ||
+            String(report.id_postulation).includes(term);
+        const matchesDate =
+            !dateFilter || report.created_at.slice(0, 10) === dateFilter;
+
+        return matchesText && matchesDate;
+    });
+
 
     async function handleCreateReport(e: React.FormEvent) {
         e.preventDefault();
@@ -251,6 +270,11 @@ export const useDashboardReports = (user:User | null) => {
         severityLabels,
         statusLabels,
         reports,
+        filteredReports,
+        searchTerm,
+        setSearchTerm,
+        dateFilter,
+        setDateFilter,
         loading,
         error,
         isModalOpen,

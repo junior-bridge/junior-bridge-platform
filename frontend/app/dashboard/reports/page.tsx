@@ -5,6 +5,7 @@ import { useUser } from "../../../context/UserContext";
 import { Plus, X, Upload } from "lucide-react";
 import { useDashboardReports } from "@/hooks/dashboard/useDashboardReports";
 import Loader from "@/components/ui/Loader";
+import ListFilters from "@/components/dashboard/ListFilters";
 
 
 export default function ReportsPage() {
@@ -15,6 +16,11 @@ export default function ReportsPage() {
         severityLabels,
         statusLabels,
         reports,
+        filteredReports,
+        searchTerm,
+        setSearchTerm,
+        dateFilter,
+        setDateFilter,
         loading,
         error,
         isModalOpen,
@@ -68,6 +74,14 @@ export default function ReportsPage() {
                 )}
             </div>
 
+            <ListFilters
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                dateFilter={dateFilter}
+                onDateChange={setDateFilter}
+                placeholder="Buscar reporte..."
+            />
+
             {error && (
                 <div className="mb-4 rounded-xl bg-red-50 border border-red-100 px-4 py-3 text-sm text-red-600">
                     {error}
@@ -112,7 +126,7 @@ export default function ReportsPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {reports.map((report) => {
+                                {filteredReports.map((report) => {
                                     const severityLabel =
                                         severityLabels[report.severity] ??
                                         report.severity;
@@ -172,10 +186,12 @@ export default function ReportsPage() {
                         </table>
                     </div>
 
-                    {reports.length === 0 && (
+                    {filteredReports.length === 0 && (
                         <div className="py-12 text-center">
                             <p className="text-sm text-gray-400">
-                                No hay reportes para mostrar.
+                                {reports.length === 0
+                                    ? "No hay reportes para mostrar."
+                                    : "No se encontraron reportes."}
                             </p>
                         </div>
                     )}

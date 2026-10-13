@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useUser } from "@/context/UserContext";
-import { Plus, Search } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useDashboardProjects } from "@/hooks/dashboard/useDashboardProjects";
 import { useProjectAudit } from "@/hooks/dashboard/useProjectAudit";
 import ProjectAuditPanel from "@/components/dashboard/ProjectAuditPanel";
+import ListFilters from "@/components/dashboard/ListFilters";
 import { Fragment, useState } from "react";
 
 
@@ -19,6 +20,8 @@ export default function ProjectsPage() {
         statusColors,
         searchTerm,
         setSearchTerm,
+        dateFilter,
+        setDateFilter,
         currentPage,
         totalPages,
         paginatedProjects,
@@ -84,16 +87,13 @@ export default function ProjectsPage() {
                 )}
             </div>
 
-            <div className="flex items-center gap-2 bg-white rounded-full px-4 py-2 w-full sm:w-72 border border-gray-200 mb-6">
-                <Search size={15} className="text-gray-400" />
-                <input
-                    type="text"
-                    placeholder="Buscar proyecto..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="bg-transparent text-sm outline-none w-full placeholder-gray-400"
-                />
-            </div>
+            <ListFilters
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                dateFilter={dateFilter}
+                onDateChange={setDateFilter}
+                placeholder="Buscar proyecto..."
+            />
 
             {message && (
                 <p

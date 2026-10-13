@@ -20,6 +20,8 @@ export const useDashboardPostulations = (user: User | null) => {
     };
 
     const [postulations, setPostulations] = useState<Postulation[]>([]);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [dateFilter, setDateFilter] = useState("");
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState<number | null>(null);
     
@@ -46,6 +48,21 @@ export const useDashboardPostulations = (user: User | null) => {
 
         loadPostulations();
     }, [user]);
+
+    const filteredPostulations = postulations.filter((postulation) => {
+        const term = searchTerm.toLowerCase();
+        const statusLabel = statusLabels[postulation.status] ?? postulation.status;
+        const matchesText =
+            (postulation.project_title ?? "").toLowerCase().includes(term) ||
+            (postulation.tester_name ?? "").toLowerCase().includes(term) ||
+            (postulation.tester_email ?? "").toLowerCase().includes(term) ||
+            statusLabel.toLowerCase().includes(term);
+        const matchesDate =
+            !dateFilter ||
+            postulation.postulation_date.slice(0, 10) === dateFilter;
+
+        return matchesText && matchesDate;
+    });
 
      async function handleAccept(id: number) {
         setActionLoading(id);
@@ -123,6 +140,11 @@ export const useDashboardPostulations = (user: User | null) => {
         statusColors,
         statusLabels,
         postulations,
+        filteredPostulations,
+        searchTerm,
+        setSearchTerm,
+        dateFilter,
+        setDateFilter,
         loading,
         actionLoading,
         handleAccept,
