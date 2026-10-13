@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from apps.users.models import User
 
-from .models import Project
+from .models import Project, ProjectAudit
 
 
 class ProjectClientSerializer(serializers.ModelSerializer):
@@ -56,3 +56,27 @@ class ProjectStatusSerializer(serializers.ModelSerializer):
             )
 
         return value
+
+
+class ProjectAuditSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectAudit
+        fields = [
+            'id',
+            'strategy',
+            'status',
+            'performance',
+            'accessibility',
+            'best_practices',
+            'seo',
+            'error_message',
+            'created_at',
+        ]
+        read_only_fields = fields
+
+
+class ProjectAuditRequestSerializer(serializers.Serializer):
+    strategy = serializers.ChoiceField(
+        choices=ProjectAudit.Strategy.choices,
+        default=ProjectAudit.Strategy.MOBILE,
+    )

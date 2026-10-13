@@ -1,9 +1,20 @@
 from apps.users.models import User
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from apps.notifications.models import Notification
 
+
+@extend_schema_field({"type": "string", "nullable": True, "readOnly": True})
+class _UsernameField(serializers.ReadOnlyField):
+    """Same ReadOnlyField DRF builds for User.username (set to None on the model).
+
+    Declared explicitly only so the OpenAPI schema can describe it.
+    """
+
  
 class UserSimpleSerializer(serializers.ModelSerializer):
+    username = _UsernameField()
+
     class Meta:
         model = User
         fields = ['id', 'username', 'email']

@@ -19,7 +19,7 @@ class PostulationSerializer(serializers.ModelSerializer):
         read_only=True,
     )
 
-    def get_tester_name(self, obj):
+    def get_tester_name(self, obj) -> str:
         return f'{obj.id_tester.name} {obj.id_tester.surname}'.strip()
 
     class Meta:
