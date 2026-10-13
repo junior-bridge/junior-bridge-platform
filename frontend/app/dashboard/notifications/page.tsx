@@ -1,25 +1,7 @@
 "use client";
 
-import { useUser } from "@/context/UserContext";
 import { Bell, CheckCheck } from "lucide-react";
-
-const notificationsByRole: Record<string, { id: number; title: string; body: string; time: string; read: boolean; type: string }[]> = {
-  emprendedor: [
-    { id: 1, title: "Nueva postulación", body: "Roxana Pop se postuló a tu proyecto SaaS Dashboard", time: "Hace 2h", read: false, type: "postulation" },
-    { id: 2, title: "Bug reportado", body: "Se registró el bug #BUG-1025 en SaaS Dashboard", time: "Hace 4h", read: false, type: "bug" },
-    { id: 3, title: "Tester aceptado", body: "Trevor Guy fue aceptado en App Fintech", time: "Ayer", read: true, type: "info" },
-  ],
-  tester: [
-    { id: 1, title: "Postulación aceptada", body: "Fuiste aceptado en el proyecto CRM Empresarial", time: "Hace 1h", read: false, type: "success" },
-    { id: 2, title: "Nueva calificación", body: "Recibiste 5 estrellas por tu trabajo en App Delivery", time: "Hace 3h", read: false, type: "star" },
-    { id: 3, title: "Proyecto disponible", body: "Se publicó un nuevo proyecto que coincide con tus skills", time: "Ayer", read: true, type: "info" },
-  ],
-  admin: [
-    { id: 1, title: "Nuevo usuario registrado", body: "Trevor Guy se registró como tester", time: "Hace 30min", read: false, type: "user" },
-    { id: 2, title: "Bug crítico reportado", body: "Bug #BUG-1026 con riesgo ALTO en SaaS Dashboard", time: "Hace 1h", read: false, type: "bug" },
-    { id: 3, title: "Proyecto publicado", body: "CRM Empresarial fue publicado por Ana López", time: "Hace 2h", read: true, type: "info" },
-  ],
-};
+import { useNotificationsContext } from "@/context/NotificationContext";
 
 const typeColors: Record<string, string> = {
   postulation: "bg-blue-100 text-blue-600",
@@ -28,44 +10,115 @@ const typeColors: Record<string, string> = {
   success: "bg-green-100 text-green-600",
   star: "bg-orange-100 text-orange-500",
   user: "bg-purple-100 text-purple-600",
+  message: "bg-green-100 text-green-600",
 };
 
-export default function NotificationsPage() {
-  const { user } = useUser();
-  if (!user) return null;
+function formatDate(value: string) {
+  const date = new Date(value);
 
-  const notifications = notificationsByRole[user.role] ?? [];
-  const unread = notifications.filter(n => !n.read).length;
+  if (Number.isNaN(date.getTime())) return value;
+
+  return date.toLocaleString("es-AR", {
+    dateStyle: "short",
+    timeStyle: "short",
+  });
+}
+
+export default function NotificationsPage() {
+  const { notifications, unreadCount, isLoading, markAsRead } =
+    useNotificationsContext();
+
+  const handleMarkAllRead = async () => {
+    await Promise.all(
+      notifications
+        .filter((notification) => !notification.is_read)
+        .map((notification) => markAsRead(notification.notification_id))
+    );
+  };
 
   return (
-    <div className="px-4 sm:px-6 py-4 sm:py-6 max-w-2xl">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
+    <div className="max-w-3xl px-4 py-6 sm:px-6">
+      <div className="mb-6 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Notificaciones</h1>
-          <p className="text-gray-500 text-sm mt-1">{unread} sin leer</p>
+          <h1 className="text-2xl font-bold text-gray-800">
+            Notificaciones
+          </h1>
+          <p className="mt-1 text-sm text-gray-500">
+            {unreadCount} sin leer
+          </p>
         </div>
-        <button className="flex items-center gap-1 text-xs text-brand-green font-medium hover:underline">
-          <CheckCheck size={13} /> Marcar todas como leídas
+
+        <button
+          onClick={handleMarkAllRead}
+          disabled={isLoading || unreadCount === 0}
+          className="flex items-center gap-1 text-xs font-medium text-brand-green hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <CheckCheck size={13} />
+          Marcar todas como leídas
         </button>
       </div>
 
-      <div className="flex flex-col gap-3">
-        {notifications.map((n) => (
-          <div key={n.id} className={`bg-white rounded-xl p-4 shadow-sm flex items-start gap-3 ${!n.read ? "border-l-4 border-brand-green" : ""}`}>
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${typeColors[n.type]}`}>
-              <Bell size={14} />
-            </div>
-            <div className="flex-1">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-semibold text-gray-800">{n.title}</p>
-                <span className="text-[10px] text-gray-400">{n.time}</span>
+      {isLoading ? (
+        <p className="py-8 text-center text-sm text-gray-500">
+          Cargando notificaciones...
+        </p>
+      ) : notifications.length === 0 ? (
+        <div className="rounded-xl bg-white p-8 text-center shadow-sm">
+          <Bell className="mx-auto mb-3 text-gray-400" size={28} />
+          <p className="text-sm text-gray-600">
+            No tenés notificaciones todavía.
+          </p>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {notifications.map((notification) => (
+            <div
+              key={notification.notification_id}
+              className={`flex items-start gap-3 rounded-xl bg-white p-4 shadow-sm ${
+                !notification.is_read ? "border-l-4 border-brand-green" : ""
+              }`}
+            >
+              <div
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
+                  typeColors[notification.type ?? "info"] ?? typeColors.info
+                }`}
+              >
+                <Bell size={14} />
               </div>
-              <p className="text-xs text-gray-500 mt-0.5">{n.body}</p>
+
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-col justify-between gap-1 sm:flex-row">
+                  <p className="text-sm font-semibold text-gray-800">
+                    {notification.title}
+                  </p>
+                  <span className="text-xs text-gray-400">
+                    {formatDate(notification.created_at)}
+                  </span>
+                </div>
+
+                <p className="mt-1 text-sm text-gray-600">
+                  {notification.message}
+                </p>
+
+                {!notification.is_read && (
+                  <button
+                    onClick={() =>
+                      markAsRead(notification.notification_id)
+                    }
+                    className="mt-2 text-xs font-medium text-blue-600 hover:underline"
+                  >
+                    Marcar como leída
+                  </button>
+                )}
+              </div>
+
+              {!notification.is_read && (
+                <div className="mt-1 h-2 w-2 shrink-0 rounded-full bg-brand-green" />
+              )}
             </div>
-            {!n.read && <div className="w-2 h-2 rounded-full bg-brand-green mt-1 shrink-0" />}
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
