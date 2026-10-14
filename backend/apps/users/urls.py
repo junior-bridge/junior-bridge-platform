@@ -10,6 +10,7 @@ from .views import (
     PasswordResetConfirmView,
     PasswordResetRequestView,
     ProfileView,
+    ProfilePhotoView,
     RegisterView,
 )
 
@@ -31,6 +32,7 @@ urlpatterns = [
     ),
     path("token/refresh/", CookieTokenRefreshView.as_view(),name="token-refresh",),
     path("profile/", ProfileView.as_view(), name="auth-profile"),
+    path("profile/photo/", ProfilePhotoView.as_view(), name="auth-profile-photo"),
     path("oauth/<str:provider>/start/", SocialOAuthStartView.as_view(), name="social-oauth-start"),
     path("oauth/finalize/", OAuthFinalizeView.as_view(), name="oauth-finalize"),
 ]

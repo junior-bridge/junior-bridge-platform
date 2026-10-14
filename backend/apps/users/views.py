@@ -1,9 +1,11 @@
 import logging
+import mimetypes
 from urllib.parse import urlencode
 
 from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
 from django.core.mail import send_mail
+from django.http import FileResponse, Http404
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils.encoding import force_bytes
@@ -430,6 +432,28 @@ class LogoutView(APIView):
         )
 
         return clear_auth_cookies(response)
+
+
+@extend_schema(tags=['Authentication / Profile'])
+class ProfilePhotoView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        photo = request.user.profile_photo
+        if not photo:
+            raise Http404("Profile photo not found.")
+
+        try:
+            photo_file = photo.open("rb")
+        except FileNotFoundError as error:
+            raise Http404("Profile photo not found.") from error
+
+        content_type = mimetypes.guess_type(photo.name)[0] or "image/jpeg"
+        response = FileResponse(photo_file, content_type=content_type)
+        response["Content-Disposition"] = "inline"
+        response["X-Content-Type-Options"] = "nosniff"
+        response["Cache-Control"] = "private, no-cache"
+        return response
 
 
 @extend_schema(tags=['Authentication / Profile'])

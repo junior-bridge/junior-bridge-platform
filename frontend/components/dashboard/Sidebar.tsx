@@ -17,6 +17,7 @@ import {
     Bug,
 } from "lucide-react";
 import { User as ApiUser } from "@/types/index";
+import { getMediaUrl } from "@/lib/media";
 
 type UserRole = ApiUser["role"];
 
@@ -83,6 +84,8 @@ const roleLabel: Record<UserRole, string> = {
 interface SidebarProps {
     userName: string;
     userRole: ApiUser["role"];
+    profilePhoto: string | null;
+    photoVersion: string;
     onLogout: () => void;
     onNavigate?: () => void;
 }
@@ -90,11 +93,14 @@ interface SidebarProps {
 export default function Sidebar({
     userName,
     userRole,
+    profilePhoto,
+    photoVersion,
     onLogout,
     onNavigate,
 }: SidebarProps) {
     const pathname = usePathname();
     const navItems = navByRole[userRole] ?? navByRole.CLIENT;
+    const profilePhotoUrl = getMediaUrl(profilePhoto);
 
     return (
         <aside className="w-56 h-full bg-brand-green flex flex-col justify-between py-6 px-4 shrink-0">
@@ -137,8 +143,18 @@ export default function Sidebar({
             <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-2 px-2 mb-2">
                     <div className="flex items-center gap-2 px-2 mb-2">
-                        <div className="w-9 h-9 rounded-full bg-orange-400 flex items-center justify-center">
-                            {userName?.[0]?.toUpperCase() ?? "?"}
+                        <div className="relative w-9 h-9 rounded-full bg-orange-400 flex items-center justify-center overflow-hidden text-white">
+                            {profilePhotoUrl ? (
+                                <Image
+                                    src={`${profilePhotoUrl}?v=${encodeURIComponent(photoVersion)}`}
+                                    alt="Foto de perfil"
+                                    fill
+                                    unoptimized
+                                    className="object-cover"
+                                />
+                            ) : (
+                                userName?.[0]?.toUpperCase() ?? "?"
+                            )}
                         </div>
 
                         <p className="text-green-100 text-xs font-medium truncate">
