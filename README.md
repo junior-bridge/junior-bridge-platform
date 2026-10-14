@@ -203,6 +203,7 @@ se optimizan a un máximo de 512 px.
 
 - PostgreSQL
 - MongoDB
+- [Configuración de PostgreSQL en Supabase](docs/configuracion-supabase.md)
 
 ### Infraestructura
 
