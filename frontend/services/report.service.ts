@@ -20,8 +20,8 @@ export async function createReport(
     formData.append("severity", data.severity);
     formData.append("steps_to_reproduce", JSON.stringify(data.steps_to_reproduce));
 
-    if (data.capture_evidence) {
-        formData.append("capture_evidence", data.capture_evidence);
+    for (const image of data.evidence_images ?? []) {
+        formData.append("evidence_images", image);
     }
 
     const response = await fetch(

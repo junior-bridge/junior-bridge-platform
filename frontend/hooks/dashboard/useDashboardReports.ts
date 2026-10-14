@@ -14,14 +14,14 @@ const initialReportForm: {
     description: string;
     stepsToReproduce: string;
     severity: "low" | "medium" | "high" | "critical";
-    evidenceFile: File | null;
+    evidenceFiles: File[];
 } = {
     postulationId: "",
     title: "",
     description: "",
     stepsToReproduce: "",
     severity: "medium",
-    evidenceFile: null,
+    evidenceFiles: [],
 };
 
 export const useDashboardReports = (user:User | null) => {
@@ -69,7 +69,7 @@ export const useDashboardReports = (user:User | null) => {
         setModalError(null);
         setFormErrors({});
         setForm(initialReportForm);
-    }, []);
+    }, [setForm, setFormErrors, setIsModalOpen, setModalError]);
 
     // Cierre iniciado por el usuario (X, Cancelar, backdrop, Escape).
     // Mientras se envía el reporte no se permite cerrar, para no perder el resultado del submit.
@@ -201,6 +201,14 @@ export const useDashboardReports = (user:User | null) => {
             nextErrors.stepsToReproduce =
                 "Los pasos para reproducir son obligatorios.";
         }
+        if (form.evidenceFiles.length > 5) {
+            setModalError("Podés adjuntar hasta 5 imágenes por reporte.");
+            return;
+        }
+        if (form.evidenceFiles.some((file) => file.size > 5 * 1024 * 1024)) {
+            setModalError("Cada imagen debe pesar 5 MB o menos.");
+            return;
+        }
 
         setFormErrors(nextErrors);
         if (Object.keys(nextErrors).length > 0) return;
@@ -220,7 +228,7 @@ export const useDashboardReports = (user:User | null) => {
                     description: form.description.trim(),
                     severity: form.severity,
                     steps_to_reproduce: steps,
-                    capture_evidence: form.evidenceFile ?? undefined,
+                    evidence_images: form.evidenceFiles,
                 });
             } catch (err) {
                 console.error("Error al crear reporte:", err);
@@ -282,6 +290,7 @@ export const useDashboardReports = (user:User | null) => {
         closeReportModal,
         submitting,
         modalError,
+        setModalError,
         formErrors,
         setFormErrors,
         userPostulations,
