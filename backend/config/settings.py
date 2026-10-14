@@ -283,22 +283,22 @@ CHANNEL_LAYERS = {
 WEBSOCKET_ACCEPT_ALL = False  # Requerir autenticación
 WEBSOCKET_TIMEOUT = 300  # 5 minutos de inactividad
 
-# Configuración de email
-# Si hay credenciales de Mailtrap (MAILTRAP_HOST definido) se usa SMTP real;
-# de lo contrario se mantiene el backend de consola para desarrollo.
-MAILTRAP_HOST = os.getenv("MAILTRAP_HOST")
+# Email configuration (provider-agnostic SMTP).
+# With EMAIL_HOST set, mail goes through SMTP: Mailtrap sandbox in development,
+# Brevo SMTP relay in production. Without it, the console backend is used.
+EMAIL_HOST = os.getenv("EMAIL_HOST", "")
 
-if MAILTRAP_HOST:
+if EMAIL_HOST:
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-    EMAIL_HOST = MAILTRAP_HOST
-    EMAIL_PORT = int(os.getenv("MAILTRAP_PORT", "2525"))
-    EMAIL_HOST_USER = os.getenv("MAILTRAP_USERNAME")
-    EMAIL_HOST_PASSWORD = os.getenv("MAILTRAP_PASSWORD")
-    EMAIL_USE_TLS = True
+    EMAIL_PORT = positive_int_env("EMAIL_PORT", 587)
+    EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
+    EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+    EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True").strip().lower() in ("1", "true", "yes")
 else:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
-DEFAULT_FROM_EMAIL = "noreply@juniorbridge.com"
+# Must be a sender (or domain) verified in the email provider, e.g. Brevo.
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL") or "noreply@juniorbridge.com"
 
 # Seconds before an SMTP connection gives up, so a slow server cannot block requests.
 EMAIL_TIMEOUT = positive_int_env("EMAIL_TIMEOUT", 10)

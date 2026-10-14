@@ -3,6 +3,7 @@ from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 from asgiref.sync import async_to_sync
 from apps.postulations.models import Postulation
+from apps.projects.models import Project
 from apps.notifications.models import Notification
 from apps.notifications.services import send_notification_email
 from channels.layers import get_channel_layer
@@ -158,6 +159,73 @@ def notify_postulation_rejected(sender, instance, created, **kwargs):
                 f"Lamentablemente, tu postulación al proyecto "
                 f"'{instance.id_project.title}' fue rechazada.\n\n"
                 f"Te animamos a seguir participando en otros proyectos. \n\n"
+                f"Saludos"
+            )
+        )
+
+    transaction.on_commit(send_external_notifications)
+
+
+@receiver(pre_save, sender=Project)
+def cache_previous_project_state(sender, instance, **kwargs):
+    if instance.pk:
+        instance._previous_state = (
+            Project.objects.filter(pk=instance.pk)
+            .values_list('state', flat=True)
+            .first()
+        )
+    else:
+        instance._previous_state = None
+
+
+@receiver(post_save, sender=Project)
+def notify_project_completed(sender, instance, created, **kwargs):
+    previous = getattr(instance, '_previous_state', None)
+    if instance.state != 'COMPLETED' or previous == 'COMPLETED':
+        return
+
+    accepted_postulations = Postulation.objects.filter(
+        id_project=instance,
+        status=Postulation.State.ACCEPTED,
+    ).select_related('id_tester')
+
+    for postulation in accepted_postulations:
+        notify_tester_project_completed(instance, postulation.id_tester)
+
+
+def notify_tester_project_completed(project, tester):
+    notification = Notification.objects.create(
+        id_user=tester,
+        type='project_completed',
+        message=f"El proyecto {project.title} fue finalizado.",
+        is_read=False
+    )
+
+    def send_external_notifications():
+        channel_layer = get_channel_layer()
+
+        async_to_sync(channel_layer.group_send)(
+            f"user_{tester.id}_notifications",
+            {
+                "type": "notification_received",
+                "notification_id": notification.id_notification,
+                "title": "Proyecto finalizado",
+                "message": notification.message,
+                "notification_type": "project_completed",
+                "username": "Sistema",
+                "created_at": str(notification.created_at),
+            }
+        )
+
+        send_notification_email(
+            user=tester,
+            subject="Proyecto finalizado — JuniorBridge",
+            message=(
+                f"Hola {tester.name},\n\n"
+                f"El proyecto '{project.title}' en el que participaste "
+                f"fue marcado como finalizado.\n\n"
+                f"¡Gracias por tu trabajo! Ingresá a JuniorBridge para ver "
+                f"el estado del proyecto y calificar tu experiencia.\n\n"
                 f"Saludos"
             )
         )
