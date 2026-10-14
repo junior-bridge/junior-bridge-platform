@@ -15,6 +15,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from apps.postulations.models import Postulation
 from apps.reports.serializers import ReportSerializer
+from apps.users.models import User
 from .mongodb import reports_collection
 from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiParameter
 from drf_spectacular.types import OpenApiTypes
@@ -56,7 +57,14 @@ class ReportListAPIView(APIView):
     )
     def get(self, request):
         user = request.user
-    
+
+        if user.role == User.Role.ADMIN:
+            reports = list(reports_collection.find())
+            return Response(
+                [_serialize_report(report) for report in reports],
+                status=status.HTTP_200_OK,
+            )
+
         tester_postulations = Postulation.objects.filter(
             id_tester=user
         ).values_list('id_postulation', flat=True)

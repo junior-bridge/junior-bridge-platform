@@ -83,7 +83,12 @@ class ReportCreateTests(APITestCase):
 
     def tearDown(self):
         reports_collection.delete_many({
-            'title': self.report_title,
+            'title': {
+                '$in': [
+                    self.report_title,
+                    f'{self.report_title}_unrelated',
+                ],
+            },
         })
 
     def test_tester_can_create_report_for_accepted_postulation(self):
@@ -131,6 +136,61 @@ class ReportCreateTests(APITestCase):
             self.postulation.id_postulation,
         )
         self.assertEqual(report['severity'], 'high')
+
+    def test_client_can_list_reports_for_owned_projects(self):
+        reports_collection.insert_one({
+            'title': self.report_title,
+            'description': self.report_data['description'],
+            'severity': self.report_data['severity'],
+            'steps_to_reproduce': self.report_data['steps_to_reproduce'],
+            'id_postulation': self.postulation.id_postulation,
+        })
+        reports_collection.insert_one({
+            'title': f'{self.report_title}_unrelated',
+            'description': 'Report from another project.',
+            'severity': 'low',
+            'steps_to_reproduce': [],
+            'id_postulation': -1,
+        })
+        self.client.force_authenticate(user=self.client_user)
+
+        response = self.client.get(reverse('report-list'))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(any(
+            report['title'] == self.report_title
+            and report['id_postulation'] == self.postulation.id_postulation
+            for report in response.data
+        ))
+        self.assertFalse(any(
+            report['title'] == f'{self.report_title}_unrelated'
+            for report in response.data
+        ))
+
+    def test_admin_can_list_all_reports(self):
+        reports_collection.insert_one({
+            'title': self.report_title,
+            'description': self.report_data['description'],
+            'severity': self.report_data['severity'],
+            'steps_to_reproduce': self.report_data['steps_to_reproduce'],
+            'id_postulation': self.postulation.id_postulation,
+        })
+        admin_user = User.objects.create_user(
+            email='report-admin@example.com',
+            password='test-password',
+            name='Report',
+            surname='Admin',
+            role=User.Role.ADMIN,
+        )
+        self.client.force_authenticate(user=admin_user)
+
+        response = self.client.get(reverse('report-list'))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(any(
+            report['title'] == self.report_title
+            for report in response.data
+        ))
 
     @patch(
         'apps.reports.views.default_storage.save',

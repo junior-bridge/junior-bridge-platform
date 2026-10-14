@@ -4,7 +4,7 @@ import { User } from "@/types";
 import { Postulation } from "@/types/postulationTypes";
 import { Report } from "@/types/reportTypes";
 import { getUserPostulations } from "@/services/postulation.service";
-import { createReport, getPostulationReports } from "@/services/report.service";
+import { createReport, getReports } from "@/services/report.service";
 import Swal from "sweetalert2";
 
 // Estado inicial del formulario de reporte; se reutiliza al cerrar/cancelar y después de crear.
@@ -102,22 +102,21 @@ export const useDashboardReports = (user:User | null) => {
         let isMounted = true;
 
         if (!user) return;
+        const isTester = user.role === "TESTER";
 
         async function initFetch() {
             try {
                 setError(null);
-                const postulations = await getUserPostulations();
+                const [userReports, postulations] = await Promise.all([
+                    getReports(),
+                    isTester
+                        ? getUserPostulations()
+                        : Promise.resolve([]),
+                ]);
 
                 if (!isMounted) return;
                 setUserPostulations(postulations);
-
-                const reportsPromises = postulations.map((p) =>
-                    getPostulationReports(p.id_postulation).catch(() => []),
-                );
-                const reportsNested = await Promise.all(reportsPromises);
-
-                if (!isMounted) return;
-                setReports(reportsNested.flat());
+                setReports(userReports);
             } catch (err) {
                 if (!isMounted) return;
                 console.error("Error cargando reportes:", err);
@@ -145,15 +144,8 @@ export const useDashboardReports = (user:User | null) => {
             setError(null);
             setLoading(true);
 
-            const postulations = await getUserPostulations();
-            setUserPostulations(postulations);
-
-            const reportsPromises = postulations.map((p) =>
-                getPostulationReports(p.id_postulation).catch(() => []),
-            );
-            const reportsNested = await Promise.all(reportsPromises);
-
-            setReports(reportsNested.flat());
+            const userReports = await getReports();
+            setReports(userReports);
         } catch (err) {
             console.error("Error cargando reportes:", err);
             setError(
