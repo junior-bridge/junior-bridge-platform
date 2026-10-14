@@ -14,7 +14,7 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-from config.env import positive_int_env
+from config.env import bool_env, csv_env, positive_int_env
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -28,10 +28,12 @@ load_dotenv()
 SECRET_KEY = os.environ["SECRET_KEY"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = bool_env("DEBUG", default=False)
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = csv_env(
+    "ALLOWED_HOSTS",
+    ["localhost", "127.0.0.1", "backend"],
+)
 
 # Application definition
 
@@ -209,23 +211,28 @@ AUTH_COOKIE_NAME = "access_token"
 
 CORS_ALLOW_CREDENTIALS = True
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://localhost:3001",
-    "http://127.0.0.1:3001",
-]
+CORS_ALLOWED_ORIGINS = csv_env(
+    "CORS_ALLOWED_ORIGINS",
+    [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:3001",
+        "http://127.0.0.1:3001",
+    ],
+)
 
 
 # CSRF
 
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://localhost:3001",
-    "http://127.0.0.1:3001",
-    # "https://app.juniorbridge.com",  # Producción
-]
+CSRF_TRUSTED_ORIGINS = csv_env(
+    "CSRF_TRUSTED_ORIGINS",
+    [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:3001",
+        "http://127.0.0.1:3001",
+    ],
+)
 
 
 # Cookie security
@@ -306,11 +313,16 @@ MONGODB_DATABASE = os.getenv(
 )
 
 
+REDIS_URL = (
+    os.getenv("REDIS_URL", "").strip()
+    or "redis://redis:6379/0"
+)
+
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("redis", 6379)], 
+            "hosts": [REDIS_URL],
         },
     },
 }
