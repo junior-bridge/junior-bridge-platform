@@ -1,8 +1,12 @@
+from io import BytesIO
 from uuid import uuid4
+from unittest.mock import patch
 
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
+from PIL import Image
 
 from apps.postulations.models import Postulation
 from apps.projects.models import Project
@@ -64,6 +68,19 @@ class ReportCreateTests(APITestCase):
             'capture_evidence': 'https://example.com/evidence.png',
         }
 
+    @staticmethod
+    def create_test_image(name):
+        image_buffer = BytesIO()
+        Image.new('RGB', (1, 1), color='red').save(
+            image_buffer,
+            format='PNG',
+        )
+        return SimpleUploadedFile(
+            name,
+            image_buffer.getvalue(),
+            content_type='image/png',
+        )
+
     def tearDown(self):
         reports_collection.delete_many({
             'title': self.report_title,
@@ -80,6 +97,18 @@ class ReportCreateTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIn('_id', response.data)
+        self.assertEqual(
+            response.data['_id'],
+            str(
+                reports_collection.find_one(
+                    {'title': self.report_title}
+                )['_id']
+            ),
+        )
+        self.assertEqual(
+            response.data['id_postulation'],
+            self.postulation.id_postulation,
+        )
 
     def test_report_is_saved_in_mongodb(self):
         self.client.force_authenticate(user=self.tester_user)
@@ -102,6 +131,125 @@ class ReportCreateTests(APITestCase):
             self.postulation.id_postulation,
         )
         self.assertEqual(report['severity'], 'high')
+
+    @patch(
+        'apps.reports.views.default_storage.save',
+        side_effect=[
+            'reports/evidence/evidence-1.png',
+            'reports/evidence/evidence-2.png',
+        ],
+    )
+    def test_tester_can_upload_multiple_evidence_images(
+        self,
+        save_image,
+    ):
+        self.client.force_authenticate(user=self.tester_user)
+        multipart_data = {
+            'title': self.report_title,
+            'description': self.report_data['description'],
+            'severity': self.report_data['severity'],
+            'steps_to_reproduce': '["Open the application.", "Submit a report."]',
+            'evidence_images': [
+                self.create_test_image('evidence-1.png'),
+                self.create_test_image('evidence-2.png'),
+            ],
+        }
+
+        response = self.client.post(
+            self.url,
+            multipart_data,
+            format='multipart',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(
+            response.data['evidence_images'],
+            [
+                reverse(
+                    'report-evidence',
+                    kwargs={'id_report': response.data['_id'], 'index': 0},
+                ),
+                reverse(
+                    'report-evidence',
+                    kwargs={'id_report': response.data['_id'], 'index': 1},
+                ),
+            ],
+        )
+        report = reports_collection.find_one({'title': self.report_title})
+        self.assertEqual(
+            report['evidence_images'],
+            [
+                'reports/evidence/evidence-1.png',
+                'reports/evidence/evidence-2.png',
+            ],
+        )
+        self.assertEqual(save_image.call_count, 2)
+
+    @patch(
+        'apps.reports.views.default_storage.open',
+        return_value=BytesIO(b'evidence'),
+    )
+    def test_evidence_image_requires_report_access(self, _open_image):
+        self.client.force_authenticate(user=self.tester_user)
+        report_id = reports_collection.insert_one({
+            'title': self.report_title,
+            'description': self.report_data['description'],
+            'severity': self.report_data['severity'],
+            'steps_to_reproduce': self.report_data['steps_to_reproduce'],
+            'evidence_images': ['reports/evidence/private.png'],
+            'id_postulation': self.postulation.id_postulation,
+        }).inserted_id
+        evidence_url = reverse(
+            'report-evidence',
+            kwargs={'id_report': str(report_id), 'index': 0},
+        )
+
+        response = self.client.get(evidence_url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response["Content-Type"], "image/png")
+        self.assertEqual(response["Content-Disposition"], "inline")
+        self.assertEqual(b''.join(response.streaming_content), b'evidence')
+
+        other_tester = User.objects.create_user(
+            email='other-tester@example.com',
+            password='test-password',
+            name='Other',
+            surname='Tester',
+            role=User.Role.TESTER,
+        )
+        self.client.force_authenticate(user=other_tester)
+        forbidden_response = self.client.get(evidence_url)
+
+        self.assertEqual(
+            forbidden_response.status_code,
+            status.HTTP_403_FORBIDDEN,
+        )
+
+    def test_report_rejects_more_than_five_evidence_images(self):
+        self.client.force_authenticate(user=self.tester_user)
+        multipart_data = {
+            'title': self.report_title,
+            'description': self.report_data['description'],
+            'severity': self.report_data['severity'],
+            'steps_to_reproduce': '["Open the application."]',
+            'evidence_images': [
+                self.create_test_image(f'evidence-{index}.png')
+                for index in range(6)
+            ],
+        }
+
+        response = self.client.post(
+            self.url,
+            multipart_data,
+            format='multipart',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('evidence_images', response.data)
+        self.assertFalse(
+            reports_collection.find_one({'title': self.report_title})
+        )
 
     def test_rejected_postulation_cannot_create_report(self):
         rejected_postulation = Postulation.objects.create(

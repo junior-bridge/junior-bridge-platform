@@ -13,6 +13,7 @@ export type User = {
     sex: string;
     date_of_birth: string | null;
     zona: string;
+    profile_photo: string | null;
     role: "CLIENT" | "TESTER" | "ADMIN";
     reputation: string;
     date_joined: string;

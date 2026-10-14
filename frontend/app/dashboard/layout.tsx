@@ -9,6 +9,8 @@ import { NotificationBell } from "@/components/NotificationBell";
 import { useDashboard } from "@/hooks/useDashboard";
 import { User } from "@/types";
 import Loader from "@/components/ui/Loader";
+import Image from "next/image";
+import { getMediaUrl } from "@/lib/media";
 
 export default function DashboardLayout({
     children,
@@ -30,6 +32,7 @@ export default function DashboardLayout({
     }
 
     if (!user) return null;
+    const profilePhotoUrl = getMediaUrl(user.profile_photo);
 
     return (
         <NotificationsProvider>
@@ -51,6 +54,8 @@ export default function DashboardLayout({
                     <Sidebar
                         userName={user.name}
                         userRole={user.role as User["role"]}
+                        profilePhoto={user.profile_photo}
+                        photoVersion={user.updated_at}
                         onLogout={handleLogout}
                         onNavigate={() => setSidebarOpen(false)}
                     />
@@ -81,8 +86,18 @@ export default function DashboardLayout({
                                     </p>
                                 </div>
 
-                                <div className="w-8 h-8 rounded-full bg-orange-400 flex items-center justify-center text-white font-bold text-sm shrink-0">
-                                    {avatarInitials}
+                                <div className="relative w-8 h-8 rounded-full bg-orange-400 flex items-center justify-center text-white font-bold text-sm shrink-0 overflow-hidden">
+                                    {profilePhotoUrl ? (
+                                        <Image
+                                            src={`${profilePhotoUrl}?v=${encodeURIComponent(user.updated_at)}`}
+                                            alt="Foto de perfil"
+                                            fill
+                                            unoptimized
+                                            className="object-cover"
+                                        />
+                                    ) : (
+                                        avatarInitials
+                                    )}
                                 </div>
                             </div>
                         </div>

@@ -112,7 +112,7 @@ Todo esto desde una interfaz intuitiva, moderna y accesible.
 ### 🐞 Reportes de Bugs
 
 - Registro estructurado de errores
-- Adjuntar capturas de pantalla
+- Adjuntar hasta 5 imágenes de evidencia por reporte
 - Pasos para reproducir
 - Nivel de criticidad o riesgo
 
@@ -166,6 +166,25 @@ JuniorBridge contempla el desarrollo completo del flujo de testing dentro de la 
 
 Estas funcionalidades quedan planteadas como futuras versiones del producto.
 
+## Almacenamiento de evidencias
+
+En desarrollo, las imágenes se guardan localmente en `backend/media`. Para
+producción, se puede configurar un bucket privado de AWS S3 definiendo
+`AWS_STORAGE_BUCKET_NAME` y `AWS_S3_REGION_NAME` en el entorno del backend.
+La aplicación genera enlaces temporales para que quienes tienen acceso al
+reporte puedan ver sus imágenes. En AWS, se recomienda asignar permisos S3 al
+rol de la aplicación en vez de guardar credenciales en el repositorio.
+Para desarrollo local fuera de AWS, el SDK puede autenticarse mediante
+`AWS_ACCESS_KEY_ID` y `AWS_SECRET_ACCESS_KEY` (y `AWS_SESSION_TOKEN` si se usan
+credenciales temporales); nunca se deben copiar credenciales reales al
+`.env.example` ni subirlas al repositorio. El backend entrega las imágenes por
+rutas autenticadas y comprueba el acceso de cada usuario al reporte.
+
+Cada reporte admite hasta 5 imágenes JPG, PNG o WEBP, de hasta 5 MB cada una;
+el backend las redimensiona a un máximo de 1920 px y las recomprime antes de
+guardarlas. Las fotos de perfil aceptan JPG, PNG o WEBP, también hasta 5 MB, y
+se optimizan a un máximo de 512 px.
+
 ---
 
 # 🛠️ Stack Tecnológico
@@ -184,6 +203,7 @@ Estas funcionalidades quedan planteadas como futuras versiones del producto.
 
 - PostgreSQL
 - MongoDB
+- [Configuración de PostgreSQL en Supabase](docs/configuracion-supabase.md)
 
 ### Infraestructura
 
