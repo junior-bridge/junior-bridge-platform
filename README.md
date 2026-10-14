@@ -196,7 +196,22 @@ Estas funcionalidades quedan planteadas como futuras versiones del producto.
 - Google OAuth
 - GitHub OAuth
 - Google Maps API
-- Mailtrap
+- Mailtrap (email en desarrollo)
+- Gmail SMTP (email en producción)
+
+### Email
+
+El backend envía email por SMTP configurado con variables de entorno
+(`EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`,
+`EMAIL_USE_TLS`, `DEFAULT_FROM_EMAIL`). Ver `.env.example`.
+
+- **Sin `EMAIL_HOST`**: los emails se imprimen en la consola del backend.
+- **Desarrollo**: Mailtrap sandbox (`sandbox.smtp.mailtrap.io`, puerto `2525`).
+  Los emails quedan en la bandeja de Mailtrap y no llegan a casillas reales.
+- **Producción**: Gmail SMTP (`smtp.gmail.com`, puerto `587`, TLS).
+  Los emails llegan a casillas reales. `EMAIL_HOST_USER` y `DEFAULT_FROM_EMAIL`
+  son la cuenta de Gmail del proyecto; `EMAIL_HOST_PASSWORD` es una contraseña
+  de aplicación de Google (requiere verificación en dos pasos activada).
 
 ### Control de Versiones
 
