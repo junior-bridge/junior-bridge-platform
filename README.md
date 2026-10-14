@@ -184,6 +184,7 @@ Estas funcionalidades quedan planteadas como futuras versiones del producto.
 
 - PostgreSQL
 - MongoDB
+- [Configuración de PostgreSQL en Supabase](docs/configuracion-supabase.md)
 
 ### Infraestructura
 
