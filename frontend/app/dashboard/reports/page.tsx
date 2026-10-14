@@ -1,15 +1,22 @@
 "use client";
 
 import { useRef } from "react";
+import { useState } from "react";
+import Image from "next/image";
 import { useUser } from "../../../context/UserContext";
+import { getMediaUrl } from "@/lib/media";
 import { Plus, X, Upload } from "lucide-react";
 import { useDashboardReports } from "@/hooks/dashboard/useDashboardReports";
 import Loader from "@/components/ui/Loader";
 import ListFilters from "@/components/dashboard/ListFilters";
 
-
 export default function ReportsPage() {
     const { user } = useUser();
+    const [selectedEvidence, setSelectedEvidence] = useState<{
+        url: string;
+        title: string;
+    } | null>(null);
+    const [evidenceLoadError, setEvidenceLoadError] = useState(false);
 
     const { severityColors,
         statusColors,
@@ -28,6 +35,7 @@ export default function ReportsPage() {
         closeReportModal,
         submitting,
         modalError,
+        setModalError,
         formErrors,
         setFormErrors,
         userPostulations,
@@ -123,6 +131,9 @@ export default function ReportsPage() {
                                     <th className="text-left px-4 py-3 font-semibold">
                                         Fecha
                                     </th>
+                                    <th className="text-left px-4 py-3 font-semibold">
+                                        Evidencia
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -133,6 +144,12 @@ export default function ReportsPage() {
                                     const status =
                                         statusLabels[report.state ?? "PENDING"] ??
                                         report.state;
+                                    const evidenceImages = [
+                                        ...(report.evidence_images ?? []),
+                                        ...(report.capture_evidence
+                                            ? [report.capture_evidence]
+                                            : []),
+                                    ];
 
                                     return (
                                         <tr
@@ -179,6 +196,32 @@ export default function ReportsPage() {
                                             <td className="px-4 py-3 text-gray-400 text-xs whitespace-nowrap">
                                                 {formatDate(report.created_at)}
                                             </td>
+                                            <td className="px-4 py-3 text-xs">
+                                                {evidenceImages.length > 0 ? (
+                                                    <div className="flex flex-col gap-1">
+                                                        {evidenceImages.map(
+                                                            (image, index) => (
+                                                                <button
+                                                                    key={`${image}-${index}`}
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setEvidenceLoadError(false);
+                                                                        setSelectedEvidence({
+                                                                            url: getMediaUrl(image) ?? image,
+                                                                            title: `${report.title} - Imagen ${index + 1}`,
+                                                                        });
+                                                                    }}
+                                                                    className="text-brand-green hover:underline whitespace-nowrap"
+                                                                >
+                                                                    Ver imagen {index + 1}
+                                                                </button>
+                                                            ),
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-gray-400">—</span>
+                                                )}
+                                            </td>
                                         </tr>
                                     );
                                 })}
@@ -193,6 +236,49 @@ export default function ReportsPage() {
                                     ? "No hay reportes para mostrar."
                                     : "No se encontraron reportes."}
                             </p>
+                        </div>
+                    )}
+
+                    {selectedEvidence && (
+                        <div
+                            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4"
+                            onClick={() => setSelectedEvidence(null)}
+                        >
+                            <div
+                                role="dialog"
+                                aria-modal="true"
+                                aria-label="Evidencia del reporte"
+                                className="relative flex max-h-[95vh] max-w-[95vw] flex-col items-center gap-3"
+                                onClick={(event) => event.stopPropagation()}
+                            >
+                                <button
+                                    type="button"
+                                    onClick={() => setSelectedEvidence(null)}
+                                    aria-label="Cerrar imagen"
+                                    className="absolute -right-3 -top-3 z-10 rounded-full bg-white p-2 text-gray-700 shadow"
+                                >
+                                    <X size={18} />
+                                </button>
+                                {evidenceLoadError ? (
+                                    <p className="rounded-lg bg-white p-6 text-sm text-red-600">
+                                        No se pudo cargar la imagen. Revisá tu sesión e
+                                        intentá nuevamente.
+                                    </p>
+                                ) : (
+                                    <Image
+                                        src={selectedEvidence.url}
+                                        alt={selectedEvidence.title}
+                                        width={1600}
+                                        height={1200}
+                                        unoptimized
+                                        onError={() => setEvidenceLoadError(true)}
+                                        className="h-auto max-h-[85vh] w-auto max-w-[95vw] rounded-lg object-contain"
+                                    />
+                                )}
+                                <p className="rounded bg-black/60 px-3 py-1 text-sm text-white">
+                                    {selectedEvidence.title}
+                                </p>
+                            </div>
                         </div>
                     )}
                 </div>
@@ -461,30 +547,83 @@ export default function ReportsPage() {
 
                             <div>
                                 <label className="block text-xs font-semibold text-gray-700 mb-1">
-                                    Captura de Evidencia (Opcional)
+                                    Imágenes de evidencia (Opcional)
                                 </label>
                                 <div className="flex items-center gap-2">
                                     <label className="cursor-pointer flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 text-xs text-gray-600 hover:bg-gray-50">
                                         <Upload size={14} />
-                                        Subir archivo
+                                        Subir imágenes
                                         <input
                                             type="file"
-                                            accept="image/*"
+                                            accept="image/jpeg,image/png,image/webp"
+                                            multiple
                                             className="hidden"
-                                            onChange={(e) =>
+                                            onChange={(e) => {
+                                                const files = Array.from(
+                                                    e.target.files ?? [],
+                                                );
+                                                if (files.length > 5) {
+                                                    setModalError(
+                                                        "Podés adjuntar hasta 5 imágenes por reporte.",
+                                                    );
+                                                    return;
+                                                }
+                                                if (
+                                                    files.some(
+                                                        (file) =>
+                                                            file.size >
+                                                            5 * 1024 * 1024,
+                                                    )
+                                                ) {
+                                                    setModalError(
+                                                        "Cada imagen debe pesar 5 MB o menos.",
+                                                    );
+                                                    return;
+                                                }
+                                                setModalError(null);
                                                 setForm((current) => ({
                                                     ...current,
-                                                    evidenceFile: e.target.files?.[0] ?? null,
-                                                }))
-                                            }
+                                                    evidenceFiles: files,
+                                                }));
+                                            }}
                                         />
                                     </label>
-                                    <span className="text-xs text-gray-400 truncate max-w-45">
-                                        {form.evidenceFile
-                                            ? form.evidenceFile.name
-                                            : "Sin archivo"}
-                                    </span>
                                 </div>
+                                <p className="mt-1 text-xs text-gray-500">
+                                    Hasta 5 imágenes JPG, PNG o WEBP (5 MB cada una).
+                                </p>
+                                {form.evidenceFiles.length > 0 && (
+                                    <ul className="mt-2 space-y-1">
+                                        {form.evidenceFiles.map((file, index) => (
+                                            <li
+                                                key={`${file.name}-${file.lastModified}`}
+                                                className="flex items-center justify-between gap-2 text-xs text-gray-600"
+                                            >
+                                                <span className="truncate">
+                                                    {file.name}
+                                                </span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setModalError(null);
+                                                        setForm((current) => ({
+                                                            ...current,
+                                                            evidenceFiles:
+                                                                current.evidenceFiles.filter(
+                                                                    (_, fileIndex) =>
+                                                                        fileIndex !== index,
+                                                                ),
+                                                        }));
+                                                    }}
+                                                    aria-label={`Quitar ${file.name}`}
+                                                    className="text-gray-400 hover:text-red-500"
+                                                >
+                                                    <X size={14} />
+                                                </button>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
                             </div>
 
                             <div className="flex justify-end gap-2 pt-2">
