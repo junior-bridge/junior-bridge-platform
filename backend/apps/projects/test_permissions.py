@@ -25,26 +25,41 @@ class IsProjectOwnerTests(SimpleTestCase):
         return IsProjectOwner().has_object_permission(request, None, project)
 
     def test_owner_client_is_allowed(self):
+        # Arrange
+        # Act
         user = self.user(User.Role.CLIENT, pk=1)
 
+        # Assert
         self.assertTrue(self.has_permission(user, self.project(client_id=1)))
 
     def test_other_client_is_denied(self):
+        # Arrange
+        # Act
         user = self.user(User.Role.CLIENT, pk=2)
 
+        # Assert
         self.assertFalse(self.has_permission(user, self.project(client_id=1)))
 
     def test_tester_is_denied(self):
+        # Arrange
+        # Act
         user = self.user(User.Role.TESTER, pk=1)
 
+        # Assert
         self.assertFalse(self.has_permission(user, self.project(client_id=1)))
 
     def test_admin_is_allowed(self):
+        # Arrange
+        # Act
         user = self.user(User.Role.ADMIN, pk=2)
 
+        # Assert
         self.assertTrue(self.has_permission(user, self.project(client_id=1)))
 
     def test_anonymous_user_is_denied(self):
+        # Arrange
+        # Act
         user = self.user(is_authenticated=False)
 
+        # Assert
         self.assertFalse(self.has_permission(user, self.project(client_id=1)))

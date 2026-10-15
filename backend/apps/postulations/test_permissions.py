@@ -45,28 +45,43 @@ class IsPostulationTesterTests(PostulationPermissionTestCase):
     permission_class = IsPostulationTester
 
     def test_owner_tester_is_allowed(self):
+        # Arrange
+        # Act
         user = self.user(User.Role.TESTER, pk=1)
 
+        # Assert
         self.assertTrue(self.has_permission(user))
 
     def test_other_tester_is_denied(self):
+        # Arrange
+        # Act
         user = self.user(User.Role.TESTER, pk=2)
 
+        # Assert
         self.assertFalse(self.has_permission(user))
 
     def test_client_is_denied(self):
+        # Arrange
+        # Act
         user = self.user(User.Role.CLIENT, pk=1)
 
+        # Assert
         self.assertFalse(self.has_permission(user))
 
     def test_admin_is_allowed(self):
+        # Arrange
+        # Act
         user = self.user(User.Role.ADMIN, pk=2)
 
+        # Assert
         self.assertTrue(self.has_permission(user))
 
     def test_anonymous_user_is_denied(self):
+        # Arrange
+        # Act
         user = self.user(is_authenticated=False)
 
+        # Assert
         self.assertFalse(self.has_permission(user))
 
 
@@ -74,28 +89,43 @@ class IsPostulationProjectOwnerTests(PostulationPermissionTestCase):
     permission_class = IsPostulationProjectOwner
 
     def test_project_owner_client_is_allowed(self):
+        # Arrange
+        # Act
         user = self.user(User.Role.CLIENT, pk=1)
 
+        # Assert
         self.assertTrue(self.has_permission(user))
 
     def test_other_client_is_denied(self):
+        # Arrange
+        # Act
         user = self.user(User.Role.CLIENT, pk=2)
 
+        # Assert
         self.assertFalse(self.has_permission(user))
 
     def test_tester_is_denied(self):
+        # Arrange
+        # Act
         user = self.user(User.Role.TESTER, pk=1)
 
+        # Assert
         self.assertFalse(self.has_permission(user))
 
     def test_admin_is_allowed(self):
+        # Arrange
+        # Act
         user = self.user(User.Role.ADMIN, pk=2)
 
+        # Assert
         self.assertTrue(self.has_permission(user))
 
     def test_anonymous_user_is_denied(self):
+        # Arrange
+        # Act
         user = self.user(is_authenticated=False)
 
+        # Assert
         self.assertFalse(self.has_permission(user))
 
 
@@ -103,41 +133,62 @@ class IsAcceptedPostulationTesterTests(PostulationPermissionTestCase):
     permission_class = IsAcceptedPostulationTester
 
     def test_accepted_owner_tester_is_allowed(self):
+        # Arrange
+        # Act
         user = self.user(User.Role.TESTER, pk=1)
         postulation = self.postulation(status=Postulation.State.ACCEPTED)
 
+        # Assert
         self.assertTrue(self.has_permission(user, postulation))
 
     def test_pending_owner_tester_is_denied(self):
+        # Arrange
+        # Act
         user = self.user(User.Role.TESTER, pk=1)
         postulation = self.postulation(status=Postulation.State.PENDING)
 
+        # Assert
         self.assertFalse(self.has_permission(user, postulation))
 
     def test_rejected_owner_tester_is_denied(self):
+        # Arrange
+        # Act
         user = self.user(User.Role.TESTER, pk=1)
         postulation = self.postulation(status=Postulation.State.REJECTED)
 
+        # Assert
         self.assertFalse(self.has_permission(user, postulation))
 
     def test_other_tester_is_denied(self):
+        # Arrange
+        # Act
         user = self.user(User.Role.TESTER, pk=2)
         postulation = self.postulation(status=Postulation.State.ACCEPTED)
 
+        # Assert
         self.assertFalse(self.has_permission(user, postulation))
 
     def test_client_is_denied(self):
+        # Arrange
+        # Act
         user = self.user(User.Role.CLIENT, pk=1)
         postulation = self.postulation(status=Postulation.State.ACCEPTED)
 
+        # Assert
         self.assertFalse(self.has_permission(user, postulation))
 
     def test_admin_is_allowed(self):
+        # Arrange
+        # Act
         user = self.user(User.Role.ADMIN, pk=2)
 
+        # Assert
         self.assertTrue(self.has_permission(user))
 
     def test_anonymous_user_is_denied(self):
+        # Arrange
+        # Act
         user = self.user(is_authenticated=False)
 
+        # Assert
         self.assertFalse(self.has_permission(user))

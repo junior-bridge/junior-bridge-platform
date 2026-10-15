@@ -92,14 +92,17 @@ class ReportCreateTests(APITestCase):
         })
 
     def test_tester_can_create_report_for_accepted_postulation(self):
+        # Arrange
         self.client.force_authenticate(user=self.tester_user)
 
+        # Act
         response = self.client.post(
             self.url,
             self.report_data,
             format='json',
         )
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIn('_id', response.data)
         self.assertEqual(
@@ -116,14 +119,17 @@ class ReportCreateTests(APITestCase):
         )
 
     def test_report_is_saved_in_mongodb(self):
+        # Arrange
         self.client.force_authenticate(user=self.tester_user)
 
+        # Act
         response = self.client.post(
             self.url,
             self.report_data,
             format='json',
         )
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         report = reports_collection.find_one({
@@ -138,6 +144,7 @@ class ReportCreateTests(APITestCase):
         self.assertEqual(report['severity'], 'high')
 
     def test_client_can_list_reports_for_owned_projects(self):
+        # Arrange
         reports_collection.insert_one({
             'title': self.report_title,
             'description': self.report_data['description'],
@@ -154,8 +161,10 @@ class ReportCreateTests(APITestCase):
         })
         self.client.force_authenticate(user=self.client_user)
 
+        # Act
         response = self.client.get(reverse('report-list'))
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(any(
             report['title'] == self.report_title
@@ -168,6 +177,7 @@ class ReportCreateTests(APITestCase):
         ))
 
     def test_admin_can_list_all_reports(self):
+        # Arrange
         reports_collection.insert_one({
             'title': self.report_title,
             'description': self.report_data['description'],
@@ -184,8 +194,10 @@ class ReportCreateTests(APITestCase):
         )
         self.client.force_authenticate(user=admin_user)
 
+        # Act
         response = self.client.get(reverse('report-list'))
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(any(
             report['title'] == self.report_title
@@ -200,6 +212,7 @@ class ReportCreateTests(APITestCase):
         ],
     )
     def test_tester_can_upload_multiple_evidence_images(
+        # Arrange
         self,
         save_image,
     ):
@@ -215,12 +228,14 @@ class ReportCreateTests(APITestCase):
             ],
         }
 
+        # Act
         response = self.client.post(
             self.url,
             multipart_data,
             format='multipart',
         )
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(
             response.data['evidence_images'],
@@ -250,6 +265,7 @@ class ReportCreateTests(APITestCase):
         return_value=BytesIO(b'evidence'),
     )
     def test_evidence_image_requires_report_access(self, _open_image):
+        # Arrange
         self.client.force_authenticate(user=self.tester_user)
         report_id = reports_collection.insert_one({
             'title': self.report_title,
@@ -264,8 +280,10 @@ class ReportCreateTests(APITestCase):
             kwargs={'id_report': str(report_id), 'index': 0},
         )
 
+        # Act
         response = self.client.get(evidence_url)
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response["Content-Type"], "image/png")
         self.assertEqual(response["Content-Disposition"], "inline")
@@ -287,6 +305,7 @@ class ReportCreateTests(APITestCase):
         )
 
     def test_report_rejects_more_than_five_evidence_images(self):
+        # Arrange
         self.client.force_authenticate(user=self.tester_user)
         multipart_data = {
             'title': self.report_title,
@@ -299,12 +318,14 @@ class ReportCreateTests(APITestCase):
             ],
         }
 
+        # Act
         response = self.client.post(
             self.url,
             multipart_data,
             format='multipart',
         )
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('evidence_images', response.data)
         self.assertFalse(
@@ -312,6 +333,7 @@ class ReportCreateTests(APITestCase):
         )
 
     def test_rejected_postulation_cannot_create_report(self):
+        # Arrange
         rejected_postulation = Postulation.objects.create(
             id_project=self.project,
             id_tester=User.objects.create_user(
@@ -335,12 +357,14 @@ class ReportCreateTests(APITestCase):
             user=rejected_postulation.id_tester
         )
 
+        # Act
         response = self.client.post(
             url,
             self.report_data,
             format='json',
         )
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
             response.data['detail'],
@@ -348,17 +372,21 @@ class ReportCreateTests(APITestCase):
         )
 
     def test_client_cannot_create_report(self):
+        # Arrange
         self.client.force_authenticate(user=self.client_user)
 
+        # Act
         response = self.client.post(
             self.url,
             self.report_data,
             format='json',
         )
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_nonexistent_postulation_returns_not_found(self):
+        # Arrange
         self.client.force_authenticate(user=self.tester_user)
 
         url = reverse(
@@ -366,15 +394,18 @@ class ReportCreateTests(APITestCase):
             kwargs={'postulation_id': 999999},
         )
 
+        # Act
         response = self.client.post(
             url,
             self.report_data,
             format='json',
         )
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_invalid_report_data_returns_bad_request(self):
+        # Arrange
         self.client.force_authenticate(user=self.tester_user)
 
         invalid_data = {
@@ -382,12 +413,14 @@ class ReportCreateTests(APITestCase):
             'severity': 'invalid',
         }
 
+        # Act
         response = self.client.post(
             self.url,
             invalid_data,
             format='json',
         )
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertFalse(
             reports_collection.find_one({

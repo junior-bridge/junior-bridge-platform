@@ -34,16 +34,20 @@ class ProjectCreateTests(APITestCase):
         }
 
     def test_client_can_create_project(self):
+        # Arrange
         self.client.force_authenticate(user=self.client_user)
 
+        # Act
         response = self.client.post(self.url, self.project_data, format='json')
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         project = Project.objects.get()
         self.assertEqual(project.client, self.client_user)
         self.assertEqual(project.state, 'PENDING')
 
     def test_client_and_state_are_assigned_by_backend(self):
+        # Arrange
         self.client.force_authenticate(user=self.client_user)
         data = {
             **self.project_data,
@@ -51,24 +55,32 @@ class ProjectCreateTests(APITestCase):
             'state': 'COMPLETED',
         }
 
+        # Act
         response = self.client.post(self.url, data, format='json')
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         project = Project.objects.get()
         self.assertEqual(project.client, self.client_user)
         self.assertEqual(project.state, 'PENDING')
 
     def test_tester_cannot_create_project(self):
+        # Arrange
         self.client.force_authenticate(user=self.tester_user)
 
+        # Act
         response = self.client.post(self.url, self.project_data, format='json')
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertFalse(Project.objects.exists())
 
     def test_anonymous_user_cannot_create_project(self):
+        # Arrange
+        # Act
         response = self.client.post(self.url, self.project_data, format='json')
 
+        # Assert
         self.assertIn(
             response.status_code,
             [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN],
@@ -76,19 +88,25 @@ class ProjectCreateTests(APITestCase):
         self.assertFalse(Project.objects.exists())
 
     def test_required_fields_are_validated(self):
+        # Arrange
         self.client.force_authenticate(user=self.client_user)
 
+        # Act
         response = self.client.post(self.url, {}, format='json')
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertFalse(Project.objects.exists())
 
     def test_repository_must_be_a_valid_url(self):
+        # Arrange
         self.client.force_authenticate(user=self.client_user)
         data = {**self.project_data, 'repository': 'not-a-url'}
 
+        # Act
         response = self.client.post(self.url, data, format='json')
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertFalse(Project.objects.exists())
 
@@ -131,64 +149,79 @@ class ProjectStatusUpdateTests(APITestCase):
         )
 
     def test_admin_can_approve_pending_project(self):
+        # Arrange
         self.client.force_authenticate(user=self.admin_user)
 
+        # Act
         response = self.client.patch(
             self.url,
             {'state': 'OPEN'},
             format='json',
         )
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.project.refresh_from_db()
         self.assertEqual(self.project.state, 'OPEN')
 
     def test_admin_can_reject_pending_project(self):
+        # Arrange
         self.client.force_authenticate(user=self.admin_user)
 
+        # Act
         response = self.client.patch(
             self.url,
             {'state': 'REJECTED'},
             format='json',
         )
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.project.refresh_from_db()
         self.assertEqual(self.project.state, 'REJECTED')
 
     def test_client_cannot_update_project_status(self):
+        # Arrange
         self.client.force_authenticate(user=self.client_user)
 
+        # Act
         response = self.client.patch(
             self.url,
             {'state': 'OPEN'},
             format='json',
         )
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.project.refresh_from_db()
         self.assertEqual(self.project.state, 'PENDING')
 
     def test_tester_cannot_update_project_status(self):
+        # Arrange
         self.client.force_authenticate(user=self.tester_user)
 
+        # Act
         response = self.client.patch(
             self.url,
             {'state': 'OPEN'},
             format='json',
         )
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.project.refresh_from_db()
         self.assertEqual(self.project.state, 'PENDING')
 
     def test_anonymous_user_cannot_update_project_status(self):
+        # Arrange
+        # Act
         response = self.client.patch(
             self.url,
             {'state': 'OPEN'},
             format='json',
         )
 
+        # Assert
         self.assertIn(
             response.status_code,
             [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN],
@@ -197,39 +230,48 @@ class ProjectStatusUpdateTests(APITestCase):
         self.assertEqual(self.project.state, 'PENDING')
 
     def test_admin_cannot_use_invalid_status(self):
+        # Arrange
         self.client.force_authenticate(user=self.admin_user)
 
+        # Act
         response = self.client.patch(
             self.url,
             {'state': 'COMPLETED'},
             format='json',
         )
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.project.refresh_from_db()
         self.assertEqual(self.project.state, 'PENDING')
 
     def test_processed_project_cannot_be_updated_again(self):
+        # Arrange
         self.client.force_authenticate(user=self.admin_user)
         self.project.state = 'OPEN'
         self.project.save()
 
+        # Act
         response = self.client.patch(
             self.url,
             {'state': 'REJECTED'},
             format='json',
         )
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.project.refresh_from_db()
         self.assertEqual(self.project.state, 'OPEN')
 
     def test_nonexistent_project_returns_not_found(self):
+        # Arrange
         self.client.force_authenticate(user=self.admin_user)
         url = reverse('project-status-update', kwargs={'pk': 9999})
 
+        # Act
         response = self.client.patch(url, {'state': 'OPEN'}, format='json')
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 class ProjectDetailTests(APITestCase):
@@ -277,146 +319,191 @@ class ProjectDetailTests(APITestCase):
         )
 
     def test_owner_can_view_project(self):
+        # Arrange
         self.client.force_authenticate(user=self.client_user)
 
+        # Act
         response = self.client.get(self.url)
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['id'], self.project.id)
 
     def test_admin_can_view_project(self):
+        # Arrange
         self.client.force_authenticate(user=self.admin_user)
 
+        # Act
         response = self.client.get(self.url)
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_other_client_cannot_view_project(self):
+        # Arrange
         self.client.force_authenticate(user=self.other_client)
 
+        # Act
         response = self.client.get(self.url)
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_tester_cannot_view_project(self):
+        # Arrange
         self.client.force_authenticate(user=self.tester_user)
 
+        # Act
         response = self.client.get(self.url)
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_nonexistent_project_returns_not_found(self):
+        # Arrange
         self.client.force_authenticate(user=self.client_user)
         url = reverse('project-detail', kwargs={'pk': 9999})
 
+        # Act
         response = self.client.get(url)
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_owner_can_update_pending_project(self):
+        # Arrange
         self.client.force_authenticate(user=self.client_user)
 
+        # Act
         response = self.client.patch(
             self.url,
             {'title': 'Updated Project'},
             format='json',
         )
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.project.refresh_from_db()
         self.assertEqual(self.project.title, 'Updated Project')
 
     def test_admin_can_update_pending_project(self):
+        # Arrange
         self.client.force_authenticate(user=self.admin_user)
 
+        # Act
         response = self.client.patch(
             self.url,
             {'title': 'Updated By Admin'},
             format='json',
         )
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.project.refresh_from_db()
         self.assertEqual(self.project.title, 'Updated By Admin')
 
     def test_other_client_cannot_update_project(self):
+        # Arrange
         self.client.force_authenticate(user=self.other_client)
 
+        # Act
         response = self.client.patch(
             self.url,
             {'title': 'Unauthorized update'},
             format='json',
         )
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_tester_cannot_update_project(self):
+        # Arrange
         self.client.force_authenticate(user=self.tester_user)
 
+        # Act
         response = self.client.patch(
             self.url,
             {'title': 'Unauthorized update'},
             format='json',
         )
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_processed_project_cannot_be_updated(self):
+        # Arrange
         self.project.state = 'OPEN'
         self.project.save()
 
         self.client.force_authenticate(user=self.client_user)
 
+        # Act
         response = self.client.patch(
             self.url,
             {'title': 'Should not update'},
             format='json',
         )
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.project.refresh_from_db()
         self.assertNotEqual(self.project.title, 'Should not update')
 
     def test_owner_can_delete_pending_project(self):
+        # Arrange
         self.client.force_authenticate(user=self.client_user)
 
+        # Act
         response = self.client.delete(self.url)
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(Project.objects.filter(pk=self.project.pk).exists())
 
     def test_admin_can_delete_pending_project(self):
+        # Arrange
         self.client.force_authenticate(user=self.admin_user)
 
+        # Act
         response = self.client.delete(self.url)
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(Project.objects.filter(pk=self.project.pk).exists())
 
     def test_other_client_cannot_delete_project(self):
+        # Arrange
         self.client.force_authenticate(user=self.other_client)
 
+        # Act
         response = self.client.delete(self.url)
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertTrue(Project.objects.filter(pk=self.project.pk).exists())
 
     def test_tester_cannot_delete_project(self):
+        # Arrange
         self.client.force_authenticate(user=self.tester_user)
 
+        # Act
         response = self.client.delete(self.url)
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertTrue(Project.objects.filter(pk=self.project.pk).exists())
 
     def test_processed_project_cannot_be_deleted(self):
+        # Arrange
         self.project.state = 'OPEN'
         self.project.save()
 
         self.client.force_authenticate(user=self.client_user)
 
+        # Act
         response = self.client.delete(self.url)
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertTrue(Project.objects.filter(pk=self.project.pk).exists())
 
