@@ -25,12 +25,15 @@ class LoginAPITests(APITestCase):
         return payload
 
     def test_login_success_sets_auth_cookies(self):
+        # Arrange
+        # Act
         response = self.client.post(
             self.login_url,
             self.valid_payload(),
             format="json",
         )
 
+        # Assert
         self.assertEqual(
             response.status_code,
             status.HTTP_200_OK,
@@ -52,12 +55,15 @@ class LoginAPITests(APITestCase):
         )
 
     def test_login_invalid_password_returns_400(self):
+        # Arrange
+        # Act
         response = self.client.post(
             self.login_url,
             self.valid_payload(password="WrongPassword123!"),
             format="json",
         )
 
+        # Assert
         self.assertEqual(
             response.status_code,
             status.HTTP_400_BAD_REQUEST,
@@ -66,12 +72,15 @@ class LoginAPITests(APITestCase):
         self.assertNotIn("refresh_token", response.cookies)
 
     def test_login_unknown_email_returns_400(self):
+        # Arrange
+        # Act
         response = self.client.post(
             self.login_url,
             self.valid_payload(email="unknown@example.com"),
             format="json",
         )
 
+        # Assert
         self.assertEqual(
             response.status_code,
             status.HTTP_400_BAD_REQUEST,
@@ -79,15 +88,18 @@ class LoginAPITests(APITestCase):
         self.assertNotIn("access_token", response.cookies)
 
     def test_login_missing_email_returns_400(self):
+        # Arrange
         payload = self.valid_payload()
         payload.pop("email")
 
+        # Act
         response = self.client.post(
             self.login_url,
             payload,
             format="json",
         )
 
+        # Assert
         self.assertEqual(
             response.status_code,
             status.HTTP_400_BAD_REQUEST,
@@ -95,15 +107,18 @@ class LoginAPITests(APITestCase):
         self.assertIn("email", response.data)
 
     def test_login_missing_password_returns_400(self):
+        # Arrange
         payload = self.valid_payload()
         payload.pop("password")
 
+        # Act
         response = self.client.post(
             self.login_url,
             payload,
             format="json",
         )
 
+        # Assert
         self.assertEqual(
             response.status_code,
             status.HTTP_400_BAD_REQUEST,
@@ -111,12 +126,15 @@ class LoginAPITests(APITestCase):
         self.assertIn("password", response.data)
 
     def test_login_invalid_email_returns_400(self):
+        # Arrange
+        # Act
         response = self.client.post(
             self.login_url,
             self.valid_payload(email="correo-invalido"),
             format="json",
         )
 
+        # Assert
         self.assertEqual(
             response.status_code,
             status.HTTP_400_BAD_REQUEST,
