@@ -227,8 +227,11 @@ SIMPLE_JWT = {
 
 AUTH_COOKIE_NAME = "access_token"
 
-# CORS
+# CAMBIOS DE PRODUCCION:
+# Detectar HTTPS detrás del proxy de Render (OBLIGATORIO)
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
+# CORS
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = csv_env(
@@ -242,9 +245,7 @@ CORS_ALLOWED_ORIGINS = csv_env(
     ],
 )
 
-
 # CSRF
-
 CSRF_TRUSTED_ORIGINS = csv_env(
     "CSRF_TRUSTED_ORIGINS",
     [
@@ -256,18 +257,16 @@ CSRF_TRUSTED_ORIGINS = csv_env(
     ],
 )
 
-
-# Cookie security
-# Producción: DEBUG=False → AUTH_COOKIE_SECURE=True
-
+# Cookie security (Ajustado para producción interdominio)
 AUTH_COOKIE_SECURE = not DEBUG
 AUTH_COOKIE_HTTPONLY = True
-AUTH_COOKIE_SAMESITE = "Lax"
+AUTH_COOKIE_SAMESITE = "None" if not DEBUG else "Lax"
 
-# CSRF cookie
+# CSRF cookie (Ajustado para producción interdominio)
 CSRF_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_HTTPONLY = False
-CSRF_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_SAMESITE = "None" if not DEBUG else "Lax"
+
 
 
 # Internationalization
