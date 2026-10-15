@@ -217,8 +217,11 @@ class NotificationWebSocketTests(TestCase):
         return communicator
 
     async def test_authenticated_user_can_connect(self):
+        # Arrange
+        # Act
         communicator = self.create_communicator(self.user)
         connected, _ = await communicator.connect()
+        # Assert
         self.assertTrue(connected)
         response = await communicator.receive_json_from()
 
@@ -234,8 +237,11 @@ class NotificationWebSocketTests(TestCase):
         await communicator.disconnect()
 
     async def test_ping_returns_pong(self):
+        # Arrange
+        # Act
         communicator = self.create_communicator(self.user)
         connected, _ = await communicator.connect()
+        # Assert
         self.assertTrue(connected)
 
         await communicator.receive_json_from()
@@ -255,8 +261,11 @@ class NotificationWebSocketTests(TestCase):
         await communicator.disconnect()
 
     async def test_notification_is_sent_to_user(self):
+        # Arrange
+        # Act
         communicator = self.create_communicator(self.user)
         connected, _ = await communicator.connect()
+        # Assert
         self.assertTrue(connected)
 
         await communicator.receive_json_from()
@@ -290,10 +299,13 @@ class NotificationWebSocketTests(TestCase):
         await communicator.disconnect()
 
     async def test_unauthenticated_user_cannot_connect(self):
+        # Arrange
+        # Act
         from django.contrib.auth.models import AnonymousUser
         communicator = self.create_communicator(AnonymousUser())
         connected, _ = await communicator.connect()
 
+        # Assert
         self.assertFalse(connected)
 
 

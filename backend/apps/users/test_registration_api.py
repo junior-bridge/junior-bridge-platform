@@ -20,14 +20,17 @@ class RegisterAPITests(APITestCase):
         return payload
 
     def test_register_success(self):
+        # Arrange
         payload = self.valid_payload()
 
+        # Act
         response = self.client.post(
             self.register_url,
             payload,
             format="json",
         )
 
+        # Assert
         self.assertEqual(
             response.status_code,
             status.HTTP_201_CREATED,
@@ -41,17 +44,20 @@ class RegisterAPITests(APITestCase):
         self.assertNotIn("password", response.data["user"])
 
     def test_register_duplicate_email_returns_400(self):
+        # Arrange
         User.objects.create_user(
             email="existing@example.com",
             password="StrongPassword123!",
         )
 
+        # Act
         response = self.client.post(
             self.register_url,
             self.valid_payload(email="existing@example.com"),
             format="json",
         )
 
+        # Assert
         self.assertEqual(
             response.status_code,
             status.HTTP_400_BAD_REQUEST,
@@ -60,16 +66,19 @@ class RegisterAPITests(APITestCase):
         self.assertIn("email", response.data)
 
     def test_register_required_fields_returns_400(self):
+        # Arrange
         payload = self.valid_payload()
         payload.pop("name")
         payload.pop("surname")
 
+        # Act
         response = self.client.post(
             self.register_url,
             payload,
             format="json",
         )
 
+        # Assert
         self.assertEqual(
             response.status_code,
             status.HTTP_400_BAD_REQUEST,
@@ -79,12 +88,15 @@ class RegisterAPITests(APITestCase):
         self.assertIn("surname", response.data)
 
     def test_register_invalid_email_returns_400(self):
+        # Arrange
+        # Act
         response = self.client.post(
             self.register_url,
             self.valid_payload(email="correo-invalido"),
             format="json",
         )
 
+        # Assert
         self.assertEqual(
             response.status_code,
             status.HTTP_400_BAD_REQUEST,

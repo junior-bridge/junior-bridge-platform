@@ -65,7 +65,10 @@ class ReportExportTests(APITestCase):
         return list(csv.reader(StringIO(response.content.decode("utf-8-sig")), delimiter=";"))
 
     def test_csv_is_real_complete_utf8_and_private(self):
+        # Arrange
+        # Act
         response = self.export()
+        # Assert
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.content.startswith(b"\xef\xbb\xbf"))
         rows = self.csv_rows(response)
@@ -85,14 +88,20 @@ class ReportExportTests(APITestCase):
         self.assertEqual(response["Content-Type"], "text/csv; charset=utf-8")
 
     def test_csv_neutralizes_formulas_without_losing_original_text(self):
+        # Arrange
+        # Act
         for formula in ('=HYPERLINK("evil")', '  +SUM(1,2)', '-1+1', '@cmd', '\t=1', '\r=1', '\n=1'):
             with self.subTest(formula=formula):
                 self.documents[0]["title"] = formula
+        # Assert
                 self.assertEqual(self.csv_rows(self.export())[1][3], "'" + formula)
 
     def test_xlsx_is_real_and_user_text_cannot_become_formula(self):
+        # Arrange
+        # Act
         self.documents[0]["title"] = "=1+1"
         response = self.export(file_format="xlsx")
+        # Assert
         self.assertEqual(response.status_code, 200)
         workbook = load_workbook(BytesIO(response.content))
         self.assertEqual(workbook.sheetnames, ["Reportes"])
@@ -110,15 +119,21 @@ class ReportExportTests(APITestCase):
         self.assertIsNone(sheet["I5"].value)
 
     def test_excel_never_silently_truncates_long_text(self):
+        # Arrange
+        # Act
         self.documents[0]["description"] = "ñ" * 33000
         response = self.export(file_format="xlsx")
+        # Assert
         self.assertEqual(response.status_code, 400)
         self.assertIn("Excel", response.data["detail"])
         self.assertNotIn("Content-Disposition", response)
 
     def test_pdf_is_real_multipage_with_long_text_and_escaped_markup(self):
+        # Arrange
+        # Act
         self.documents[0]["description"] = '<img src="https://private.test"> & ñ\n' * 500
         response = self.export(file_format="pdf")
+        # Assert
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "application/pdf")
         self.assertTrue(response.content.startswith(b"%PDF-"))
@@ -126,15 +141,21 @@ class ReportExportTests(APITestCase):
         self.assertGreater(len(re.findall(rb"/Type\s*/Page\b", response.content)), 1)
 
     def test_anonymous_cannot_export(self):
+        # Arrange
+        # Act
         self.client.force_authenticate(user=None)
+        # Assert
         self.assertEqual(self.export().status_code, 401)
         self.find.assert_not_called()
 
     def test_authorization_is_same_as_list_for_every_role(self):
+        # Arrange
+        # Act
         for user, count in [(self.admin, 5), (self.tester, 4), (self.owner, 4), (self.stranger, 0), (self.other_client, 0)]:
             with self.subTest(role=user.email):
                 self.client.force_authenticate(user=user)
                 listing = self.client.get(reverse("report-list"))
+        # Assert
                 self.assertEqual(len(listing.data), count)
                 response = self.export()
                 if count:
@@ -146,6 +167,8 @@ class ReportExportTests(APITestCase):
                     self.assertNotIn("Content-Disposition", response)
 
     def test_filters_match_frontend_fields_and_utc_day(self):
+        # Arrange
+        # Act
         for params, count in [
             ({"q": "LOGIN"}, 1), ({"q": "media"}, 1), ({"q": "REVISIÓN"}, 1),
             ({"q": "abierto"}, 2), ({"q": "critical"}, 1), ({"q": str(self.postulation.pk)}, 4),
@@ -155,28 +178,38 @@ class ReportExportTests(APITestCase):
         ]:
             with self.subTest(params=params):
                 response = self.export(**params)
+        # Assert
                 self.assertEqual(response.status_code, 200 if count else 400)
                 if count:
                     self.assertEqual(len(self.csv_rows(response))-1, count)
 
     def test_filters_apply_to_all_formats(self):
+        # Arrange
+        # Act
         for fmt in ("csv", "pdf", "xlsx"):
             with self.subTest(fmt=fmt):
                 response = self.export(file_format=fmt, q="Login", date="2026-10-15")
+        # Assert
                 self.assertEqual(response.status_code, 200)
                 self.assertEqual(response["X-Report-Count"], "1")
 
     def test_invalid_parameters_do_not_expand_access(self):
+        # Arrange
+        # Act
         for params in ({"file_format": "exe"}, {"date": "2026-02-30"}, {"date": "2026-1-1"},
                 {"user_id": self.admin.pk}, {"postulation_id": -1}, {"q": ["a", "b"]}):
             with self.subTest(params=params):
                 response = self.export(**params)
+        # Assert
                 self.assertEqual(response.status_code, 400)
                 self.assertNotIn("Content-Disposition", response)
         self.assertEqual(self.client.get(self.url).status_code, 400)
 
     def test_no_partial_success_when_generation_fails(self):
+        # Arrange
+        # Act
         with patch("apps.reports.views.generate_csv", side_effect=RuntimeError("generation failed")):
+        # Assert
             with self.assertLogs("apps.reports.views", level="ERROR"):
                 response = self.export()
         self.assertEqual(response.status_code, 500)
@@ -184,15 +217,21 @@ class ReportExportTests(APITestCase):
         self.assertIn("archivo completo", response.data["detail"])
 
     def test_export_limit_returns_error_without_truncating(self):
+        # Arrange
+        # Act
         with patch("apps.reports.views.MAX_EXPORT_REPORTS", 2):
             response = self.export()
+        # Assert
         self.assertEqual(response.status_code, 400)
         self.assertNotIn("Content-Disposition", response)
 
     def test_missing_fields_and_orphan_project_are_explicit(self):
+        # Arrange
+        # Act
         self.client.force_authenticate(user=self.admin)
         response = self.export()
         rows = self.csv_rows(response)
+        # Assert
         self.assertEqual(rows[-1][2], "")
         self.assertEqual(rows[4][6], "ABIERTO")
         self.assertEqual(rows[4][8], "")

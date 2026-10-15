@@ -145,6 +145,7 @@ class PostulationTests(APITestCase):
         self.assertFalse(Postulation.objects.exists())
 
     def test_project_owner_can_accept_postulation(self):
+        # Arrange
         postulation = self.create_postulation()
         url = reverse(
             'postulation-accept',
@@ -152,8 +153,10 @@ class PostulationTests(APITestCase):
         )
         self.client.force_authenticate(user=self.client_user)
 
+        # Act
         response = self.client.post(url)
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         postulation.refresh_from_db()
         self.project.refresh_from_db()
@@ -161,6 +164,7 @@ class PostulationTests(APITestCase):
         self.assertEqual(self.project.state, 'IN_PROGRESS')
 
     def test_project_owner_can_reject_postulation(self):
+        # Arrange
         postulation = self.create_postulation()
         url = reverse(
             'postulation-reject',
@@ -168,13 +172,16 @@ class PostulationTests(APITestCase):
         )
         self.client.force_authenticate(user=self.client_user)
 
+        # Act
         response = self.client.post(url)
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         postulation.refresh_from_db()
         self.assertEqual(postulation.status, Postulation.State.REJECTED)
 
     def test_other_client_cannot_accept_postulation(self):
+        # Arrange
         postulation = self.create_postulation()
         url = reverse(
             'postulation-accept',
@@ -182,14 +189,17 @@ class PostulationTests(APITestCase):
         )
         self.client.force_authenticate(user=self.other_client)
 
+        # Act
         response = self.client.post(url)
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         postulation.refresh_from_db()
         self.assertEqual(postulation.status, Postulation.State.PENDING)
         self.assertEqual(self.project.state, 'OPEN')
 
     def test_other_client_cannot_reject_postulation(self):
+        # Arrange
         postulation = self.create_postulation()
         url = reverse(
             'postulation-reject',
@@ -197,13 +207,16 @@ class PostulationTests(APITestCase):
         )
         self.client.force_authenticate(user=self.other_client)
 
+        # Act
         response = self.client.post(url)
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         postulation.refresh_from_db()
         self.assertEqual(postulation.status, Postulation.State.PENDING)
 
     def test_accepted_postulation_cannot_be_accepted_again(self):
+        # Arrange
         postulation = self.create_postulation(Postulation.State.ACCEPTED)
         url = reverse(
             'postulation-accept',
@@ -211,8 +224,10 @@ class PostulationTests(APITestCase):
         )
         self.client.force_authenticate(user=self.client_user)
 
+        # Act
         response = self.client.post(url)
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         postulation.refresh_from_db()
         self.assertEqual(postulation.status, Postulation.State.ACCEPTED)
