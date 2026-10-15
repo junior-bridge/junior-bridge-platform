@@ -113,3 +113,12 @@ class RolePermissionTests(SimpleTestCase):
 
         # Assert
         self.assert_all_permissions_denied(request)
+
+
+class CsrfTokenViewTests(SimpleTestCase):
+    def test_csrf_endpoint_returns_token_and_sets_cookie(self):
+        response = self.client.get("/api/auth/csrf/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["csrfToken"])
+        self.assertIn("csrftoken", response.cookies)

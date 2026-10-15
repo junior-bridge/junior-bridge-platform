@@ -1,6 +1,6 @@
 import { User } from "@/types";
 import { AdminUser } from "@/types/dashboardTypes";
-import { getCookie, getCsrfToken } from "./auth.service";
+import { clearCsrfToken, getCsrfToken } from "@/lib/csrf";
 import { apiFetch } from "./index.service";
 import { API_BASE } from "@/lib/apiBase";
 
@@ -15,26 +15,24 @@ export async function logoutUser(): Promise<void> {
 }
 
 export async function updateProfilePhoto(file: File): Promise<User> {
-    await getCsrfToken();
-    const csrfToken = getCookie("csrftoken");
-    if (!csrfToken) {
-        throw new Error("No se encontró el token CSRF.");
-    }
+    const csrfToken = await getCsrfToken();
 
     const formData = new FormData();
     formData.append("profile_photo_upload", file);
 
-    const response = await fetch(
-        `${API_BASE}/api/auth/profile/`,
-        {
+    let response: Response;
+    try {
+        response = await fetch(`${API_BASE}/api/auth/profile/`, {
             method: "PUT",
             headers: {
                 "X-CSRFToken": csrfToken,
             },
             credentials: "include",
             body: formData,
-        },
-    );
+        });
+    } finally {
+        clearCsrfToken();
+    }
 
     if (!response.ok) {
         const errorData: unknown = await response.json().catch(() => ({}));
