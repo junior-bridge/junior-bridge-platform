@@ -42,12 +42,15 @@ class ProfilePhotoTests(APITestCase):
         )
 
     def test_user_can_upload_compressed_profile_photo(self):
+        # Arrange
+        # Act
         response = self.client.put(
             reverse("auth-profile"),
             {"profile_photo_upload": self.create_image()},
             format="multipart",
         )
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
             response.data["profile_photo"],
@@ -60,11 +63,14 @@ class ProfilePhotoTests(APITestCase):
             self.assertLessEqual(max(saved_image.size), 512)
 
     def test_profile_photo_is_served_inline_to_authenticated_user(self):
+        # Arrange
+        # Act
         response = self.client.put(
             reverse("auth-profile"),
             {"profile_photo_upload": self.create_image()},
             format="multipart",
         )
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         photo_response = self.client.get(reverse("auth-profile-photo"))
@@ -74,8 +80,11 @@ class ProfilePhotoTests(APITestCase):
         self.assertEqual(photo_response["Content-Disposition"], "inline")
 
     def test_other_user_cannot_read_profile_photo(self):
+        # Arrange
         self.client.force_authenticate(user=None)
 
+        # Act
         response = self.client.get(reverse("auth-profile-photo"))
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

@@ -65,6 +65,7 @@ class ProjectCompletedNotificationTests(TestCase):
             self.project.save()
 
     def test_completion_notifies_and_emails_accepted_tester(
+        # Arrange
         self, mock_send_email, mock_get_channel_layer, mock_async_to_sync
     ):
         group_send = MagicMock()
@@ -72,7 +73,9 @@ class ProjectCompletedNotificationTests(TestCase):
 
         self.complete_project()
 
+        # Act
         notification = self.completion_notifications().get()
+        # Assert
         self.assertEqual(notification.id_user, self.accepted_tester)
         self.assertIn(self.project.title, notification.message)
 
@@ -87,51 +90,63 @@ class ProjectCompletedNotificationTests(TestCase):
         self.assertIn(self.project.title, email_kwargs['message'])
 
     def test_non_accepted_testers_get_nothing(
+        # Arrange
         self, mock_send_email, mock_get_channel_layer, mock_async_to_sync
     ):
         self.complete_project()
 
+        # Act
         notified_users = set(
             self.completion_notifications().values_list('id_user', flat=True)
         )
+        # Assert
         self.assertNotIn(self.pending_tester.id, notified_users)
         self.assertNotIn(self.rejected_tester.id, notified_users)
         emailed_users = {c.kwargs['user'] for c in mock_send_email.call_args_list}
         self.assertEqual(emailed_users, {self.accepted_tester})
 
     def test_resaving_completed_project_sends_nothing(
+        # Arrange
         self, mock_send_email, mock_get_channel_layer, mock_async_to_sync
     ):
         self.complete_project()
         mock_send_email.reset_mock()
 
+        # Act
         with self.captureOnCommitCallbacks(execute=True):
             self.project.title = 'Renamed completed project'
             self.project.save()
 
+        # Assert
         self.assertEqual(self.completion_notifications().count(), 1)
         mock_send_email.assert_not_called()
 
     def test_other_state_changes_send_nothing(
+        # Arrange
+        # Act
         self, mock_send_email, mock_get_channel_layer, mock_async_to_sync
     ):
         with self.captureOnCommitCallbacks(execute=True):
             self.project.state = 'IN_REVIEW'
             self.project.save()
 
+        # Assert
         self.assertFalse(self.completion_notifications().exists())
         mock_send_email.assert_not_called()
 
     def test_complete_endpoint_notifies_accepted_tester(
+        # Arrange
         self, mock_send_email, mock_get_channel_layer, mock_async_to_sync
     ):
         api = APIClient()
         api.force_authenticate(user=self.client_user)
         url = reverse('project-complete', kwargs={'pk': self.project.pk})
 
+        # Act
         with self.captureOnCommitCallbacks(execute=True):
             response = api.post(url)
 
+        # Assert
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             list(self.completion_notifications().values_list('id_user', flat=True)),

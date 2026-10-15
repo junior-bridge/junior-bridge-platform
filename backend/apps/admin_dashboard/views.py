@@ -9,6 +9,7 @@ from rest_framework.views import APIView
 from apps.reports.mongodb import reports_collection
 from apps.projects.models import Project
 from apps.users.models import User
+from apps.users.permissions import IsAdmin
 from apps.postulations.models import Postulation
 
 
@@ -58,7 +59,7 @@ AdminStatsResponseSerializer = inline_serializer(
 
 @extend_schema(tags=["Admin"])
 class AdminStatsView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdmin]
 
     @extend_schema(
         summary="Get Admin Dashboard Stats",
@@ -70,6 +71,7 @@ class AdminStatsView(APIView):
         responses={
             200: AdminStatsResponseSerializer,
             401: OpenApiResponse(description="Authentication required."),
+            403: OpenApiResponse(description="Administrator role required."),
         },
     )
     def get(self, request):

@@ -69,10 +69,13 @@ def mock_urlopen_response(payload):
 class FetchPageSpeedScoresTests(TestCase):
     @patch('apps.projects.pagespeed.urllib.request.urlopen')
     def test_parses_scores_as_integers_from_zero_to_one_hundred(self, urlopen):
+        # Arrange
         urlopen.return_value = mock_urlopen_response(SAMPLE_PSI_RESPONSE)
 
+        # Act
         scores = fetch_pagespeed_scores('https://example.com', 'MOBILE')
 
+        # Assert
         self.assertEqual(
             scores,
             {
@@ -86,12 +89,15 @@ class FetchPageSpeedScoresTests(TestCase):
     @override_settings(PAGESPEED_API_KEY='', PAGESPEED_TIMEOUT=7)
     @patch('apps.projects.pagespeed.urllib.request.urlopen')
     def test_builds_query_without_key_when_not_configured(self, urlopen):
+        # Arrange
         urlopen.return_value = mock_urlopen_response(SAMPLE_PSI_RESPONSE)
 
         fetch_pagespeed_scores('https://example.com', 'DESKTOP')
 
+        # Act
         request_url = urlopen.call_args.args[0]
         query = parse_qs(urlparse(request_url).query)
+        # Assert
         self.assertEqual(query['url'], ['https://example.com'])
         self.assertEqual(query['strategy'], ['desktop'])
         self.assertEqual(
@@ -104,47 +110,65 @@ class FetchPageSpeedScoresTests(TestCase):
     @override_settings(PAGESPEED_API_KEY='secret-key')
     @patch('apps.projects.pagespeed.urllib.request.urlopen')
     def test_includes_key_when_configured(self, urlopen):
+        # Arrange
         urlopen.return_value = mock_urlopen_response(SAMPLE_PSI_RESPONSE)
 
         fetch_pagespeed_scores('https://example.com', 'MOBILE')
 
+        # Act
         query = parse_qs(urlparse(urlopen.call_args.args[0]).query)
+        # Assert
         self.assertEqual(query['key'], ['secret-key'])
 
     @patch('apps.projects.pagespeed.urllib.request.urlopen')
     def test_raises_on_network_error(self, urlopen):
+        # Arrange
+        # Act
         urlopen.side_effect = URLError('unreachable')
 
+        # Assert
         with self.assertRaises(PageSpeedError):
             fetch_pagespeed_scores('https://example.com', 'MOBILE')
 
     @patch('apps.projects.pagespeed.urllib.request.urlopen')
     def test_raises_on_timeout(self, urlopen):
+        # Arrange
+        # Act
         urlopen.side_effect = socket.timeout('timed out')
 
+        # Assert
         with self.assertRaises(PageSpeedError):
             fetch_pagespeed_scores('https://example.com', 'MOBILE')
 
     @patch('apps.projects.pagespeed.urllib.request.urlopen')
     def test_raises_on_http_error(self, urlopen):
+        # Arrange
+        # Act
         urlopen.side_effect = HTTPError(
             'https://www.googleapis.com', 429, 'Too Many Requests', {}, None
         )
 
+        # Assert
         with self.assertRaises(PageSpeedError):
             fetch_pagespeed_scores('https://example.com', 'MOBILE')
 
     @patch('apps.projects.pagespeed.urllib.request.urlopen')
     def test_raises_on_invalid_json(self, urlopen):
+        # Arrange
+        # Act
         urlopen.return_value = mock_urlopen_response(b'not json')
 
+        # Assert
         with self.assertRaises(PageSpeedError):
             fetch_pagespeed_scores('https://example.com', 'MOBILE')
 
     @patch('apps.projects.pagespeed.urllib.request.urlopen')
     def test_raises_when_lighthouse_result_is_missing(self, urlopen):
+        # Arrange
+        # Act
         urlopen.return_value = mock_urlopen_response({'id': 'x'})
 
+        # Assert
         with self.assertRaises(PageSpeedError):
             fetch_pagespeed_scores('https://example.com', 'MOBILE')
 
@@ -162,15 +186,20 @@ class FetchPageSpeedScoresRobustnessTests(TestCase):
 
     @patch('apps.projects.pagespeed.urllib.request.urlopen')
     def test_raises_on_transport_error_when_opening(self, urlopen):
+        # Arrange
+        # Act
         for error in self.TRANSPORT_ERRORS:
             with self.subTest(error=type(error).__name__):
                 urlopen.side_effect = error
 
+        # Assert
                 with self.assertRaises(PageSpeedError):
                     fetch_pagespeed_scores('https://example.com', 'MOBILE')
 
     @patch('apps.projects.pagespeed.urllib.request.urlopen')
     def test_raises_on_transport_error_while_reading(self, urlopen):
+        # Arrange
+        # Act
         for error in self.TRANSPORT_ERRORS:
             with self.subTest(error=type(error).__name__):
                 response = mock_urlopen_response(b'')
@@ -178,11 +207,14 @@ class FetchPageSpeedScoresRobustnessTests(TestCase):
                 urlopen.side_effect = None
                 urlopen.return_value = response
 
+        # Assert
                 with self.assertRaises(PageSpeedError):
                     fetch_pagespeed_scores('https://example.com', 'MOBILE')
 
     @patch('apps.projects.pagespeed.urllib.request.urlopen')
     def test_raises_on_malformed_categories(self, urlopen):
+        # Arrange
+        # Act
         malformed_payloads = {
             'categories is a list': {'lighthouseResult': {'categories': ['performance']}},
             'categories is a string': {'lighthouseResult': {'categories': 'oops'}},
@@ -207,15 +239,19 @@ class FetchPageSpeedScoresRobustnessTests(TestCase):
             with self.subTest(payload=label):
                 urlopen.return_value = mock_urlopen_response(payload)
 
+        # Assert
                 with self.assertRaises(PageSpeedError):
                     fetch_pagespeed_scores('https://example.com', 'MOBILE')
 
     @patch('apps.projects.pagespeed.urllib.request.urlopen')
     def test_missing_categories_yield_empty_scores(self, urlopen):
+        # Arrange
         urlopen.return_value = mock_urlopen_response({'lighthouseResult': {}})
 
+        # Act
         scores = fetch_pagespeed_scores('https://example.com', 'MOBILE')
 
+        # Assert
         self.assertEqual(
             scores,
             {
@@ -234,10 +270,13 @@ class RunProjectAuditTests(TestCase):
 
     @patch('apps.projects.pagespeed.fetch_pagespeed_scores')
     def test_stores_successful_audit_with_scores(self, fetch):
+        # Arrange
         fetch.return_value = SAMPLE_SCORES
 
+        # Act
         audit = run_project_audit(self.project, self.owner, 'DESKTOP')
 
+        # Assert
         fetch.assert_called_once_with('https://example.com/demo', 'DESKTOP')
         self.assertEqual(audit.status, ProjectAudit.Status.SUCCESS)
         self.assertEqual(audit.strategy, ProjectAudit.Strategy.DESKTOP)
@@ -248,8 +287,11 @@ class RunProjectAuditTests(TestCase):
 
     @patch('apps.projects.pagespeed.fetch_pagespeed_scores')
     def test_stores_failed_audit_on_error(self, fetch):
+        # Arrange
+        # Act
         fetch.side_effect = PageSpeedError('PSI unavailable')
 
+        # Assert
         with self.assertLogs('apps.projects.pagespeed', level='WARNING'):
             audit = run_project_audit(self.project, self.owner)
 
@@ -270,11 +312,14 @@ class ProjectAuditViewTests(APITestCase):
         self.url = reverse('project-audit', kwargs={'pk': self.project.pk})
 
     def test_owner_can_run_audit(self, fetch):
+        # Arrange
         fetch.return_value = SAMPLE_SCORES
         self.client.force_authenticate(user=self.owner)
 
+        # Act
         response = self.client.post(self.url, {}, format='json')
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['status'], 'SUCCESS')
         self.assertEqual(response.data['performance'], 90)
@@ -282,38 +327,50 @@ class ProjectAuditViewTests(APITestCase):
         self.assertEqual(self.project.audits.count(), 1)
 
     def test_admin_can_run_audit_with_strategy(self, fetch):
+        # Arrange
         fetch.return_value = SAMPLE_SCORES
         self.client.force_authenticate(user=self.admin)
 
+        # Act
         response = self.client.post(
             self.url, {'strategy': 'DESKTOP'}, format='json'
         )
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['strategy'], 'DESKTOP')
         fetch.assert_called_once_with('https://example.com/demo', 'DESKTOP')
 
     def test_other_client_cannot_run_audit(self, fetch):
+        # Arrange
         self.client.force_authenticate(user=self.other_client)
 
+        # Act
         response = self.client.post(self.url, {}, format='json')
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         fetch.assert_not_called()
         self.assertFalse(ProjectAudit.objects.exists())
 
     def test_tester_cannot_run_audit(self, fetch):
+        # Arrange
         self.client.force_authenticate(user=self.tester)
 
+        # Act
         response = self.client.post(self.url, {}, format='json')
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         fetch.assert_not_called()
 
     def test_pagespeed_failure_returns_bad_gateway(self, fetch):
+        # Arrange
+        # Act
         fetch.side_effect = PageSpeedError('PSI unavailable')
         self.client.force_authenticate(user=self.owner)
 
+        # Assert
         with self.assertLogs('apps.projects.pagespeed', level='WARNING'):
             response = self.client.post(self.url, {}, format='json')
 
@@ -323,24 +380,31 @@ class ProjectAuditViewTests(APITestCase):
         self.assertEqual(audit.status, ProjectAudit.Status.FAILED)
 
     def test_invalid_strategy_returns_bad_request(self, fetch):
+        # Arrange
         self.client.force_authenticate(user=self.owner)
 
+        # Act
         response = self.client.post(
             self.url, {'strategy': 'TABLET'}, format='json'
         )
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         fetch.assert_not_called()
 
     def test_post_to_missing_project_returns_not_found(self, fetch):
+        # Arrange
         self.client.force_authenticate(user=self.admin)
         url = reverse('project-audit', kwargs={'pk': 9999})
 
+        # Act
         response = self.client.post(url, {}, format='json')
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_tester_can_read_latest_audit(self, fetch):
+        # Arrange
         ProjectAudit.objects.create(
             project=self.project,
             status=ProjectAudit.Status.SUCCESS,
@@ -353,46 +417,62 @@ class ProjectAuditViewTests(APITestCase):
         )
         self.client.force_authenticate(user=self.tester)
 
+        # Act
         response = self.client.get(self.url)
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['id'], latest.id)
         self.assertEqual(response.data['performance'], 75)
 
     def test_get_without_audits_returns_not_found(self, fetch):
+        # Arrange
         self.client.force_authenticate(user=self.tester)
 
+        # Act
         response = self.client.get(self.url)
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertIn('detail', response.data)
 
     def test_get_missing_project_returns_not_found(self, fetch):
+        # Arrange
         self.client.force_authenticate(user=self.tester)
         url = reverse('project-audit', kwargs={'pk': 9999})
 
+        # Act
         response = self.client.get(url)
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_unauthenticated_user_cannot_run_audit(self, fetch):
+        # Arrange
+        # Act
         response = self.client.post(self.url, {}, format='json')
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         fetch.assert_not_called()
         self.assertFalse(ProjectAudit.objects.exists())
 
     def test_unauthenticated_user_cannot_read_audit(self, fetch):
+        # Arrange
+        # Act
         response = self.client.get(self.url)
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_transport_error_while_reading_returns_bad_gateway(self, fetch):
+        # Arrange
         fetch.side_effect = None
         self.client.force_authenticate(user=self.owner)
         response_mock = mock_urlopen_response(b'')
         response_mock.read.side_effect = http.client.IncompleteRead(b'partial')
 
+        # Act
         with patch(
             'apps.projects.pagespeed.fetch_pagespeed_scores',
             wraps=fetch_pagespeed_scores,
@@ -402,6 +482,7 @@ class ProjectAuditViewTests(APITestCase):
         ), self.assertLogs('apps.projects.pagespeed', level='WARNING'):
             response = self.client.post(self.url, {}, format='json')
 
+        # Assert
         self.assertEqual(response.status_code, status.HTTP_502_BAD_GATEWAY)
         self.assertEqual(response.data['status'], 'FAILED')
         self.assertTrue(response.data['error_message'])
