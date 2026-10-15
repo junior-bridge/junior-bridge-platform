@@ -30,9 +30,23 @@ SECRET_KEY = os.environ["SECRET_KEY"]
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool_env("DEBUG", default=False)
 
+FRONTEND_URL = os.getenv("FRONTEND_URL", "").strip().rstrip("/")
+if FRONTEND_URL and "://" not in FRONTEND_URL:
+    FRONTEND_URL = f"https://{FRONTEND_URL}"
+FRONTEND_URL = FRONTEND_URL or "http://localhost:3000"
+
 ALLOWED_HOSTS = csv_env(
     "ALLOWED_HOSTS",
-    ["localhost", "127.0.0.1", "backend"],
+    [
+        host
+        for host in [
+            os.getenv("RENDER_EXTERNAL_HOSTNAME", "").strip(),
+            "localhost",
+            "127.0.0.1",
+            "backend",
+        ]
+        if host
+    ],
 )
 
 # Application definition
@@ -170,8 +184,14 @@ SOCIALACCOUNT_LOGIN_ON_GET = False
 
 SITE_ID = 1
 
-FRONTEND_OAUTH_SUCCESS_URL = os.environ["FRONTEND_OAUTH_SUCCESS_URL"]
-FRONTEND_OAUTH_ERROR_URL = os.environ["FRONTEND_OAUTH_ERROR_URL"]
+FRONTEND_OAUTH_SUCCESS_URL = os.getenv(
+    "FRONTEND_OAUTH_SUCCESS_URL",
+    f"{FRONTEND_URL}/dashboard",
+)
+FRONTEND_OAUTH_ERROR_URL = os.getenv(
+    "FRONTEND_OAUTH_ERROR_URL",
+    f"{FRONTEND_URL}/login",
+)
 SOCIALACCOUNT_LOGIN_ON_GET = True
 SOCIALACCOUNT_ADAPTER = "apps.users.adapter.JuniorBridgeSocialAccountAdapter"
 # Django REST Framework
@@ -214,6 +234,7 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = csv_env(
     "CORS_ALLOWED_ORIGINS",
     [
+        FRONTEND_URL,
         "http://localhost:3000",
         "http://127.0.0.1:3000",
         "http://localhost:3001",
@@ -227,6 +248,7 @@ CORS_ALLOWED_ORIGINS = csv_env(
 CSRF_TRUSTED_ORIGINS = csv_env(
     "CSRF_TRUSTED_ORIGINS",
     [
+        FRONTEND_URL,
         "http://localhost:3000",
         "http://127.0.0.1:3000",
         "http://localhost:3001",
@@ -313,10 +335,11 @@ MONGODB_DATABASE = os.getenv(
 )
 
 
-REDIS_URL = (
-    os.getenv("REDIS_URL", "").strip()
-    or "redis://redis:6379/0"
-)
+REDIS_URL = os.getenv("REDIS_URL", "").strip()
+if not REDIS_URL:
+    redis_host = os.getenv("REDIS_HOST", "redis").strip()
+    redis_port = os.getenv("REDIS_PORT", "6379").strip()
+    REDIS_URL = f"redis://{redis_host}:{redis_port}/0"
 
 CHANNEL_LAYERS = {
     "default": {
@@ -358,7 +381,7 @@ PAGESPEED_TIMEOUT = positive_int_env("PAGESPEED_TIMEOUT", 120)
 
 FRONTEND_PASSWORD_RESET_URL = os.getenv(
     "FRONTEND_PASSWORD_RESET_URL",
-    "http://localhost:3000/reset-password",
+    f"{FRONTEND_URL}/reset-password",
 )
 
 PASSWORD_RESET_TIMEOUT = int(

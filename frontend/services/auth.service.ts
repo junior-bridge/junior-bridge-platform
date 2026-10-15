@@ -1,5 +1,6 @@
 import { OAuthFlow, OAuthProcess, OAuthProvider, OAuthStartResponse } from "@/types/authTypes";
 import { apiFetch } from "./index.service";
+import { API_BASE } from "@/lib/apiBase";
 
 export function getCookie(name: string): string | null {
     if (typeof document === "undefined") {
@@ -20,7 +21,7 @@ export function getCookie(name: string): string | null {
 }
 
 export async function getCsrfToken(): Promise<void> {
-    const url = `${process.env.NEXT_PUBLIC_API_BASE}/api/auth/csrf/`;
+    const url = `${API_BASE}/api/auth/csrf/`;
     const response = await fetch(url, {
         method: "GET",
         credentials: "include",

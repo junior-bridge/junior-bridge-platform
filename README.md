@@ -210,6 +210,8 @@ se optimizan a un máximo de 512 px.
 - Docker
 - Docker Compose
 - Redis
+- [Instrucciones de despliegue local](docs/despliegue-local.md)
+- [Bitácora del despliegue en Render](docs/bitacora-despliegue-render.md)
 
 ### Integraciones
 

@@ -2,6 +2,7 @@ import { User } from "@/types";
 import { AdminUser } from "@/types/dashboardTypes";
 import { getCookie, getCsrfToken } from "./auth.service";
 import { apiFetch } from "./index.service";
+import { API_BASE } from "@/lib/apiBase";
 
 export async function getProfile(): Promise<User> {
     return apiFetch<User>("/api/auth/profile/");
@@ -24,7 +25,7 @@ export async function updateProfilePhoto(file: File): Promise<User> {
     formData.append("profile_photo_upload", file);
 
     const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE}/api/auth/profile/`,
+        `${API_BASE}/api/auth/profile/`,
         {
             method: "PUT",
             headers: {

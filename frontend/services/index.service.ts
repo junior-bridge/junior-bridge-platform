@@ -1,5 +1,6 @@
 import { ApiError } from "@/types";
 import { getCookie } from "./auth.service";
+import { API_BASE } from "@/lib/apiBase";
 
 export class ApiRequestError extends Error {
     readonly data: ApiError;
@@ -32,7 +33,7 @@ export async function apiFetch<T>(
 
         headers.set("X-CSRFToken", csrfToken);
     }
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}${endpoint}`, {
+    const response = await fetch(`${API_BASE}${endpoint}`, {
         ...options,
         headers,
         credentials: "include",
