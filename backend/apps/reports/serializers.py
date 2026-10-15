@@ -1,8 +1,30 @@
 import json
+from datetime import date
 
 from django.urls import reverse
 from rest_framework.fields import empty
 from rest_framework import serializers
+
+
+class ReportExportQuerySerializer(serializers.Serializer):
+    file_format = serializers.ChoiceField(choices=["csv", "pdf", "xlsx"])
+    q = serializers.CharField(required=False, default="", allow_blank=True, trim_whitespace=False)
+    date = serializers.RegexField(r"^\d{4}-\d{2}-\d{2}$", required=False, allow_blank=True, default="")
+
+    def validate_date(self, value):
+        if value:
+            try:
+                date.fromisoformat(value)
+            except ValueError:
+                raise serializers.ValidationError("Usá una fecha válida con formato YYYY-MM-DD.")
+        return value
+
+    def to_internal_value(self, data):
+        if set(data) - set(self.fields):
+            raise serializers.ValidationError({"detail": "Parámetros de exportación desconocidos."})
+        if hasattr(data, "getlist") and any(len(data.getlist(key)) != 1 for key in data):
+            raise serializers.ValidationError({"detail": "No repitas parámetros de exportación."})
+        return super().to_internal_value(data)
 
 
 class StringListField(serializers.ListField):
