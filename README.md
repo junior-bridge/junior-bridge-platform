@@ -1,4 +1,3 @@
-
 <div align="center">
   <h1><strong style="font-size: 24px;">JuniorBridge</strong></h1>
 </div>
@@ -210,8 +209,6 @@ se optimizan a un máximo de 512 px.
 - Docker
 - Docker Compose
 - Redis
-- [Instrucciones de despliegue local](docs/despliegue-local.md)
-- [Bitácora del despliegue en Render](docs/bitacora-despliegue-render.md)
 
 ### Integraciones
 
@@ -255,7 +252,7 @@ Preparación de versiones candidatas para entrega.
 🔶 **develop**
 Integración continua de funcionalidades.
 
-🔧 **feature/***
+🔧 **feature/\***
 Ramas utilizadas para cada funcionalidad o historia de usuario.
 
 ---
@@ -290,12 +287,10 @@ Estudiantes de la Tecnicatura Superior en Desarrollo de Software - ISPC
 - Carlos Huallpa
 - Ezequiel Gonzáles
 
-
 <p align="center">
   <!-- Imagen del equipo -->
   <img width="500" alt="El Palomar" src="https://github.com/user-attachments/assets/07d60560-4f9b-43d1-b0cd-b9dbf757e7bf" />
 </p>
-
 
 ### 💡 Nuestro objetivo
 
