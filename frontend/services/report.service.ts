@@ -1,6 +1,7 @@
 import { CreateReportData, Report } from "@/types/reportTypes";
 import { apiFetch } from "./index.service";
 import { getCookie, getCsrfToken } from "./auth.service";
+import { API_BASE } from "@/lib/apiBase";
 
 export async function getReports(): Promise<Report[]> {
     return apiFetch<Report[]>("/api/reports/");
@@ -25,7 +26,7 @@ export async function createReport(
     }
 
     const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE}/api/postulations/${postulationId}/reports/`,
+        `${API_BASE}/api/postulations/${postulationId}/reports/`,
         {
             method: "POST",
             headers: {

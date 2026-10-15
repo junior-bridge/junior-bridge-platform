@@ -4,6 +4,7 @@ import { LoginErrors } from "@/types/loginTypes";
 import { User } from "@/types";
 import { loginUser } from "@/services/login.service";
 import { startOAuth } from "@/services/auth.service";
+import { API_BASE } from "@/lib/apiBase";
 
 export const useLogin = (setUser: (user: User | null) => void) => {
     const router = useRouter();
@@ -65,8 +66,7 @@ export const useLogin = (setUser: (user: User | null) => void) => {
 
         try {
             const response = await startOAuth(provider, "login");
-            const apiUrl = process.env.NEXT_PUBLIC_API_BASE;
-            window.location.href = `${apiUrl}${response.login_url}`;
+            window.location.href = `${API_BASE}${response.login_url}`;
         } catch (err) {
             if (err instanceof Error) {
                 setError(err.message);

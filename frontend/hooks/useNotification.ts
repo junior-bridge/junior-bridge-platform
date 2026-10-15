@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState, useRef, useCallback } from 'react';
+import { API_BASE, API_WEBSOCKET_BASE } from '@/lib/apiBase';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 const NOTIFICATIONS_API = `${API_BASE}/api/notifications`;
 
 type Notification = {
@@ -96,9 +96,7 @@ export function useNotifications() {
   const connect = useCallback(() => {
     shouldReconnectRef.current = true;
 
-    const wsProtocol =
-      window.location.protocol === 'https:' ? 'wss' : 'ws';
-    const wsUrl = `${wsProtocol}://localhost:8000/ws/notifications/`;
+    const wsUrl = `${API_WEBSOCKET_BASE}/ws/notifications/`;
 
     try {
       const ws = new WebSocket(wsUrl);
