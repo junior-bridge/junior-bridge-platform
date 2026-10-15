@@ -1,6 +1,6 @@
 import { CreateReportData, Report } from "@/types/reportTypes";
 import { apiFetch } from "./index.service";
-import { getCookie, getCsrfToken } from "./auth.service";
+import { clearCsrfToken, getCsrfToken } from "@/lib/csrf";
 import { API_BASE } from "@/lib/apiBase";
 
 export async function getReports(): Promise<Report[]> {
@@ -11,9 +11,7 @@ export async function createReport(
     postulationId: number,
     data: CreateReportData,
 ): Promise<Report> {
-    await getCsrfToken();
-
-    const csrfToken = getCookie("csrftoken") ?? "";
+    const csrfToken = await getCsrfToken();
     const formData = new FormData();
 
     formData.append("title", data.title);
@@ -25,17 +23,22 @@ export async function createReport(
         formData.append("evidence_images", image);
     }
 
-    const response = await fetch(
-        `${API_BASE}/api/postulations/${postulationId}/reports/`,
-        {
-            method: "POST",
-            headers: {
-                "X-CSRFToken": csrfToken,
+    let response: Response;
+    try {
+        response = await fetch(
+            `${API_BASE}/api/postulations/${postulationId}/reports/`,
+            {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": csrfToken,
+                },
+                credentials: "include",
+                body: formData,
             },
-            credentials: "include",
-            body: formData,
-        },
-    );
+        );
+    } finally {
+        clearCsrfToken();
+    }
 
     if (!response.ok) {
         const err = await response.json().catch(() => ({}));

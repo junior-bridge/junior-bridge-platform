@@ -1,5 +1,5 @@
 import { ApiError } from "@/types";
-import { getCookie } from "./auth.service";
+import { clearCsrfToken, getCsrfToken } from "@/lib/csrf";
 import { API_BASE } from "@/lib/apiBase";
 
 export class ApiRequestError extends Error {
@@ -25,19 +25,20 @@ export async function apiFetch<T>(
     }
 
     if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
-        const csrfToken = getCookie("csrftoken");
-
-        if (!csrfToken) {
-            throw new Error("No se encontró el token CSRF.");
-        }
-
-        headers.set("X-CSRFToken", csrfToken);
+        headers.set("X-CSRFToken", await getCsrfToken());
     }
-    const response = await fetch(`${API_BASE}${endpoint}`, {
-        ...options,
-        headers,
-        credentials: "include",
-    });
+    let response: Response;
+    try {
+        response = await fetch(`${API_BASE}${endpoint}`, {
+            ...options,
+            headers,
+            credentials: "include",
+        });
+    } finally {
+        if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
+            clearCsrfToken();
+        }
+    }
 
     if (!response.ok) {
         let error: ApiError = {

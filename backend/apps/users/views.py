@@ -6,6 +6,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
 from django.core.mail import send_mail
 from django.http import FileResponse, Http404
+from django.middleware.csrf import get_token
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils.encoding import force_bytes
@@ -62,13 +63,23 @@ class CsrfTokenView(APIView):
         description="Stablishes the CSRF cookie required for protected requests.",
         responses={
             200: OpenApiResponse(
-                description="Cookie CSRF stablish correctly."
+                response=inline_serializer(
+                    name="CsrfTokenResponse",
+                    fields={
+                        "detail": serializers.CharField(),
+                        "csrfToken": serializers.CharField(),
+                    },
+                ),
+                description="Returns a CSRF token and sets the CSRF cookie.",
             ),
         },
     )
     def get(self, request):
         return Response(
-            {"detail": "CSRF cookie establecida."},
+            {
+                "detail": "CSRF cookie establecida.",
+                "csrfToken": get_token(request),
+            },
             status=status.HTTP_200_OK,
         )
 
