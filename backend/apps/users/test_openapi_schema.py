@@ -21,6 +21,8 @@ class OpenApiSchemaTests(SimpleTestCase):
         return paths[path][method]
 
     def test_previously_undocumented_endpoints_describe_their_responses(self):
+        # Arrange
+        # Act
         # (path, method, success status) for views drf-spectacular could not
         # introspect: each must expose a JSON body schema and a summary.
         expected = [
@@ -37,6 +39,7 @@ class OpenApiSchemaTests(SimpleTestCase):
         for path, method, code in expected:
             with self.subTest(path=path, method=method):
                 operation = self.get_operation(path, method)
+        # Assert
                 self.assertTrue(operation.get("summary"), "missing summary")
                 self.assertIn(code, operation["responses"])
                 self.assertIn(
@@ -46,16 +49,25 @@ class OpenApiSchemaTests(SimpleTestCase):
                 )
 
     def test_postulation_withdraw_documents_no_content(self):
+        # Arrange
+        # Act
         operation = self.get_operation("/api/postulations/{id_postulation}/", "delete")
+        # Assert
         self.assertTrue(operation.get("summary"), "missing summary")
         self.assertIn("204", operation["responses"])
 
     def test_oauth_start_documents_request_body(self):
+        # Arrange
+        # Act
         operation = self.get_operation("/api/auth/oauth/{provider}/start/", "post")
+        # Assert
         self.assertIn("requestBody", operation)
 
     def test_cookie_jwt_security_scheme_is_registered(self):
+        # Arrange
+        # Act
         schemes = self.schema.get("components", {}).get("securitySchemes", {})
+        # Assert
         self.assertIn("cookieJWTAuth", schemes)
         self.assertEqual(schemes["cookieJWTAuth"]["type"], "apiKey")
         self.assertEqual(schemes["cookieJWTAuth"]["in"], "cookie")

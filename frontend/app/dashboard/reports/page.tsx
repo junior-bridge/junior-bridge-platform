@@ -9,6 +9,7 @@ import { Plus, X, Upload } from "lucide-react";
 import { useDashboardReports } from "@/hooks/dashboard/useDashboardReports";
 import Loader from "@/components/ui/Loader";
 import ListFilters from "@/components/dashboard/ListFilters";
+import ReportExportMenu from "@/components/dashboard/ReportExportMenu";
 
 export default function ReportsPage() {
     const { user } = useUser();
@@ -69,17 +70,23 @@ export default function ReportsPage() {
                     </p>
                 </div>
 
-                {user.role === "TESTER" && (
-                    <button
-                        type="button"
-                        onClick={() => setIsModalOpen(true)}
-                        className="flex items-center gap-2 btn-primary cursor-pointer"
-                        
-                    >
-                        <Plus size={15} />
-                        Nuevo Reporte
-                    </button>
-                )}
+                <div className="flex flex-wrap items-start gap-3">
+                    <ReportExportMenu
+                        filters={{ q: searchTerm, date: dateFilter }}
+                        count={filteredReports.length}
+                        disabledReason={loading ? "Cargando reportes..." : error ? "No se pudieron cargar los reportes." : undefined}
+                    />
+                    {user.role === "TESTER" && (
+                        <button
+                            type="button"
+                            onClick={() => setIsModalOpen(true)}
+                            className="flex items-center gap-2 btn-primary cursor-pointer"
+                        >
+                            <Plus size={15} />
+                            Nuevo Reporte
+                        </button>
+                    )}
+                </div>
             </div>
 
             <ListFilters

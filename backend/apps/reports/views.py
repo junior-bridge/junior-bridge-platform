@@ -1,9 +1,11 @@
 import mimetypes
+import logging
+import json
 from bson import ObjectId
 from bson.errors import InvalidId
 from django.core.files.storage import default_storage
 from datetime import datetime, timezone
-from django.http import FileResponse, Http404
+from django.http import FileResponse, Http404, HttpResponse
 from pathlib import Path
 from uuid import uuid4
 
@@ -14,11 +16,16 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 
 from apps.postulations.models import Postulation
-from apps.reports.serializers import ReportSerializer
-from apps.users.models import User
+from apps.reports.serializers import ReportSerializer, ReportExportQuerySerializer
+from .services import authorized_reports, matches_report_filters
+from .exporters import CONTENT_TYPES, ExportValidationError, export_rows, generate_csv, generate_pdf, generate_xlsx
 from .mongodb import reports_collection
 from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiParameter
 from drf_spectacular.types import OpenApiTypes
+
+logger = logging.getLogger(__name__)
+MAX_EXPORT_REPORTS = 5000
+MAX_EXPORT_TEXT_SIZE = 10_000_000
 
 
 def _store_evidence_images(files):
@@ -40,6 +47,7 @@ def _store_evidence_images(files):
 
 
 def _serialize_report(report):
+    report = report.copy()
     report["_id"] = str(report["_id"])
     return ReportSerializer(report).data
 
@@ -56,36 +64,68 @@ class ReportListAPIView(APIView):
         },
     )
     def get(self, request):
-        user = request.user
-
-        if user.role == User.Role.ADMIN:
-            reports = list(reports_collection.find())
-            return Response(
-                [_serialize_report(report) for report in reports],
-                status=status.HTTP_200_OK,
-            )
-
-        tester_postulations = Postulation.objects.filter(
-            id_tester=user
-        ).values_list('id_postulation', flat=True)
-        
-        client_postulations = Postulation.objects.filter(
-            id_project__client=user
-        ).values_list('id_postulation', flat=True)
-        
-        postulation_ids = list(tester_postulations) + list(client_postulations)
-        
-        if not postulation_ids:
-            return Response([], status=status.HTTP_200_OK)
-        
-        reports = list(reports_collection.find(
-            {"id_postulation": {"$in": postulation_ids}}
-        ))
-
         return Response(
-            [_serialize_report(report) for report in reports],
+            [_serialize_report(report) for report in authorized_reports(request.user)],
             status=status.HTTP_200_OK,
         )
+
+
+@extend_schema(tags=["Reports"])
+class ReportExportAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def finalize_response(self, request, response, *args, **kwargs):
+        response = super().finalize_response(request, response, *args, **kwargs)
+        response["Cache-Control"] = "no-store, private"
+        response["X-Content-Type-Options"] = "nosniff"
+        return response
+
+    @extend_schema(
+        summary="Export authorized reports as CSV, PDF or XLSX",
+        parameters=[ReportExportQuerySerializer],
+        responses={200: OpenApiTypes.BINARY, 400: OpenApiResponse(description="Invalid parameters, empty results or export limit exceeded.")},
+    )
+    def get(self, request):
+        params = ReportExportQuerySerializer(data=request.query_params)
+        params.is_valid(raise_exception=True)
+        file_format = params.validated_data["file_format"]
+        query = params.validated_data["q"]
+        date = params.validated_data["date"]
+        reports = []
+        text_size = 0
+        try:
+            for document in authorized_reports(request.user):
+                report = _serialize_report(document)
+                if not matches_report_filters(report, query, date):
+                    continue
+                reports.append(report)
+                text_size += len(json.dumps(report, ensure_ascii=False))
+                if len(reports) > MAX_EXPORT_REPORTS or text_size > MAX_EXPORT_TEXT_SIZE:
+                    return Response({"detail": "La exportación es demasiado grande. Aplicá filtros y volvé a intentar."}, status=400)
+            if not reports:
+                return Response({"detail": "No hay reportes para exportar con los filtros seleccionados."}, status=400)
+
+            rows = export_rows(reports)
+            generated_at = datetime.now(timezone.utc)
+            if file_format == "csv":
+                content = generate_csv(rows)
+            elif file_format == "xlsx":
+                content = generate_xlsx(rows)
+            else:
+                content = generate_pdf(rows, query=query, date=date, generated_at=generated_at)
+        except ExportValidationError as error:
+            return Response({"detail": str(error)}, status=400)
+        except Exception:
+            logger.exception("Report export failed")
+            return Response({"detail": "No se pudo generar el archivo completo. Intentá nuevamente."}, status=500)
+
+        filename = f"reportes-juniorbridge-{generated_at:%Y%m%d-%H%M%S}.{file_format}"
+        response = HttpResponse(content, content_type=CONTENT_TYPES[file_format])
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        response["Content-Length"] = len(content)
+        response["X-Report-Count"] = len(reports)
+        response["Access-Control-Expose-Headers"] = "Content-Disposition, X-Report-Count"
+        return response
 
 
 @extend_schema(tags=['Reports'])

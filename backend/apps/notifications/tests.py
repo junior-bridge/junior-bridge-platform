@@ -24,6 +24,7 @@ class NotificationSignalTests(TestCase):
     @patch('apps.notifications.signals.get_channel_layer')
     @patch('apps.notifications.signals.async_to_sync')
     def test_accepted_postulation_triggers_notification_websocket_and_email(
+        # Arrange
         self,
         mock_async_to_sync,
         mock_get_channel_layer,
@@ -42,10 +43,12 @@ class NotificationSignalTests(TestCase):
         group_send.reset_mock()
         mock_send_email.reset_mock()
 
+        # Act
         with self.captureOnCommitCallbacks(execute=True):
             postulation.status = Postulation.State.ACCEPTED
             postulation.save()
 
+        # Assert
         self.assertTrue(
             Notification.objects.filter(
                 id_user=self.tester_user,
@@ -98,17 +101,20 @@ class NotificationSignalTests(TestCase):
         )
 
     def test_accepted_postulation_creates_notification_and_email(self):
+        # Arrange
         postulation = self.create_postulation()
 
         with self.captureOnCommitCallbacks(execute=True):
             postulation.status = Postulation.State.ACCEPTED
             postulation.save()
 
+        # Act
         notification = Notification.objects.filter(
             id_user=self.tester_user,
             type='message',
         ).first()
 
+        # Assert
         self.assertIsNotNone(notification)
         self.assertIn('aceptada', notification.message)
         self.assertEqual(len(mail.outbox), 1)
@@ -116,17 +122,20 @@ class NotificationSignalTests(TestCase):
         self.assertIn('aceptada', mail.outbox[0].subject)
 
     def test_rejected_postulation_creates_notification_and_email(self):
+        # Arrange
         postulation = self.create_postulation()
 
         with self.captureOnCommitCallbacks(execute=True):
             postulation.status = Postulation.State.REJECTED
             postulation.save()
 
+        # Act
         notification = Notification.objects.filter(
             id_user=self.tester_user,
             type='message',
         ).first()
 
+        # Assert
         self.assertIsNotNone(notification)
         self.assertIn('rechazada', notification.message)
         self.assertEqual(len(mail.outbox), 1)
@@ -134,6 +143,7 @@ class NotificationSignalTests(TestCase):
         self.assertIn('rechazada', mail.outbox[0].subject)
 
     def test_accepted_postulation_does_not_duplicate_notification_or_email(self):
+        # Arrange
         postulation = self.create_postulation()
 
         with self.captureOnCommitCallbacks(execute=True):
@@ -146,9 +156,11 @@ class NotificationSignalTests(TestCase):
         ).count()
         email_count = len(mail.outbox)
 
+        # Act
         with self.captureOnCommitCallbacks(execute=True):
             postulation.save()
 
+        # Assert
         self.assertEqual(
             Notification.objects.filter(
                 id_user=self.tester_user,
@@ -159,16 +171,19 @@ class NotificationSignalTests(TestCase):
         self.assertEqual(len(mail.outbox), email_count)
 
     def test_new_postulation_sends_email_to_project_client(self):
+        # Arrange
         # Al crear una postulación, el cliente dueño del proyecto debe recibir
         # una notificación y un email avisándole de la nueva postulación.
         with self.captureOnCommitCallbacks(execute=True):
             self.create_postulation()
 
+        # Act
         notification = Notification.objects.filter(
             id_user=self.client_user,
             type='postulation',
         ).first()
 
+        # Assert
         self.assertIsNotNone(notification)
         self.assertIn('postulo', notification.message)
         self.assertEqual(len(mail.outbox), 1)
@@ -202,8 +217,11 @@ class NotificationWebSocketTests(TestCase):
         return communicator
 
     async def test_authenticated_user_can_connect(self):
+        # Arrange
+        # Act
         communicator = self.create_communicator(self.user)
         connected, _ = await communicator.connect()
+        # Assert
         self.assertTrue(connected)
         response = await communicator.receive_json_from()
 
@@ -219,8 +237,11 @@ class NotificationWebSocketTests(TestCase):
         await communicator.disconnect()
 
     async def test_ping_returns_pong(self):
+        # Arrange
+        # Act
         communicator = self.create_communicator(self.user)
         connected, _ = await communicator.connect()
+        # Assert
         self.assertTrue(connected)
 
         await communicator.receive_json_from()
@@ -240,8 +261,11 @@ class NotificationWebSocketTests(TestCase):
         await communicator.disconnect()
 
     async def test_notification_is_sent_to_user(self):
+        # Arrange
+        # Act
         communicator = self.create_communicator(self.user)
         connected, _ = await communicator.connect()
+        # Assert
         self.assertTrue(connected)
 
         await communicator.receive_json_from()
@@ -275,10 +299,13 @@ class NotificationWebSocketTests(TestCase):
         await communicator.disconnect()
 
     async def test_unauthenticated_user_cannot_connect(self):
+        # Arrange
+        # Act
         from django.contrib.auth.models import AnonymousUser
         communicator = self.create_communicator(AnonymousUser())
         connected, _ = await communicator.connect()
 
+        # Assert
         self.assertFalse(connected)
 
 
@@ -303,6 +330,8 @@ class NotificationApiEmailTests(TestCase):
         self.api.force_authenticate(user=self.user)
 
     def test_api_create_notification_does_not_send_email(self):
+        # Arrange
+        # Act
         # Crear una notificación por la API REST no debe disparar ningún email:
         # el email queda reservado para los eventos de postulación.
         response = self.api.post(
@@ -311,6 +340,7 @@ class NotificationApiEmailTests(TestCase):
             format='json',
         )
 
+        # Assert
         self.assertEqual(response.status_code, 201)
         self.assertTrue(
             Notification.objects.filter(id_user=self.user).exists()
