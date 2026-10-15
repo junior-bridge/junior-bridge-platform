@@ -1,79 +1,83 @@
 services:
-  - type: keyvalue
-    name: junior-bridge-redis
-    plan: free
-    region: oregon
-    ipAllowList: []
+    - type: keyvalue
+      name: junior-bridge-redis
+      plan: free
+      region: oregon
+      ipAllowList: []
 
-  - type: web
-    name: junior-bridge-api
-    runtime: python
-    plan: free
-    region: oregon
-    rootDir: backend
-    buildCommand: pip install -r requirements.txt
-    startCommand: >-
-      sh -c 'python manage.py migrate &&
-      python manage.py create_google_social_app &&
-      python manage.py create_github_social_app &&
-      exec daphne -b 0.0.0.0 -p "$PORT" config.asgi:application'
-    healthCheckPath: /api/auth/csrf/
-    envVars:
-      - key: SECRET_KEY
-        sync: false
-      - key: DEBUG
-        value: "False"
-      - key: POSTGRES_DB
-        sync: false
-      - key: POSTGRES_USER
-        sync: false
-      - key: POSTGRES_PASSWORD
-        sync: false
-      - key: POSTGRES_HOST
-        sync: false
-      - key: POSTGRES_PORT
-        value: "5432"
-      - key: POSTGRES_SSLMODE
-        value: require
-      - key: MONGODB_URI
-        sync: false
-      - key: MONGODB_DATABASE
-        value: junior_bridge
-      - key: REDIS_HOST
-        fromService:
-          type: keyvalue
-          name: junior-bridge-redis
-          property: host
-      - key: REDIS_PORT
-        fromService:
-          type: keyvalue
-          name: junior-bridge-redis
-          property: port
-      - key: FRONTEND_URL
-        fromService:
-          type: web
-          name: junior-bridge-frontend
-          property: host
-      - key: GOOGLE_CLIENT_ID
-        sync: false
-      - key: GOOGLE_CLIENT_SECRET
-        sync: false
-      - key: GITHUB_CLIENT_ID
-        sync: false
-      - key: GITHUB_CLIENT_SECRET
-        sync: false
+    - type: web
+      name: junior-bridge-api
+      runtime: python
+      plan: free
+      region: oregon
+      rootDir: backend
+      buildCommand: pip install -r requirements.txt
+      startCommand: >-
+          sh -c 'python manage.py migrate &&
+          python manage.py create_google_social_app &&
+          python manage.py create_github_social_app &&
+          exec daphne -b 0.0.0.0 -p "$PORT" config.asgi:application'
+      healthCheckPath: /api/auth/csrf/
+      envVars:
+          - key: SECRET_KEY
+            sync: false
+          - key: DEBUG
+            value: "False"
+          - key: POSTGRES_DB
+            sync: false
+          - key: POSTGRES_USER
+            sync: false
+          - key: POSTGRES_PASSWORD
+            sync: false
+          - key: POSTGRES_HOST
+            sync: false
+          - key: POSTGRES_PORT
+            value: "5432"
+          - key: POSTGRES_SSLMODE
+            value: require
+          - key: MONGODB_URI
+            sync: false
+          - key: MONGODB_DATABASE
+            value: junior_bridge
+          - key: REDIS_HOST
+            fromService:
+                type: keyvalue
+                name: junior-bridge-redis
+                property: host
+          - key: REDIS_PORT
+            fromService:
+                type: keyvalue
+                name: junior-bridge-redis
+                property: port
+          - key: FRONTEND_URL
+            fromService:
+                type: web
+                name: junior-bridge-frontend
+                property: host
+          - key: GOOGLE_CLIENT_ID
+            sync: false
+          - key: GOOGLE_CLIENT_SECRET
+            sync: false
+          - key: GITHUB_CLIENT_ID
+            sync: false
+          - key: GITHUB_CLIENT_SECRET
+            sync: false
+          - key: CORS_ALLOWED_ORIGINS
+            value: "http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://127.0.0.1:3001,https://junior-bridge-frontend.onrender.com"
+          - key: CSRF_TRUSTED_ORIGINS
+            value: "http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://127.0.0.1:3001,https://junior-bridge-frontend.onrender.com,https://junior-bridge-api.onrender.com"
 
-  - type: web
-    name: junior-bridge-frontend
-    runtime: node
-    plan: free
-    region: oregon
-    rootDir: frontend
-    buildCommand: npm ci && npm run build
-    startCommand: npm run start
-    envVars:
-      - key: NEXT_PUBLIC_API_BASE
-        fromService:
-          type: web
-          name: junior-bridge-api
-          property: host
+    - type: web
+      name: junior-bridge-frontend
+      runtime: node
+      plan: free
+      region: oregon
+      rootDir: frontend
+      buildCommand: npm ci && npm run build
+      startCommand: npm run start
+      envVars:
+          - key: NEXT_PUBLIC_API_BASE
+            fromService:
+                type: web
+                name: junior-bridge-api
+                property: host
