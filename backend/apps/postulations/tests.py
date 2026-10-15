@@ -17,6 +17,13 @@ class PostulationTests(APITestCase):
             surname='User',
             role=User.Role.CLIENT,
         )
+        self.other_client = User.objects.create_user(
+            email='other-client@example.com',
+            password='test-password',
+            name='Other',
+            surname='Client',
+            role=User.Role.CLIENT,
+        )
         self.tester_user = User.objects.create_user(
             email='tester@example.com',
             password='test-password',
@@ -136,6 +143,79 @@ class PostulationTests(APITestCase):
         # Assert
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(Postulation.objects.exists())
+
+    def test_project_owner_can_accept_postulation(self):
+        postulation = self.create_postulation()
+        url = reverse(
+            'postulation-accept',
+            kwargs={'id_postulation': postulation.pk},
+        )
+        self.client.force_authenticate(user=self.client_user)
+
+        response = self.client.post(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        postulation.refresh_from_db()
+        self.project.refresh_from_db()
+        self.assertEqual(postulation.status, Postulation.State.ACCEPTED)
+        self.assertEqual(self.project.state, 'IN_PROGRESS')
+
+    def test_project_owner_can_reject_postulation(self):
+        postulation = self.create_postulation()
+        url = reverse(
+            'postulation-reject',
+            kwargs={'id_postulation': postulation.pk},
+        )
+        self.client.force_authenticate(user=self.client_user)
+
+        response = self.client.post(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        postulation.refresh_from_db()
+        self.assertEqual(postulation.status, Postulation.State.REJECTED)
+
+    def test_other_client_cannot_accept_postulation(self):
+        postulation = self.create_postulation()
+        url = reverse(
+            'postulation-accept',
+            kwargs={'id_postulation': postulation.pk},
+        )
+        self.client.force_authenticate(user=self.other_client)
+
+        response = self.client.post(url)
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        postulation.refresh_from_db()
+        self.assertEqual(postulation.status, Postulation.State.PENDING)
+        self.assertEqual(self.project.state, 'OPEN')
+
+    def test_other_client_cannot_reject_postulation(self):
+        postulation = self.create_postulation()
+        url = reverse(
+            'postulation-reject',
+            kwargs={'id_postulation': postulation.pk},
+        )
+        self.client.force_authenticate(user=self.other_client)
+
+        response = self.client.post(url)
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        postulation.refresh_from_db()
+        self.assertEqual(postulation.status, Postulation.State.PENDING)
+
+    def test_accepted_postulation_cannot_be_accepted_again(self):
+        postulation = self.create_postulation(Postulation.State.ACCEPTED)
+        url = reverse(
+            'postulation-accept',
+            kwargs={'id_postulation': postulation.pk},
+        )
+        self.client.force_authenticate(user=self.client_user)
+
+        response = self.client.post(url)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        postulation.refresh_from_db()
+        self.assertEqual(postulation.status, Postulation.State.ACCEPTED)
 
     def test_processed_postulation_cannot_change_or_be_withdrawn(self):
         # Arrange
