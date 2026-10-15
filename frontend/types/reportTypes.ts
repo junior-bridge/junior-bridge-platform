@@ -19,3 +19,10 @@ export type CreateReportData = {
     steps_to_reproduce: string[];
     evidence_images?: File[];
 };
+
+export type ReportExportFormat = "xlsx" | "pdf" | "csv";
+
+export type ReportExportFilters = {
+    q: string;
+    date: string;
+};
