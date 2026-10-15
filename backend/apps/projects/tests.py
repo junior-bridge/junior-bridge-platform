@@ -419,3 +419,16 @@ class ProjectDetailTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertTrue(Project.objects.filter(pk=self.project.pk).exists())
+
+    def test_post_method_is_not_allowed_on_project_detail(self):
+        # Arrange
+        self.client.force_authenticate(user=self.client_user)
+
+        # Act
+        response = self.client.post(self.url, {}, format='json')
+
+        # Assert
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_405_METHOD_NOT_ALLOWED,
+        )
