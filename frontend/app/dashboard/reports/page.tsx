@@ -346,10 +346,11 @@ export default function ReportsPage() {
                             className="space-y-4"
                         >
                             <div>
-                                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                                <label htmlFor="report-postulation" className="block text-xs font-semibold text-gray-700 mb-1">
                                     Postulación / Proyecto *
                                 </label>
                                 <select
+                                    id="report-postulation"
                                     required
                                     value={form.postulationId}
                                     onChange={(e) => {
@@ -403,10 +404,11 @@ export default function ReportsPage() {
                             </div>
 
                             <div>
-                                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                                <label htmlFor="report-title" className="block text-xs font-semibold text-gray-700 mb-1">
                                     Título del Bug *
                                 </label>
                                 <input
+                                    id="report-title"
                                     type="text"
                                     required
                                     value={form.title}
@@ -446,10 +448,11 @@ export default function ReportsPage() {
                             </div>
 
                             <div>
-                                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                                <label htmlFor="report-severity" className="block text-xs font-semibold text-gray-700 mb-1">
                                     Severidad
                                 </label>
                                 <select
+                                    id="report-severity"
                                     value={form.severity}
                                     onChange={(e) => setForm((current) => ({
                                         ...current,
@@ -464,10 +467,11 @@ export default function ReportsPage() {
                             </div>
 
                             <div>
-                                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                                <label htmlFor="report-description" className="block text-xs font-semibold text-gray-700 mb-1">
                                     Descripción Detallada *
                                 </label>
                                 <textarea
+                                    id="report-description"
                                     required
                                     rows={3}
                                     value={form.description}
@@ -509,10 +513,11 @@ export default function ReportsPage() {
                             </div>
 
                             <div>
-                                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                                <label htmlFor="report-steps" className="block text-xs font-semibold text-gray-700 mb-1">
                                     Pasos para Reproducir *
                                 </label>
                                 <textarea
+                                    id="report-steps"
                                     required
                                     rows={3}
                                     value={form.stepsToReproduce}
