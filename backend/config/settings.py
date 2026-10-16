@@ -242,10 +242,11 @@ AUTH_COOKIE_NAME = "access_token"
 # CAMBIOS DE PRODUCCION:
 # Detectar HTTPS detrás del proxy de Render (OBLIGATORIO)
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_PORT = True
 
 # CORS
 CORS_ALLOW_CREDENTIALS = True
-
 CORS_ALLOWED_ORIGINS = csv_env(
     "CORS_ALLOWED_ORIGINS",
     [
@@ -253,8 +254,6 @@ CORS_ALLOWED_ORIGINS = csv_env(
         "https://junior-bridge-platform-jahb.vercel.app",
         "http://localhost:3000",
         "http://127.0.0.1:3000",
-        "http://localhost:3001",
-        "http://127.0.0.1:3001",
     ],
 )
 
@@ -263,16 +262,15 @@ CSRF_TRUSTED_ORIGINS = [
     "https://junior-bridge-platform-jahb.vercel.app",
     "https://*.onrender.com",
 ]
-
 # Cookie security (Ajustado para producción interdominio)
+AUTH_COOKIE_NAME = "access_token"
 AUTH_COOKIE_SECURE = True
 AUTH_COOKIE_HTTPONLY = True
-AUTH_COOKIE_SAMESITE = 'None'
+AUTH_COOKIE_SAMESITE = "None"
 
-# CSRF cookie (Ajustado para producción interdominio)
-CSRF_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_HTTPONLY = False
-CSRF_COOKIE_SAMESITE = "None" if not DEBUG else "Lax"
+CSRF_COOKIE_SAMESITE = "None"
 
 
 
