@@ -13,7 +13,7 @@ services:
       rootDir: backend
       buildCommand: pip install -r requirements.txt
       startCommand: >-
-          sh -c 'python manage.py migrate sites --fake &&
+          sh -c 'python manage.py shell -c "from django.db import connection; cursor = connection.cursor(); cursor.execute(\"INSERT INTO django_migrations (app, name, applied) VALUES (\x27sites\x27, \x270001_initial\x27, NOW()) ON CONFLICT DO NOTHING;\")" &&
           python manage.py migrate &&
           python manage.py shell -c "from django.contrib.sites.models import Site; from allauth.socialaccount.models import SocialApp; site, _ = Site.objects.get_or_create(id=1, defaults={\"domain\": \"junior-bridge-api.onrender.com\", \"name\": \"Junior Bridge\"}); site.domain = \"junior-bridge-api.onrender.com\"; site.save(); [app.sites.add(site) for app in SocialApp.objects.all()]" &&
           exec daphne -b 0.0.0.0 -p "$PORT" config.asgi:application'
