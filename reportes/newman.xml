@@ -1,167 +1,167 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuites name="Junior Bridge API - Sprint 4 (AUTH-APÍ)" tests="30" time="2.404">
-  <testsuite name="00 - Auth / TC-API-01 / GET Token CSRF" id="c2e44a65-81b9-4590-b898-f47d63c96e04" timestamp="2026-10-16T19:05:45.251Z" tests="3" failures="0" errors="0" time="0.054">
-    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.054" classname="00AuthTcApi01GetTokenCsrf"/>
-    <testcase name="Status code es 200" time="0.054" classname="00AuthTcApi01GetTokenCsrf"/>
-    <testcase name="Contrato: campos presentes y con el tipo correcto" time="0.054" classname="00AuthTcApi01GetTokenCsrf"/>
+<testsuites name="Junior Bridge API - Sprint 4 (AUTH-APÍ)" tests="30" time="2.764">
+  <testsuite name="00 - Auth / TC-API-01 / GET Token CSRF" id="4d0d589f-2cbb-4cd2-9f19-c26d7b9250fd" timestamp="2026-10-16T21:52:27.989Z" tests="3" failures="0" errors="0" time="0.056">
+    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.056" classname="00AuthTcApi01GetTokenCsrf"/>
+    <testcase name="Status code es 200" time="0.056" classname="00AuthTcApi01GetTokenCsrf"/>
+    <testcase name="Contrato: campos presentes y con el tipo correcto" time="0.056" classname="00AuthTcApi01GetTokenCsrf"/>
   </testsuite>
-  <testsuite name="00 - Auth / TC-L-01 / Login Válido - Rol CLIENT" id="b1759fd4-ed8c-4dca-b803-cd1355908657" timestamp="2026-10-16T19:05:45.251Z" tests="6" failures="0" errors="0" time="0.311">
-    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.311" classname="00AuthTcL01LoginValidoRolClient"/>
-    <testcase name="Status code es 200" time="0.311" classname="00AuthTcL01LoginValidoRolClient"/>
-    <testcase name="La respuesta trae el objeto user" time="0.311" classname="00AuthTcL01LoginValidoRolClient"/>
-    <testcase name="Contrato: campos presentes y con el tipo correcto" time="0.311" classname="00AuthTcL01LoginValidoRolClient"/>
-    <testcase name="El rol devuelto es CLIENT" time="0.311" classname="00AuthTcL01LoginValidoRolClient"/>
-    <testcase name="Setea la cookie de autenticación (access_token)" time="0.311" classname="00AuthTcL01LoginValidoRolClient"/>
+  <testsuite name="00 - Auth / TC-L-01 / Login Válido - Rol CLIENT" id="c6161da4-460b-4430-acc8-115b094dc5b1" timestamp="2026-10-16T21:52:27.989Z" tests="6" failures="0" errors="0" time="0.373">
+    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.373" classname="00AuthTcL01LoginValidoRolClient"/>
+    <testcase name="Status code es 200" time="0.373" classname="00AuthTcL01LoginValidoRolClient"/>
+    <testcase name="La respuesta trae el objeto user" time="0.373" classname="00AuthTcL01LoginValidoRolClient"/>
+    <testcase name="Contrato: campos presentes y con el tipo correcto" time="0.373" classname="00AuthTcL01LoginValidoRolClient"/>
+    <testcase name="El rol devuelto es CLIENT" time="0.373" classname="00AuthTcL01LoginValidoRolClient"/>
+    <testcase name="Setea la cookie de autenticación (access_token)" time="0.373" classname="00AuthTcL01LoginValidoRolClient"/>
   </testsuite>
-  <testsuite name="00 - Auth / TC-L-02 / Login con contraseña incorrecta" id="97e2fbc4-7282-470f-8e12-b17a0e1230e4" timestamp="2026-10-16T19:05:45.251Z" tests="3" failures="0" errors="0" time="0.572">
-    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.572" classname="00AuthTcL02LoginConContrasenaIncorrecta"/>
-    <testcase name="Status code es 400" time="0.572" classname="00AuthTcL02LoginConContrasenaIncorrecta"/>
-    <testcase name="400 con mensaje estructurado (objeto JSON)" time="0.572" classname="00AuthTcL02LoginConContrasenaIncorrecta"/>
+  <testsuite name="00 - Auth / TC-L-02 / Login con contraseña incorrecta" id="65388941-7061-4f16-8361-2dd2dce8afb3" timestamp="2026-10-16T21:52:27.989Z" tests="3" failures="0" errors="0" time="0.611">
+    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.611" classname="00AuthTcL02LoginConContrasenaIncorrecta"/>
+    <testcase name="Status code es 400" time="0.611" classname="00AuthTcL02LoginConContrasenaIncorrecta"/>
+    <testcase name="400 con mensaje estructurado (objeto JSON)" time="0.611" classname="00AuthTcL02LoginConContrasenaIncorrecta"/>
   </testsuite>
-  <testsuite name="00 - Auth / TC-L-04 / Login sin email" id="03c51721-aed6-4b39-8f2e-47234f43982b" timestamp="2026-10-16T19:05:45.251Z" tests="3" failures="0" errors="0" time="0.022">
-    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.022" classname="00AuthTcL04LoginSinEmail"/>
-    <testcase name="Status code es 400" time="0.022" classname="00AuthTcL04LoginSinEmail"/>
-    <testcase name="400 con mensaje estructurado: error por campo" time="0.022" classname="00AuthTcL04LoginSinEmail"/>
+  <testsuite name="00 - Auth / TC-L-04 / Login sin email" id="b1ff4b86-db98-4d6b-b273-f0f2efb44c75" timestamp="2026-10-16T21:52:27.989Z" tests="3" failures="0" errors="0" time="0.023">
+    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.023" classname="00AuthTcL04LoginSinEmail"/>
+    <testcase name="Status code es 400" time="0.023" classname="00AuthTcL04LoginSinEmail"/>
+    <testcase name="400 con mensaje estructurado: error por campo" time="0.023" classname="00AuthTcL04LoginSinEmail"/>
   </testsuite>
-  <testsuite name="00 - Auth / TC-L-04 / Login sin Contraseña" id="429b562e-49e3-4ecb-b6b7-1ba3e3924bfb" timestamp="2026-10-16T19:05:45.251Z" tests="3" failures="0" errors="0" time="0.025">
-    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.025" classname="00AuthTcL04LoginSinContrasena"/>
-    <testcase name="Status code es 400" time="0.025" classname="00AuthTcL04LoginSinContrasena"/>
-    <testcase name="400 con mensaje estructurado: error por campo" time="0.025" classname="00AuthTcL04LoginSinContrasena"/>
+  <testsuite name="00 - Auth / TC-L-04 / Login sin Contraseña" id="49e05719-75ae-4ef2-8d15-0e253230f7cd" timestamp="2026-10-16T21:52:27.989Z" tests="3" failures="0" errors="0" time="0.024">
+    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.024" classname="00AuthTcL04LoginSinContrasena"/>
+    <testcase name="Status code es 400" time="0.024" classname="00AuthTcL04LoginSinContrasena"/>
+    <testcase name="400 con mensaje estructurado: error por campo" time="0.024" classname="00AuthTcL04LoginSinContrasena"/>
   </testsuite>
-  <testsuite name="01 - Projects / Login CLIENT - Precondicion antes de los Tests" id="3cfa59fd-f895-49ff-80a1-183adf0cea30" timestamp="2026-10-16T19:05:45.251Z" tests="6" failures="0" errors="0" time="0.304">
-    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.304" classname="01ProjectsLoginClientPrecondicionAntesDeLosTests"/>
-    <testcase name="Status code es 200" time="0.304" classname="01ProjectsLoginClientPrecondicionAntesDeLosTests"/>
-    <testcase name="La respuesta trae el objeto user" time="0.304" classname="01ProjectsLoginClientPrecondicionAntesDeLosTests"/>
-    <testcase name="Contrato: campos presentes y con el tipo correcto" time="0.304" classname="01ProjectsLoginClientPrecondicionAntesDeLosTests"/>
-    <testcase name="El rol devuelto es CLIENT" time="0.304" classname="01ProjectsLoginClientPrecondicionAntesDeLosTests"/>
-    <testcase name="Setea la cookie de autenticación (access_token)" time="0.304" classname="01ProjectsLoginClientPrecondicionAntesDeLosTests"/>
+  <testsuite name="01 - Projects / Login CLIENT - Precondicion antes de los Tests" id="201fdea1-48cf-4b2f-aa97-c09a04cf6cd6" timestamp="2026-10-16T21:52:27.989Z" tests="6" failures="0" errors="0" time="0.321">
+    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.321" classname="01ProjectsLoginClientPrecondicionAntesDeLosTests"/>
+    <testcase name="Status code es 200" time="0.321" classname="01ProjectsLoginClientPrecondicionAntesDeLosTests"/>
+    <testcase name="La respuesta trae el objeto user" time="0.321" classname="01ProjectsLoginClientPrecondicionAntesDeLosTests"/>
+    <testcase name="Contrato: campos presentes y con el tipo correcto" time="0.321" classname="01ProjectsLoginClientPrecondicionAntesDeLosTests"/>
+    <testcase name="El rol devuelto es CLIENT" time="0.321" classname="01ProjectsLoginClientPrecondicionAntesDeLosTests"/>
+    <testcase name="Setea la cookie de autenticación (access_token)" time="0.321" classname="01ProjectsLoginClientPrecondicionAntesDeLosTests"/>
   </testsuite>
-  <testsuite name="01 - Projects / TC-D-01 / Crear Proyectos con Datos Validos" id="e1cfb344-079a-467b-b21f-0a3ed0927099" timestamp="2026-10-16T19:05:45.251Z" tests="6" failures="0" errors="0" time="0.026">
-    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.026" classname="01ProjectsTcD01CrearProyectosConDatosValidos"/>
-    <testcase name="Status code es 201" time="0.026" classname="01ProjectsTcD01CrearProyectosConDatosValidos"/>
-    <testcase name="Contrato: campos presentes y con el tipo correcto" time="0.026" classname="01ProjectsTcD01CrearProyectosConDatosValidos"/>
-    <testcase name="El proyecto nace en estado PENDING" time="0.026" classname="01ProjectsTcD01CrearProyectosConDatosValidos"/>
-    <testcase name="La modalidad coincide con la enviada" time="0.026" classname="01ProjectsTcD01CrearProyectosConDatosValidos"/>
-    <testcase name="El título coincide con el enviado" time="0.026" classname="01ProjectsTcD01CrearProyectosConDatosValidos"/>
+  <testsuite name="01 - Projects / TC-D-01 / Crear Proyectos con Datos Validos" id="db351650-b05f-4423-9377-21c84c8b9dbc" timestamp="2026-10-16T21:52:27.989Z" tests="6" failures="0" errors="0" time="0.070">
+    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.070" classname="01ProjectsTcD01CrearProyectosConDatosValidos"/>
+    <testcase name="Status code es 201" time="0.070" classname="01ProjectsTcD01CrearProyectosConDatosValidos"/>
+    <testcase name="Contrato: campos presentes y con el tipo correcto" time="0.070" classname="01ProjectsTcD01CrearProyectosConDatosValidos"/>
+    <testcase name="El proyecto nace en estado PENDING" time="0.070" classname="01ProjectsTcD01CrearProyectosConDatosValidos"/>
+    <testcase name="La modalidad coincide con la enviada" time="0.070" classname="01ProjectsTcD01CrearProyectosConDatosValidos"/>
+    <testcase name="El título coincide con el enviado" time="0.070" classname="01ProjectsTcD01CrearProyectosConDatosValidos"/>
   </testsuite>
-  <testsuite name="01 - Projects / TC-API-02 / GET Detalle del Proyecto" id="7764bd54-b2c7-44ef-9599-dfb3e83fb7f1" timestamp="2026-10-16T19:05:45.251Z" tests="4" failures="0" errors="0" time="0.024">
-    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.024" classname="01ProjectsTcApi02GetDetalleDelProyecto"/>
-    <testcase name="Status code es 200" time="0.024" classname="01ProjectsTcApi02GetDetalleDelProyecto"/>
-    <testcase name="Contrato: campos presentes y con el tipo correcto" time="0.024" classname="01ProjectsTcApi02GetDetalleDelProyecto"/>
-    <testcase name="Devuelve el proyecto pedido" time="0.024" classname="01ProjectsTcApi02GetDetalleDelProyecto"/>
+  <testsuite name="01 - Projects / TC-API-02 / GET Detalle del Proyecto" id="6d4dbe17-19b9-41ed-98f4-4ed2474a3c12" timestamp="2026-10-16T21:52:27.989Z" tests="4" failures="0" errors="0" time="0.034">
+    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.034" classname="01ProjectsTcApi02GetDetalleDelProyecto"/>
+    <testcase name="Status code es 200" time="0.034" classname="01ProjectsTcApi02GetDetalleDelProyecto"/>
+    <testcase name="Contrato: campos presentes y con el tipo correcto" time="0.034" classname="01ProjectsTcApi02GetDetalleDelProyecto"/>
+    <testcase name="Devuelve el proyecto pedido" time="0.034" classname="01ProjectsTcApi02GetDetalleDelProyecto"/>
   </testsuite>
-  <testsuite name="01 - Projects / TC-API-02/ PUT Actualizar el Proyecto" id="b2d6b84e-7210-435b-a14c-e6e4c05a7160" timestamp="2026-10-16T19:05:45.251Z" tests="4" failures="0" errors="0" time="0.028">
-    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.028" classname="01ProjectsTcApi02PutActualizarElProyecto"/>
-    <testcase name="Status code es 200" time="0.028" classname="01ProjectsTcApi02PutActualizarElProyecto"/>
-    <testcase name="Contrato: campos presentes y con el tipo correcto" time="0.028" classname="01ProjectsTcApi02PutActualizarElProyecto"/>
-    <testcase name="El título fue reemplazado" time="0.028" classname="01ProjectsTcApi02PutActualizarElProyecto"/>
+  <testsuite name="01 - Projects / TC-API-02/ PUT Actualizar el Proyecto" id="746a0509-9ca8-43dc-81cf-2377940c02f9" timestamp="2026-10-16T21:52:27.989Z" tests="4" failures="0" errors="0" time="0.045">
+    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.045" classname="01ProjectsTcApi02PutActualizarElProyecto"/>
+    <testcase name="Status code es 200" time="0.045" classname="01ProjectsTcApi02PutActualizarElProyecto"/>
+    <testcase name="Contrato: campos presentes y con el tipo correcto" time="0.045" classname="01ProjectsTcApi02PutActualizarElProyecto"/>
+    <testcase name="El título fue reemplazado" time="0.045" classname="01ProjectsTcApi02PutActualizarElProyecto"/>
   </testsuite>
-  <testsuite name="01 - Projects / TC-API-02 / PATCH Actualizar Parcialmente el Proyecto" id="eb225b4b-6e40-41d5-825e-c43f36956572" timestamp="2026-10-16T19:05:45.251Z" tests="4" failures="0" errors="0" time="0.031">
-    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.031" classname="01ProjectsTcApi02PatchActualizarParcialmenteElProyecto"/>
-    <testcase name="Status code es 200" time="0.031" classname="01ProjectsTcApi02PatchActualizarParcialmenteElProyecto"/>
-    <testcase name="Contrato: campos presentes y con el tipo correcto" time="0.031" classname="01ProjectsTcApi02PatchActualizarParcialmenteElProyecto"/>
-    <testcase name="La descripción fue actualizada" time="0.031" classname="01ProjectsTcApi02PatchActualizarParcialmenteElProyecto"/>
+  <testsuite name="01 - Projects / TC-API-02 / PATCH Actualizar Parcialmente el Proyecto" id="98f57ead-e505-4957-9288-05a0fbd57ced" timestamp="2026-10-16T21:52:27.989Z" tests="4" failures="0" errors="0" time="0.036">
+    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.036" classname="01ProjectsTcApi02PatchActualizarParcialmenteElProyecto"/>
+    <testcase name="Status code es 200" time="0.036" classname="01ProjectsTcApi02PatchActualizarParcialmenteElProyecto"/>
+    <testcase name="Contrato: campos presentes y con el tipo correcto" time="0.036" classname="01ProjectsTcApi02PatchActualizarParcialmenteElProyecto"/>
+    <testcase name="La descripción fue actualizada" time="0.036" classname="01ProjectsTcApi02PatchActualizarParcialmenteElProyecto"/>
   </testsuite>
-  <testsuite name="01 - Projects / TC-API-02 / GET Mis Proyectos" id="031c3a07-7776-4e85-a4f0-57737b84ddfa" timestamp="2026-10-16T19:05:45.251Z" tests="4" failures="0" errors="0" time="0.024">
-    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.024" classname="01ProjectsTcApi02GetMisProyectos"/>
-    <testcase name="Status code es 200" time="0.024" classname="01ProjectsTcApi02GetMisProyectos"/>
-    <testcase name="La respuesta es un array" time="0.024" classname="01ProjectsTcApi02GetMisProyectos"/>
-    <testcase name="Contrato: campos presentes y con el tipo correcto" time="0.024" classname="01ProjectsTcApi02GetMisProyectos"/>
+  <testsuite name="01 - Projects / TC-API-02 / GET Mis Proyectos" id="7ca59202-07c0-43eb-87f7-7286ae4005bf" timestamp="2026-10-16T21:52:27.989Z" tests="4" failures="0" errors="0" time="0.027">
+    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.027" classname="01ProjectsTcApi02GetMisProyectos"/>
+    <testcase name="Status code es 200" time="0.027" classname="01ProjectsTcApi02GetMisProyectos"/>
+    <testcase name="La respuesta es un array" time="0.027" classname="01ProjectsTcApi02GetMisProyectos"/>
+    <testcase name="Contrato: campos presentes y con el tipo correcto" time="0.027" classname="01ProjectsTcApi02GetMisProyectos"/>
   </testsuite>
-  <testsuite name="01 - Projects / TC-API-02 / DELETE proyecto PENDING" id="c41bb093-83fb-4e71-af1e-037f9cbe0d6a" timestamp="2026-10-16T19:05:45.251Z" tests="3" failures="0" errors="0" time="0.028">
-    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.028" classname="01ProjectsTcApi02DeleteProyectoPending"/>
-    <testcase name="Status code es 204" time="0.028" classname="01ProjectsTcApi02DeleteProyectoPending"/>
-    <testcase name="Sin cuerpo en la respuesta" time="0.028" classname="01ProjectsTcApi02DeleteProyectoPending"/>
+  <testsuite name="01 - Projects / TC-API-02 / DELETE proyecto PENDING" id="763fcf1a-6956-40f7-9d90-0a77859c00fe" timestamp="2026-10-16T21:52:27.989Z" tests="3" failures="0" errors="0" time="0.032">
+    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.032" classname="01ProjectsTcApi02DeleteProyectoPending"/>
+    <testcase name="Status code es 204" time="0.032" classname="01ProjectsTcApi02DeleteProyectoPending"/>
+    <testcase name="Sin cuerpo en la respuesta" time="0.032" classname="01ProjectsTcApi02DeleteProyectoPending"/>
   </testsuite>
-  <testsuite name="01 - Projects / TC-API-02 / GET proyecto eliminado" id="1a75d590-f5c9-4bb9-be4d-96bef879f0c4" timestamp="2026-10-16T19:05:45.251Z" tests="2" failures="0" errors="0" time="0.027">
-    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.027" classname="01ProjectsTcApi02GetProyectoEliminado"/>
-    <testcase name="Status code es 404" time="0.027" classname="01ProjectsTcApi02GetProyectoEliminado"/>
+  <testsuite name="01 - Projects / TC-API-02 / GET proyecto eliminado" id="5867c345-4ef1-4176-a965-da945fd11500" timestamp="2026-10-16T21:52:27.989Z" tests="2" failures="0" errors="0" time="0.046">
+    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.046" classname="01ProjectsTcApi02GetProyectoEliminado"/>
+    <testcase name="Status code es 404" time="0.046" classname="01ProjectsTcApi02GetProyectoEliminado"/>
   </testsuite>
-  <testsuite name="01 - Projects / TC-D-02 / Crear proyecto sin campos obligatorios" id="9be7e58e-4653-411a-a04f-a8370598e73f" timestamp="2026-10-16T19:05:45.251Z" tests="3" failures="0" errors="0" time="0.022">
-    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.022" classname="01ProjectsTcD02CrearProyectoSinCamposObligatorios"/>
-    <testcase name="Status code es 400" time="0.022" classname="01ProjectsTcD02CrearProyectoSinCamposObligatorios"/>
-    <testcase name="400 con mensaje estructurado: error por campo" time="0.022" classname="01ProjectsTcD02CrearProyectoSinCamposObligatorios"/>
+  <testsuite name="01 - Projects / TC-D-02 / Crear proyecto sin campos obligatorios" id="b9c3c69d-22ac-4edd-aac6-c40264ce35ee" timestamp="2026-10-16T21:52:27.989Z" tests="3" failures="0" errors="0" time="0.024">
+    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.024" classname="01ProjectsTcD02CrearProyectoSinCamposObligatorios"/>
+    <testcase name="Status code es 400" time="0.024" classname="01ProjectsTcD02CrearProyectoSinCamposObligatorios"/>
+    <testcase name="400 con mensaje estructurado: error por campo" time="0.024" classname="01ProjectsTcD02CrearProyectoSinCamposObligatorios"/>
   </testsuite>
-  <testsuite name="01 - Projects / TC-API-03 / Crear proyecto con modalidad invalida" id="1581247f-bc6a-4adc-ae57-a8e1bd962e7d" timestamp="2026-10-16T19:05:45.251Z" tests="3" failures="0" errors="0" time="0.023">
-    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.023" classname="01ProjectsTcApi03CrearProyectoConModalidadInvalida"/>
-    <testcase name="Status code es 400" time="0.023" classname="01ProjectsTcApi03CrearProyectoConModalidadInvalida"/>
-    <testcase name="400 con mensaje estructurado: error por campo" time="0.023" classname="01ProjectsTcApi03CrearProyectoConModalidadInvalida"/>
+  <testsuite name="01 - Projects / TC-API-03 / Crear proyecto con modalidad invalida" id="05b21b23-0afb-473f-907d-fe57dd1f71c3" timestamp="2026-10-16T21:52:27.989Z" tests="3" failures="0" errors="0" time="0.021">
+    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.021" classname="01ProjectsTcApi03CrearProyectoConModalidadInvalida"/>
+    <testcase name="Status code es 400" time="0.021" classname="01ProjectsTcApi03CrearProyectoConModalidadInvalida"/>
+    <testcase name="400 con mensaje estructurado: error por campo" time="0.021" classname="01ProjectsTcApi03CrearProyectoConModalidadInvalida"/>
   </testsuite>
-  <testsuite name="01 - Projects / Login TESTER - Precondicion antes de los Tests" id="a90f3bb7-b744-4b8b-b99a-4379eaaf569c" timestamp="2026-10-16T19:05:45.251Z" tests="6" failures="0" errors="0" time="0.295">
-    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.295" classname="01ProjectsLoginTesterPrecondicionAntesDeLosTests"/>
-    <testcase name="Status code es 200" time="0.295" classname="01ProjectsLoginTesterPrecondicionAntesDeLosTests"/>
-    <testcase name="La respuesta trae el objeto user" time="0.295" classname="01ProjectsLoginTesterPrecondicionAntesDeLosTests"/>
-    <testcase name="Contrato: campos presentes y con el tipo correcto" time="0.295" classname="01ProjectsLoginTesterPrecondicionAntesDeLosTests"/>
-    <testcase name="El rol devuelto es TESTER" time="0.295" classname="01ProjectsLoginTesterPrecondicionAntesDeLosTests"/>
-    <testcase name="Setea la cookie de autenticación (access_token)" time="0.295" classname="01ProjectsLoginTesterPrecondicionAntesDeLosTests"/>
+  <testsuite name="01 - Projects / Login TESTER - Precondicion antes de los Tests" id="36d5b7f1-7b16-4382-bd75-00468f0d29f0" timestamp="2026-10-16T21:52:27.989Z" tests="6" failures="0" errors="0" time="0.324">
+    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.324" classname="01ProjectsLoginTesterPrecondicionAntesDeLosTests"/>
+    <testcase name="Status code es 200" time="0.324" classname="01ProjectsLoginTesterPrecondicionAntesDeLosTests"/>
+    <testcase name="La respuesta trae el objeto user" time="0.324" classname="01ProjectsLoginTesterPrecondicionAntesDeLosTests"/>
+    <testcase name="Contrato: campos presentes y con el tipo correcto" time="0.324" classname="01ProjectsLoginTesterPrecondicionAntesDeLosTests"/>
+    <testcase name="El rol devuelto es TESTER" time="0.324" classname="01ProjectsLoginTesterPrecondicionAntesDeLosTests"/>
+    <testcase name="Setea la cookie de autenticación (access_token)" time="0.324" classname="01ProjectsLoginTesterPrecondicionAntesDeLosTests"/>
   </testsuite>
-  <testsuite name="01 - Projects / TC-D-05 / Crear proyecto como TESTER" id="7d484edf-6bb4-4249-b250-bfde563a4dcb" timestamp="2026-10-16T19:05:45.251Z" tests="2" failures="0" errors="0" time="0.023">
-    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.023" classname="01ProjectsTcD05CrearProyectoComoTester"/>
-    <testcase name="Status code es 403" time="0.023" classname="01ProjectsTcD05CrearProyectoComoTester"/>
+  <testsuite name="01 - Projects / TC-D-05 / Crear proyecto como TESTER" id="f6f548c1-cfcb-4c05-87af-d03ab9cbd487" timestamp="2026-10-16T21:52:27.989Z" tests="2" failures="0" errors="0" time="0.025">
+    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.025" classname="01ProjectsTcD05CrearProyectoComoTester"/>
+    <testcase name="Status code es 403" time="0.025" classname="01ProjectsTcD05CrearProyectoComoTester"/>
   </testsuite>
-  <testsuite name="01 - Projects / Logout - Precondicion antes de los Tests" id="e4ec2955-1cdc-4a6f-b850-ffd360cf3b0b" timestamp="2026-10-16T19:05:45.251Z" tests="2" failures="0" errors="0" time="0.019">
+  <testsuite name="01 - Projects / Logout - Precondicion antes de los Tests" id="5c4630f4-2a99-48f3-95a7-1d120da481ad" timestamp="2026-10-16T21:52:27.989Z" tests="2" failures="0" errors="0" time="0.019">
     <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.019" classname="01ProjectsLogoutPrecondicionAntesDeLosTests"/>
     <testcase name="Status code es 200" time="0.019" classname="01ProjectsLogoutPrecondicionAntesDeLosTests"/>
   </testsuite>
-  <testsuite name="01 - Projects / TC-API-04 / Crear Proyecto sin Sesion" id="f6fef5c6-ea43-48dd-9102-1b1f25365347" timestamp="2026-10-16T19:05:45.251Z" tests="2" failures="0" errors="0" time="0.010">
-    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.010" classname="01ProjectsTcApi04CrearProyectoSinSesion"/>
-    <testcase name="Status code es 401" time="0.010" classname="01ProjectsTcApi04CrearProyectoSinSesion"/>
+  <testsuite name="01 - Projects / TC-API-04 / Crear Proyecto sin Sesion" id="14eb859c-b44f-4713-88f1-8871d8c1e496" timestamp="2026-10-16T21:52:27.989Z" tests="2" failures="0" errors="0" time="0.011">
+    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.011" classname="01ProjectsTcApi04CrearProyectoSinSesion"/>
+    <testcase name="Status code es 401" time="0.011" classname="01ProjectsTcApi04CrearProyectoSinSesion"/>
   </testsuite>
-  <testsuite name="02 - Notifications / Login CLIENT - Precondicion antes de los Tests" id="e774241a-4fe0-4ca0-8762-f24b9f68b2fc" timestamp="2026-10-16T19:05:45.251Z" tests="6" failures="0" errors="0" time="0.297">
-    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.297" classname="02NotificationsLoginClientPrecondicionAntesDeLosTests"/>
-    <testcase name="Status code es 200" time="0.297" classname="02NotificationsLoginClientPrecondicionAntesDeLosTests"/>
-    <testcase name="La respuesta trae el objeto user" time="0.297" classname="02NotificationsLoginClientPrecondicionAntesDeLosTests"/>
-    <testcase name="Contrato: campos presentes y con el tipo correcto" time="0.297" classname="02NotificationsLoginClientPrecondicionAntesDeLosTests"/>
-    <testcase name="El rol devuelto es CLIENT" time="0.297" classname="02NotificationsLoginClientPrecondicionAntesDeLosTests"/>
-    <testcase name="Setea la cookie de autenticación (access_token)" time="0.297" classname="02NotificationsLoginClientPrecondicionAntesDeLosTests"/>
+  <testsuite name="02 - Notifications / Login CLIENT - Precondicion antes de los Tests" id="666cfa58-0106-48ef-a3a6-97fb57122201" timestamp="2026-10-16T21:52:27.989Z" tests="6" failures="0" errors="0" time="0.318">
+    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.318" classname="02NotificationsLoginClientPrecondicionAntesDeLosTests"/>
+    <testcase name="Status code es 200" time="0.318" classname="02NotificationsLoginClientPrecondicionAntesDeLosTests"/>
+    <testcase name="La respuesta trae el objeto user" time="0.318" classname="02NotificationsLoginClientPrecondicionAntesDeLosTests"/>
+    <testcase name="Contrato: campos presentes y con el tipo correcto" time="0.318" classname="02NotificationsLoginClientPrecondicionAntesDeLosTests"/>
+    <testcase name="El rol devuelto es CLIENT" time="0.318" classname="02NotificationsLoginClientPrecondicionAntesDeLosTests"/>
+    <testcase name="Setea la cookie de autenticación (access_token)" time="0.318" classname="02NotificationsLoginClientPrecondicionAntesDeLosTests"/>
   </testsuite>
-  <testsuite name="02 - Notifications / TC-API-05 / Crear Notificación" id="1512dd54-0162-4611-b89a-79fd6d4848c7" timestamp="2026-10-16T19:05:45.251Z" tests="4" failures="0" errors="0" time="0.028">
-    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.028" classname="02NotificationsTcApi05CrearNotificacion"/>
-    <testcase name="Status code es 201" time="0.028" classname="02NotificationsTcApi05CrearNotificacion"/>
-    <testcase name="Contrato: campos presentes y con el tipo correcto" time="0.028" classname="02NotificationsTcApi05CrearNotificacion"/>
-    <testcase name="El mensaje coincide con el enviado" time="0.028" classname="02NotificationsTcApi05CrearNotificacion"/>
+  <testsuite name="02 - Notifications / TC-API-05 / Crear Notificación" id="5687f669-c200-4e1e-a125-377b57dff8ee" timestamp="2026-10-16T21:52:27.989Z" tests="4" failures="0" errors="0" time="0.106">
+    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.106" classname="02NotificationsTcApi05CrearNotificacion"/>
+    <testcase name="Status code es 201" time="0.106" classname="02NotificationsTcApi05CrearNotificacion"/>
+    <testcase name="Contrato: campos presentes y con el tipo correcto" time="0.106" classname="02NotificationsTcApi05CrearNotificacion"/>
+    <testcase name="El mensaje coincide con el enviado" time="0.106" classname="02NotificationsTcApi05CrearNotificacion"/>
   </testsuite>
-  <testsuite name="02 - Notifications / TC-API-05 / GET listado" id="f20d0342-cb23-4676-8507-babfed964ae9" timestamp="2026-10-16T19:05:45.251Z" tests="5" failures="0" errors="0" time="0.029">
-    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.029" classname="02NotificationsTcApi05GetListado"/>
-    <testcase name="Status code es 200" time="0.029" classname="02NotificationsTcApi05GetListado"/>
-    <testcase name="La respuesta es un array" time="0.029" classname="02NotificationsTcApi05GetListado"/>
-    <testcase name="La notificación creada aparece en el listado" time="0.029" classname="02NotificationsTcApi05GetListado"/>
-    <testcase name="Contrato: campos presentes y con el tipo correcto" time="0.029" classname="02NotificationsTcApi05GetListado"/>
+  <testsuite name="02 - Notifications / TC-API-05 / GET listado" id="00dbc8ee-90d0-4a8a-807b-2e7aca87e759" timestamp="2026-10-16T21:52:27.989Z" tests="5" failures="0" errors="0" time="0.028">
+    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.028" classname="02NotificationsTcApi05GetListado"/>
+    <testcase name="Status code es 200" time="0.028" classname="02NotificationsTcApi05GetListado"/>
+    <testcase name="La respuesta es un array" time="0.028" classname="02NotificationsTcApi05GetListado"/>
+    <testcase name="La notificación creada aparece en el listado" time="0.028" classname="02NotificationsTcApi05GetListado"/>
+    <testcase name="Contrato: campos presentes y con el tipo correcto" time="0.028" classname="02NotificationsTcApi05GetListado"/>
   </testsuite>
-  <testsuite name="02 - Notifications / TC-API-05 / GET detalle" id="42fcd6f0-1d31-4315-81b0-dee8c706c5f1" timestamp="2026-10-16T19:05:45.251Z" tests="4" failures="0" errors="0" time="0.024">
+  <testsuite name="02 - Notifications / TC-API-05 / GET detalle" id="2c83a706-eaf7-4bd1-9e14-8a00d8a3c1ca" timestamp="2026-10-16T21:52:27.989Z" tests="4" failures="0" errors="0" time="0.024">
     <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.024" classname="02NotificationsTcApi05GetDetalle"/>
     <testcase name="Status code es 200" time="0.024" classname="02NotificationsTcApi05GetDetalle"/>
     <testcase name="Contrato: campos presentes y con el tipo correcto" time="0.024" classname="02NotificationsTcApi05GetDetalle"/>
     <testcase name="Devuelve la notificación pedida" time="0.024" classname="02NotificationsTcApi05GetDetalle"/>
   </testsuite>
-  <testsuite name="02 - Notifications / TC-API-05 / PUT marcar como leída (200)" id="03e6e306-1095-4bed-92b4-740a2e80c5dc" timestamp="2026-10-16T19:05:45.251Z" tests="3" failures="0" errors="0" time="0.029">
-    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.029" classname="02NotificationsTcApi05PutMarcarComoLeida200"/>
-    <testcase name="Status code es 200" time="0.029" classname="02NotificationsTcApi05PutMarcarComoLeida200"/>
-    <testcase name="is_read quedó en true" time="0.029" classname="02NotificationsTcApi05PutMarcarComoLeida200"/>
+  <testsuite name="02 - Notifications / TC-API-05 / PUT marcar como leída (200)" id="21c5d406-758f-4764-8996-65990bfdaa56" timestamp="2026-10-16T21:52:27.989Z" tests="3" failures="0" errors="0" time="0.033">
+    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.033" classname="02NotificationsTcApi05PutMarcarComoLeida200"/>
+    <testcase name="Status code es 200" time="0.033" classname="02NotificationsTcApi05PutMarcarComoLeida200"/>
+    <testcase name="is_read quedó en true" time="0.033" classname="02NotificationsTcApi05PutMarcarComoLeida200"/>
   </testsuite>
-  <testsuite name="02 - Notifications / TC-API-05 / PATCH marcar como no leída" id="303adb3e-12ce-4e7e-973a-0c95da18ad55" timestamp="2026-10-16T19:05:45.251Z" tests="3" failures="0" errors="0" time="0.030">
-    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.030" classname="02NotificationsTcApi05PatchMarcarComoNoLeida"/>
-    <testcase name="Status code es 200" time="0.030" classname="02NotificationsTcApi05PatchMarcarComoNoLeida"/>
-    <testcase name="is_read quedó en false" time="0.030" classname="02NotificationsTcApi05PatchMarcarComoNoLeida"/>
+  <testsuite name="02 - Notifications / TC-API-05 / PATCH marcar como no leída" id="494546b2-139d-4d97-b9b1-283ea5c270c0" timestamp="2026-10-16T21:52:27.989Z" tests="3" failures="0" errors="0" time="0.031">
+    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.031" classname="02NotificationsTcApi05PatchMarcarComoNoLeida"/>
+    <testcase name="Status code es 200" time="0.031" classname="02NotificationsTcApi05PatchMarcarComoNoLeida"/>
+    <testcase name="is_read quedó en false" time="0.031" classname="02NotificationsTcApi05PatchMarcarComoNoLeida"/>
   </testsuite>
-  <testsuite name="02 - Notifications / TC-API-05 / DELETE notificación" id="32f4a0cc-3634-483a-8e03-0e0b72af9631" timestamp="2026-10-16T19:05:45.251Z" tests="2" failures="0" errors="0" time="0.026">
-    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.026" classname="02NotificationsTcApi05DeleteNotificacion"/>
-    <testcase name="Status code es 204" time="0.026" classname="02NotificationsTcApi05DeleteNotificacion"/>
+  <testsuite name="02 - Notifications / TC-API-05 / DELETE notificación" id="7ef00b67-90b2-45d4-b682-6c6b12d69f24" timestamp="2026-10-16T21:52:27.989Z" tests="2" failures="0" errors="0" time="0.024">
+    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.024" classname="02NotificationsTcApi05DeleteNotificacion"/>
+    <testcase name="Status code es 204" time="0.024" classname="02NotificationsTcApi05DeleteNotificacion"/>
   </testsuite>
-  <testsuite name="02 - Notifications / TC-API-05 / GET notificación eliminada" id="2ce3a2c8-7380-4a7c-b6a7-08fb63563147" timestamp="2026-10-16T19:05:45.251Z" tests="2" failures="0" errors="0" time="0.022">
-    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.022" classname="02NotificationsTcApi05GetNotificacionEliminada"/>
-    <testcase name="Status code es 404" time="0.022" classname="02NotificationsTcApi05GetNotificacionEliminada"/>
+  <testsuite name="02 - Notifications / TC-API-05 / GET notificación eliminada" id="b3e3ae2c-9001-44f7-935e-30c6b6c182e8" timestamp="2026-10-16T21:52:27.989Z" tests="2" failures="0" errors="0" time="0.024">
+    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.024" classname="02NotificationsTcApi05GetNotificacionEliminada"/>
+    <testcase name="Status code es 404" time="0.024" classname="02NotificationsTcApi05GetNotificacionEliminada"/>
   </testsuite>
-  <testsuite name="02 - Notifications / TC-API-06 /Crear notificación sin type ni message" id="246990d3-a2ef-45bc-847e-c2d40443588c" timestamp="2026-10-16T19:05:45.251Z" tests="3" failures="0" errors="0" time="0.022">
-    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.022" classname="02NotificationsTcApi06CrearNotificacionSinTypeNiMessage"/>
-    <testcase name="Status code es 400" time="0.022" classname="02NotificationsTcApi06CrearNotificacionSinTypeNiMessage"/>
-    <testcase name="400 con mensaje estructurado: error por campo" time="0.022" classname="02NotificationsTcApi06CrearNotificacionSinTypeNiMessage"/>
+  <testsuite name="02 - Notifications / TC-API-06 /Crear notificación sin type ni message" id="2fa576cd-0e26-41b8-8815-c12b8a21bd6d" timestamp="2026-10-16T21:52:27.989Z" tests="3" failures="0" errors="0" time="0.023">
+    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.023" classname="02NotificationsTcApi06CrearNotificacionSinTypeNiMessage"/>
+    <testcase name="Status code es 400" time="0.023" classname="02NotificationsTcApi06CrearNotificacionSinTypeNiMessage"/>
+    <testcase name="400 con mensaje estructurado: error por campo" time="0.023" classname="02NotificationsTcApi06CrearNotificacionSinTypeNiMessage"/>
   </testsuite>
-  <testsuite name="02 - Notifications / Logout - Precondicion antes de los tests" id="e264c723-60f6-46e7-9b68-248d1bdfce5e" timestamp="2026-10-16T19:05:45.251Z" tests="2" failures="0" errors="0" time="0.020">
-    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.020" classname="02NotificationsLogoutPrecondicionAntesDeLosTests"/>
-    <testcase name="Status code es 200" time="0.020" classname="02NotificationsLogoutPrecondicionAntesDeLosTests"/>
+  <testsuite name="02 - Notifications / Logout - Precondicion antes de los tests" id="4942c2e1-8ad7-4a78-aff0-da45a382f741" timestamp="2026-10-16T21:52:27.989Z" tests="2" failures="0" errors="0" time="0.022">
+    <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.022" classname="02NotificationsLogoutPrecondicionAntesDeLosTests"/>
+    <testcase name="Status code es 200" time="0.022" classname="02NotificationsLogoutPrecondicionAntesDeLosTests"/>
   </testsuite>
-  <testsuite name="02 - Notifications / TC-API-07 / Listar notificaciones sin sesión" id="ac5c1fdb-f172-4148-abef-670814dd80a7" timestamp="2026-10-16T19:05:45.251Z" tests="2" failures="0" errors="0" time="0.009">
+  <testsuite name="02 - Notifications / TC-API-07 / Listar notificaciones sin sesión" id="ea8bf662-ee60-4493-8b5a-dff5757762e2" timestamp="2026-10-16T21:52:27.989Z" tests="2" failures="0" errors="0" time="0.009">
     <testcase name="Tiempo de respuesta menor a 2000 ms" time="0.009" classname="02NotificationsTcApi07ListarNotificacionesSinSesion"/>
     <testcase name="Status code es 401" time="0.009" classname="02NotificationsTcApi07ListarNotificacionesSinSesion"/>
   </testsuite>
