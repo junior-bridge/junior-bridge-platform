@@ -30,10 +30,15 @@ SECRET_KEY = os.environ["SECRET_KEY"]
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool_env("DEBUG", default=False)
 
-FRONTEND_URL = os.getenv("FRONTEND_URL", "").strip().rstrip("/")
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:3000").rstrip("/")
 if FRONTEND_URL and "://" not in FRONTEND_URL:
     FRONTEND_URL = f"https://{FRONTEND_URL}"
 FRONTEND_URL = FRONTEND_URL or "http://localhost:3000"
+
+
+# Redirecciones dinámicas
+LOGIN_REDIRECT_URL = f"{FRONTEND_URL}/dashboard"
+ACCOUNT_LOGOUT_REDIRECT_URL = f"{FRONTEND_URL}/login"
 
 ALLOWED_HOSTS = csv_env(
     "ALLOWED_HOSTS",
