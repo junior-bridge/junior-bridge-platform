@@ -172,9 +172,6 @@ AUTHENTICATION_BACKENDS = [
 
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 ACCOUNT_USER_MODEL_EMAIL_FIELD = "email"
-ACCOUNT_AUTHENTICATION_METHOD = "email"
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_EMAIL_VERIFICATION = "none"
 
 ACCOUNT_LOGIN_METHODS = {"email"}
@@ -242,10 +239,11 @@ AUTH_COOKIE_NAME = "access_token"
 # CAMBIOS DE PRODUCCION:
 # Detectar HTTPS detrás del proxy de Render (OBLIGATORIO)
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_PORT = True
 
 # CORS
 CORS_ALLOW_CREDENTIALS = True
-
 CORS_ALLOWED_ORIGINS = csv_env(
     "CORS_ALLOWED_ORIGINS",
     [
@@ -253,8 +251,6 @@ CORS_ALLOWED_ORIGINS = csv_env(
         "https://junior-bridge-platform-jahb.vercel.app",
         "http://localhost:3000",
         "http://127.0.0.1:3000",
-        "http://localhost:3001",
-        "http://127.0.0.1:3001",
     ],
 )
 
@@ -263,7 +259,6 @@ CSRF_TRUSTED_ORIGINS = [
     "https://junior-bridge-platform-jahb.vercel.app",
     "https://*.onrender.com",
 ]
-
 # Cookie security (Ajustado para producción interdominio)
 # Set to false only for local HTTP clients (e.g. Newman against http://backend:8000).
 # Browsers reject SameSite=None without Secure, so fall back to Lax in that case.
@@ -271,8 +266,7 @@ AUTH_COOKIE_SECURE = bool_env("AUTH_COOKIE_SECURE", default=True)
 AUTH_COOKIE_HTTPONLY = True
 AUTH_COOKIE_SAMESITE = "None" if AUTH_COOKIE_SECURE else "Lax"
 
-# CSRF cookie (Ajustado para producción interdominio)
-CSRF_COOKIE_SECURE = bool_env("CSRF_COOKIE_SECURE", default=not DEBUG)
+CSRF_COOKIE_SECURE = bool_env("CSRF_COOKIE_SECURE", default=True)
 CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SAMESITE = "None" if CSRF_COOKIE_SECURE else "Lax"
 
