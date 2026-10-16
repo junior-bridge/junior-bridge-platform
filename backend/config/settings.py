@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    'django.contrib.sites',
 
     "corsheaders",
     "rest_framework",
@@ -83,7 +84,7 @@ INSTALLED_APPS = [
     "apps.notifications",
 
 ]
-
+SITE_ID = 1
 AUTH_USER_MODEL = "users.User"
 
 
