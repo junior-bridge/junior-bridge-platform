@@ -247,22 +247,15 @@ CORS_ALLOWED_ORIGINS = csv_env(
 )
 
 # CSRF
-CSRF_TRUSTED_ORIGINS = csv_env(
-    "CSRF_TRUSTED_ORIGINS",
-    [
-        FRONTEND_URL,
-        "https://junior-bridge-platform-jahb.vercel.app",
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://localhost:3001",
-        "http://127.0.0.1:3001",
-    ],
-)
+CSRF_TRUSTED_ORIGINS = [
+    "https://junior-bridge-platform-jahb.vercel.app",
+    "https://*.onrender.com",
+]
 
 # Cookie security (Ajustado para producción interdominio)
-AUTH_COOKIE_SECURE = not DEBUG
+AUTH_COOKIE_SECURE = True
 AUTH_COOKIE_HTTPONLY = True
-AUTH_COOKIE_SAMESITE = "None" if not DEBUG else "Lax"
+AUTH_COOKIE_SAMESITE = 'None'
 
 # CSRF cookie (Ajustado para producción interdominio)
 CSRF_COOKIE_SECURE = not DEBUG
