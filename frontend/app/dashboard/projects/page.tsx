@@ -120,6 +120,7 @@ export default function ProjectsPage() {
                             {paginatedProjects.map((p) => (
                                 <div
                                     key={p.id}
+                                    data-testid={`project-${p.id}`}
                                     className="bg-white rounded-xl p-5 shadow-sm"
                                 >
                                     <div className="flex items-start justify-between mb-3">
@@ -239,6 +240,7 @@ export default function ProjectsPage() {
                                 return (
                                     <div
                                         key={p.id}
+                                        data-testid={`project-${p.id}`}
                                         className="bg-white rounded-xl p-5 shadow-sm"
                                     >
                                     <div className="flex items-center justify-between">
@@ -496,8 +498,8 @@ export default function ProjectsPage() {
 
             {ratingProjectId !== null && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-                    <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
-                        <h2 className="text-lg font-bold text-gray-800">
+                    <div role="dialog" aria-modal="true" aria-labelledby="rating-title" className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+                        <h2 id="rating-title" className="text-lg font-bold text-gray-800">
                             Calificar proyecto
                         </h2>
 
@@ -518,6 +520,8 @@ export default function ProjectsPage() {
                                         <button
                                             key={star}
                                             type="button"
+                                            aria-label={`${star} estrellas`}
+                                            aria-pressed={star <= ratingStars}
                                             onClick={() => setRatingStars(star)}
                                             className={`text-3xl transition-colors ${
                                                 star <= ratingStars
