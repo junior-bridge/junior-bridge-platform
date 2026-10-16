@@ -5,6 +5,7 @@ from allauth.socialaccount.providers.base import AuthError
 
 from django.conf import settings
 from django.shortcuts import redirect
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import User
 from .services import (
@@ -19,16 +20,7 @@ logger = logging.getLogger(__name__)
 class JuniorBridgeSocialAccountAdapter(DefaultSocialAccountAdapter):
 
     def is_auto_signup_allowed(self, request, sociallogin):
-        process = request.session.get("oauth_process")
-
-       
-        if process == "login":
-            email = sociallogin.user.email
-            if email and User.objects.filter(email__iexact=email).exists():
-                return True
-            return False
-
-        return super().is_auto_signup_allowed(request, sociallogin)
+        return True
 
     def populate_user(self, request, sociallogin, data):
         user = super().populate_user(request, sociallogin, data)
@@ -42,20 +34,19 @@ class JuniorBridgeSocialAccountAdapter(DefaultSocialAccountAdapter):
                 )
                 apply_social_role(user, flow)
             except Exception as e:
-                logger.warning(f"Ocurrió un error al aplicar rol de OAuth: {e}")
+                logger.warning(f"Error al aplicar rol de OAuth: {e}")
 
         return user
 
     def pre_social_login(self, request, sociallogin):
         process = request.session.get("oauth_process")
 
-       
         if process:
             try:
                 validate_oauth_process(process)
             except Exception as e:
                 logger.warning(f"Error en validate_oauth_process: {e}")
-
+                
         verified_email = next(
             (
                 email_address.email
@@ -65,56 +56,29 @@ class JuniorBridgeSocialAccountAdapter(DefaultSocialAccountAdapter):
             None,
         ) or getattr(sociallogin.user, "email", None)
 
-       
-        if process == "login" and not sociallogin.is_existing:
-            if not verified_email:
-                raise ImmediateHttpResponse(
-                    redirect(
-                        f"{settings.FRONTEND_OAUTH_ERROR_URL}"
-                        "?error=oauth_failed"
-                        "&reason=email_not_verified"
-                    )
+        if not verified_email:
+            raise ImmediateHttpResponse(
+                redirect(
+                    f"{settings.FRONTEND_OAUTH_ERROR_URL}"
+                    "?error=oauth_failed&reason=email_not_verified"
                 )
+            )
+            
+        existing_user = User.objects.filter(email__iexact=verified_email).first()
 
-            existing_user = User.objects.filter(
-                email__iexact=verified_email
-            ).first()
-
-            if not existing_user:
-                raise ImmediateHttpResponse(
-                    redirect(
-                        f"{settings.FRONTEND_OAUTH_ERROR_URL}"
-                        "?error=oauth_failed"
-                        "&reason=account_not_registered"
-                    )
-                )
-
+        if existing_user:
             sociallogin.connect(request, existing_user)
-
-       
-        if process == "signup" and verified_email:
-            existing_user = User.objects.filter(
-                email__iexact=verified_email
-            ).first()
-
-            if existing_user:
-                raise ImmediateHttpResponse(
-                    redirect(
-                        f"{settings.FRONTEND_OAUTH_ERROR_URL}"
-                        "?error=oauth_failed"
-                        "&reason=account_already_exists"
-                    )
-                )
 
         return super().pre_social_login(request, sociallogin)
 
-    def on_authentication_error(
+    def save_user(self, request, sociallogin, form=None):
+        user = super().save_user(request, sociallogin, form)
+        return user
+
+    def authentication_error(
         self, request, provider, error=None, exception=None, extra_context=None
     ):
-       
-        logger.error(
-            f"OAuth Authentication Error on provider {provider}: error={error}, exception={exception}"
-        )
+        logger.error(f"Error de OAuth en proveedor {provider}: {error} / {exception}")
         reason = "cancelled" if error == AuthError.CANCELLED else "provider_error"
         raise ImmediateHttpResponse(
             redirect(
