@@ -6,11 +6,12 @@ services:
             - .env
         environment:
             MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017/}
+            SEED_TEST_USERS: ${SEED_TEST_USERS:-false}
         ports:
             - "8000:8000"
         volumes:
             - ./backend:/app
-        command: sh -c "python manage.py migrate && python manage.py create_google_social_app && python manage.py create_github_social_app && daphne -b 0.0.0.0 -p 8000 config.asgi:application"
+        command: sh -c "python manage.py migrate && python manage.py create_test_users && python manage.py create_google_social_app && python manage.py create_github_social_app && daphne -b 0.0.0.0 -p 8000 config.asgi:application"
         depends_on:
             postgres:
                 condition: service_healthy
@@ -88,6 +89,17 @@ services:
             interval: 10s
             timeout: 5s
             retries: 5
+    newman:
+        build: ./tests/api
+        profiles: [ "tests" ]
+        depends_on:
+            backend:
+                condition: service_healthy
+        volumes:
+            - ./tests/api:/repo/tests/api:ro
+            - ./reportes:/repo/reportes
+        command: >
+            run tests/api/coleccion.postman_collection.json -e tests/api/entorno.local.json --env-var baseUrl=http://backend:8000 -r cli,htmlextra,junit --reporter-htmlextra-export reportes/newman.html --reporter-junit-export reportes/newman.xml
 
 volumes:
     postgres_data_junior_bridge:
