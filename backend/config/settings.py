@@ -265,14 +265,16 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 # Cookie security (Ajustado para producción interdominio)
-AUTH_COOKIE_SECURE = True
+# Set to false only for local HTTP clients (e.g. Newman against http://backend:8000).
+# Browsers reject SameSite=None without Secure, so fall back to Lax in that case.
+AUTH_COOKIE_SECURE = bool_env("AUTH_COOKIE_SECURE", default=True)
 AUTH_COOKIE_HTTPONLY = True
-AUTH_COOKIE_SAMESITE = 'None'
+AUTH_COOKIE_SAMESITE = "None" if AUTH_COOKIE_SECURE else "Lax"
 
 # CSRF cookie (Ajustado para producción interdominio)
-CSRF_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = bool_env("CSRF_COOKIE_SECURE", default=not DEBUG)
 CSRF_COOKIE_HTTPONLY = False
-CSRF_COOKIE_SAMESITE = "None" if not DEBUG else "Lax"
+CSRF_COOKIE_SAMESITE = "None" if CSRF_COOKIE_SECURE else "Lax"
 
 
 
