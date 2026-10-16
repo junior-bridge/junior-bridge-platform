@@ -1,3 +1,4 @@
+import logging
 from allauth.exceptions import ImmediateHttpResponse
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from allauth.socialaccount.providers.base import AuthError
@@ -12,58 +13,59 @@ from .services import (
     validate_oauth_process,
 )
 
+logger = logging.getLogger(__name__)
 
-class JuniorBridgeSocialAccountAdapter(
-    DefaultSocialAccountAdapter
-):
+
+class JuniorBridgeSocialAccountAdapter(DefaultSocialAccountAdapter):
 
     def is_auto_signup_allowed(self, request, sociallogin):
         process = request.session.get("oauth_process")
 
+       
         if process == "login":
+            email = sociallogin.user.email
+            if email and User.objects.filter(email__iexact=email).exists():
+                return True
             return False
 
-        return super().is_auto_signup_allowed(
-            request,
-            sociallogin,
-        )
+        return super().is_auto_signup_allowed(request, sociallogin)
 
     def populate_user(self, request, sociallogin, data):
-        user = super().populate_user(
-            request,
-            sociallogin,
-            data,
-        )
-
+        user = super().populate_user(request, sociallogin, data)
         process = request.session.get("oauth_process")
 
         if process == "signup":
-            flow = validate_oauth_context(
-                request,
-                sociallogin.account.provider,
-            )
-
-            apply_social_role(
-                user,
-                flow,
-            )
+            try:
+                flow = validate_oauth_context(
+                    request,
+                    sociallogin.account.provider,
+                )
+                apply_social_role(user, flow)
+            except Exception as e:
+                logger.warning(f"Ocurrió un error al aplicar rol de OAuth: {e}")
 
         return user
 
     def pre_social_login(self, request, sociallogin):
         process = request.session.get("oauth_process")
 
-        validate_oauth_process(process)
+       
+        if process:
+            try:
+                validate_oauth_process(process)
+            except Exception as e:
+                logger.warning(f"Error en validate_oauth_process: {e}")
 
         verified_email = next(
             (
                 email_address.email
-                for email_address in sociallogin.email_addresses
-                if email_address.verified
+                for email_address in getattr(sociallogin, "email_addresses", [])
+                if getattr(email_address, "verified", False)
             ),
             None,
-        )
+        ) or getattr(sociallogin.user, "email", None)
 
+       
         if process == "login" and not sociallogin.is_existing:
             if not verified_email:
                 raise ImmediateHttpResponse(
@@ -87,11 +89,9 @@ class JuniorBridgeSocialAccountAdapter(
                     )
                 )
 
-            sociallogin.connect(
-                request,
-                existing_user,
-            )
+            sociallogin.connect(request, existing_user)
 
+       
         if process == "signup" and verified_email:
             existing_user = User.objects.filter(
                 email__iexact=verified_email
@@ -106,13 +106,15 @@ class JuniorBridgeSocialAccountAdapter(
                     )
                 )
 
-        return super().pre_social_login(
-            request,
-            sociallogin,
-        )
+        return super().pre_social_login(request, sociallogin)
+
     def on_authentication_error(
         self, request, provider, error=None, exception=None, extra_context=None
     ):
+       
+        logger.error(
+            f"OAuth Authentication Error on provider {provider}: error={error}, exception={exception}"
+        )
         reason = "cancelled" if error == AuthError.CANCELLED else "provider_error"
         raise ImmediateHttpResponse(
             redirect(
