@@ -5,7 +5,6 @@ from allauth.socialaccount.providers.base import AuthError
 
 from django.conf import settings
 from django.shortcuts import redirect
-from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import User
 from .services import (
@@ -46,7 +45,7 @@ class JuniorBridgeSocialAccountAdapter(DefaultSocialAccountAdapter):
                 validate_oauth_process(process)
             except Exception as e:
                 logger.warning(f"Error en validate_oauth_process: {e}")
-                
+
         verified_email = next(
             (
                 email_address.email
@@ -63,7 +62,7 @@ class JuniorBridgeSocialAccountAdapter(DefaultSocialAccountAdapter):
                     "?error=oauth_failed&reason=email_not_verified"
                 )
             )
-            
+
         existing_user = User.objects.filter(email__iexact=verified_email).first()
 
         if existing_user:
@@ -71,14 +70,12 @@ class JuniorBridgeSocialAccountAdapter(DefaultSocialAccountAdapter):
 
         return super().pre_social_login(request, sociallogin)
 
-    def save_user(self, request, sociallogin, form=None):
-        user = super().save_user(request, sociallogin, form)
-        return user
-
-    def authentication_error(
+    def on_authentication_error(
         self, request, provider, error=None, exception=None, extra_context=None
     ):
-        logger.error(f"Error de OAuth en proveedor {provider}: {error} / {exception}")
+        logger.error(
+            f"Error de OAuth en proveedor {provider}: error={error}, exception={exception}"
+        )
         reason = "cancelled" if error == AuthError.CANCELLED else "provider_error"
         raise ImmediateHttpResponse(
             redirect(
