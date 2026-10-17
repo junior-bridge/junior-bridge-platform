@@ -206,7 +206,20 @@ SOCIALACCOUNT_PROVIDERS = {
         },
         "METHOD": "oauth2",
         "VERIFIED_EMAIL": True,
-    }
+    },
+    # Configured from env vars like Google, so no SocialApp row is needed.
+    # Do not also create a GitHub SocialApp in the database: allauth would
+    # find two apps and raise MultipleObjectsReturned.
+    "github": {
+        "APP": {
+            "client_id": os.environ.get("GITHUB_CLIENT_ID", ""),
+            "secret": os.environ.get("GITHUB_CLIENT_SECRET", ""),
+            "key": "",
+        },
+        "SCOPE": [
+            "user:email",
+        ],
+    },
 }
 
 
