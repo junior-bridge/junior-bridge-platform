@@ -53,6 +53,9 @@ services:
           # Public URL: fromService "host" resolves to the internal hostname, not the onrender.com domain.
           - key: FRONTEND_URL
             value: "https://junior-bridge-frontend-85z5.onrender.com"
+          # The frontend proxy forwards its own host (USE_X_FORWARDED_HOST), so both hosts are allowed.
+          - key: ALLOWED_HOSTS
+            value: "junior-bridge-api-n1o6.onrender.com,junior-bridge-frontend-85z5.onrender.com,localhost,127.0.0.1"
           - key: GOOGLE_CLIENT_ID
             sync: false
           - key: GOOGLE_CLIENT_SECRET
@@ -99,6 +102,15 @@ services:
       buildCommand: npm ci && npm run build
       startCommand: npm run start
       envVars:
-          # Public URL: the browser cannot resolve the internal hostname from fromService "host".
+          # Same-origin mode: the browser calls relative /api and /accounts URLs on the
+          # frontend origin, and Next.js rewrites proxy them to API_PROXY_TARGET, so the
+          # API cookies stay first-party (onrender.com is on the Public Suffix List).
           - key: NEXT_PUBLIC_API_BASE
+            value: "/"
+          # Public URL: the internal hostname from fromService "host" is not used here.
+          - key: API_PROXY_TARGET
             value: "https://junior-bridge-api-n1o6.onrender.com"
+          # The notifications WebSocket stays direct to the API for now, because Next.js
+          # rewrites do not proxy WebSocket upgrades. Ticket-based auth is planned in T4.
+          - key: NEXT_PUBLIC_WS_BASE
+            value: "wss://junior-bridge-api-n1o6.onrender.com"
