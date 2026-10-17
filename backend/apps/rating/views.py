@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.postulations.models import Postulation
+from apps.users.permissions import IsTester
 
 from .models import Rating
 from .serializers import RatingSerializer, TesterRatingSerializer
@@ -166,7 +167,7 @@ class RatingUpdateView(APIView):
 
 @extend_schema(tags=['Rating'])
 class TesterReputationView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsTester]
 
     @extend_schema(
         summary="Get my reputation as tester",
@@ -183,6 +184,8 @@ class TesterReputationView(APIView):
                     "ratings": TesterRatingSerializer(many=True),
                 },
             ),
+            401: OpenApiResponse(description="Authentication credentials were not provided."),
+            403: OpenApiResponse(description="Only testers can access this resource."),
         },
     )
     def get(self, request):
