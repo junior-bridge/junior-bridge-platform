@@ -1,7 +1,4 @@
-import secrets
-
 from django.conf import settings
-from django.core.cache import cache
 from django.shortcuts import redirect
 
 from rest_framework.exceptions import ValidationError
@@ -135,25 +132,3 @@ def apply_social_role(user, flow):
     user.role = get_role_from_oauth_flow(flow)
 
     return user
-
-
-# WebSockets: ticket de un solo uso para autenticar conexiones cross-site.
-# Next no puede proxear WebSockets, así que el navegador se conecta directo a
-# la API y las cookies HttpOnly no viajan. El frontend obtiene un ticket por
-# HTTP (a través del proxy) y lo pasa por query string.
-
-WS_TICKET_TTL = 30  # segundos
-
-
-def create_ws_ticket(user_id):
-    ticket = secrets.token_urlsafe(32)
-    cache.set(f"ws_ticket:{ticket}", user_id, timeout=WS_TICKET_TTL)
-    return ticket
-
-
-def consume_ws_ticket(ticket):
-    key = f"ws_ticket:{ticket}"
-    user_id = cache.get(key)
-    if user_id is not None:
-        cache.delete(key)  # single-use
-    return user_id

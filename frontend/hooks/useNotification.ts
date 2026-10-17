@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { API_BASE, API_WEBSOCKET_BASE } from '@/lib/apiBase';
-import { getWebSocketTicket } from '@/services/auth.service';
 
 const NOTIFICATIONS_API = `${API_BASE}/api/notifications`;
 
@@ -94,27 +93,10 @@ export function useNotifications() {
     }
   }, []);
 
-  const connect = useCallback(async () => {
+  const connect = useCallback(() => {
     shouldReconnectRef.current = true;
 
-    let ticket: string | null = null;
-    try {
-      ticket = await getWebSocketTicket();
-    } catch (error) {
-      console.error('❌ No se pudo obtener el ticket del WebSocket:', error);
-    }
-
-    if (!ticket) {
-      setIsConnected(false);
-      reconnectTimeoutRef.current = setTimeout(() => {
-        if (shouldReconnectRef.current) {
-          connectRef.current?.();
-        }
-      }, 5000);
-      return;
-    }
-
-    const wsUrl = `${API_WEBSOCKET_BASE}/ws/notifications/?ticket=${encodeURIComponent(ticket)}`;
+    const wsUrl = `${API_WEBSOCKET_BASE}/ws/notifications/`;
 
     try {
       const ws = new WebSocket(wsUrl);
@@ -326,7 +308,7 @@ export function useNotifications() {
 
     const startupTimeout = setTimeout(() => {
       void loadNotifications();
-      void connect();
+      connect();
     }, 0);
 
     return () => {

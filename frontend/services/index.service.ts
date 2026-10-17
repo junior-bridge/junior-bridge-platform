@@ -12,12 +12,10 @@ export class ApiRequestError extends Error {
     }
 }
 
-const WRITE_METHODS = ["POST", "PUT", "PATCH", "DELETE"];
-
-async function performRequest(
+export async function apiFetch<T>(
     endpoint: string,
     options: RequestInit = {},
-): Promise<Response> {
+): Promise<T> {
     const method = options.method?.toUpperCase() ?? "GET";
 
     const headers = new Headers(options.headers);
@@ -26,95 +24,58 @@ async function performRequest(
         headers.set("Content-Type", "application/json");
     }
 
-    if (WRITE_METHODS.includes(method)) {
+    if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
         headers.set("X-CSRFToken", await getCsrfToken());
     }
-
+    let response: Response;
     try {
-        return await fetch(`${API_BASE}${endpoint}`, {
+        response = await fetch(`${API_BASE}${endpoint}`, {
             ...options,
             headers,
             credentials: "include",
         });
     } finally {
-        if (WRITE_METHODS.includes(method)) {
+        if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
             clearCsrfToken();
         }
     }
-}
-
-function buildApiRequestError(error: ApiError): ApiRequestError {
-    if (
-        Array.isArray(error.non_field_errors) &&
-        typeof error.non_field_errors[0] === "string"
-    ) {
-        return new ApiRequestError(error.non_field_errors[0], error);
-    }
-
-    if (
-        Array.isArray(error.email) &&
-        error.email.some(
-            (message) =>
-                typeof message === "string" &&
-                message.toLowerCase().includes("already exists"),
-        )
-    ) {
-        return new ApiRequestError(
-            "Ya existe un usuario registrado con ese correo electrónico.",
-            error,
-        );
-    }
-
-    return new ApiRequestError(
-        typeof error.detail === "string"
-            ? error.detail
-            : "No se pudo completar la solicitud.",
-        error,
-    );
-}
-
-async function errorFromResponse(response: Response): Promise<ApiRequestError> {
-    let error: ApiError = {
-        detail: "Ocurrió un error inesperado.",
-    };
-
-    try {
-        error = await response.json();
-    } catch {
-        // Mantiene el mensaje por defecto cuando el body no es JSON.
-    }
-
-    return buildApiRequestError(error);
-}
-
-export async function refreshToken(): Promise<void> {
-    const response = await performRequest("/api/auth/token/refresh/", {
-        method: "POST",
-    });
 
     if (!response.ok) {
-        throw await errorFromResponse(response);
-    }
-}
+        let error: ApiError = {
+            detail: "Ocurrió un error inesperado.",
+        };
 
-export async function apiFetch<T>(
-    endpoint: string,
-    options: RequestInit = {},
-): Promise<T> {
-    let response = await performRequest(endpoint, options);
-
-    if (response.status === 401 && endpoint !== "/api/auth/token/refresh/") {
         try {
-            await refreshToken();
-        } catch {
-            // El refresh falló; el reintento de abajo mostrará el 401 original.
+            error = await response.json();
+        } catch { }
+
+        if (
+            Array.isArray(error.non_field_errors) &&
+            typeof error.non_field_errors[0] === "string"
+        ) {
+            throw new ApiRequestError(error.non_field_errors[0], error);
         }
 
-        response = await performRequest(endpoint, options);
-    }
+        if (
+            Array.isArray(error.email) &&
+            error.email.some(
+                (message) =>
+                    typeof message === "string" &&
+                    message.toLowerCase().includes("already exists"),
+            )
+        ) {
+            throw new ApiRequestError(
+                "Ya existe un usuario registrado con ese correo electrónico.",
+                error,
+            );
+        }
 
-    if (!response.ok) {
-        throw await errorFromResponse(response);
+        throw new ApiRequestError(
+            typeof error.detail === "string"
+                ? error.detail
+                : "No se pudo completar la solicitud.",
+            error,
+        );
     }
 
     if (response.status === 204) {
@@ -122,4 +83,10 @@ export async function apiFetch<T>(
     }
 
     return response.json() as Promise<T>;
+}
+
+export async function refreshToken(): Promise<void> {
+    await apiFetch("/api/auth/token/refresh/", {
+        method: "POST",
+    });
 }
