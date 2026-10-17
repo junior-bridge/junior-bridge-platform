@@ -14,6 +14,9 @@ export default function AdminDashboard({ userName }: Props) {
         router,
         projects,
         users,
+        reports,
+        reportsLoading,
+        reportsError,
         loading,
         stats,
     } = useDashboardAdminView();
@@ -35,6 +38,7 @@ export default function AdminDashboard({ userName }: Props) {
                         key={stat.label}
                         label={stat.label}
                         value={stat.value}
+                        onDetailClick={() => router.push(stat.path)}
                     />
                 ))}
             </div>
@@ -199,20 +203,63 @@ export default function AdminDashboard({ userName }: Props) {
 
                 <div className="lg:w-52 flex flex-col gap-4">
                     <div className="bg-white rounded-xl p-4 shadow-sm">
-                        <h2 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
-                            <Bug
-                                size={15}
-                                className="text-red-400"
-                            />{" "}
-                            Bugs Recientes
-                        </h2>
+                        <div className="flex items-center justify-between mb-3">
+                            <h2 className="font-bold text-gray-800 flex items-center gap-2">
+                                <Bug
+                                    size={15}
+                                    className="text-red-400"
+                                />{" "}
+                                Bugs Recientes
+                            </h2>
 
-                        <p className="text-xs text-gray-400 text-center py-2">
-                            Disponible con{" "}
-                            <code className="text-xs bg-gray-100 px-1 rounded">
-                                /api/reports/
-                            </code>
-                        </p>
+                            {reports.length > 0 && (
+                                <button
+                                    onClick={() =>
+                                        router.push("/dashboard/reports")
+                                    }
+                                    className="text-xs text-brand-green font-medium hover:underline flex items-center gap-1 cursor-pointer"
+                                >
+                                    Ver Todo <ChevronRight size={12} />
+                                </button>
+                            )}
+                        </div>
+
+                        {reportsLoading ? (
+                            <p className="text-xs text-gray-400 text-center py-2">
+                                Cargando reportes...
+                            </p>
+                        ) : reportsError ? (
+                            <p className="text-xs text-red-500 text-center py-2">
+                                No se pudieron cargar los reportes.
+                            </p>
+                        ) : reports.length === 0 ? (
+                            <p className="text-xs text-gray-400 text-center py-2">
+                                No hay bugs reportados.
+                            </p>
+                        ) : (
+                            <div className="flex flex-col divide-y divide-gray-100">
+                                {reports.slice(0, 3).map((report) => (
+                                    <div
+                                        key={report._id}
+                                        className="py-2 first:pt-0 last:pb-0"
+                                    >
+                                        <p className="text-xs font-medium text-gray-700 truncate">
+                                            {report.title}
+                                        </p>
+                                        <div className="flex items-center justify-between mt-1">
+                                            <span className="text-[10px] text-gray-400 capitalize">
+                                                {report.severity}
+                                            </span>
+                                            <span className="text-[10px] text-gray-400">
+                                                {new Date(
+                                                    report.created_at,
+                                                ).toLocaleDateString("es-AR")}
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     <div className="bg-white rounded-xl p-4 shadow-sm">

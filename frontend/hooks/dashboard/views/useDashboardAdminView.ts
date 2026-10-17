@@ -6,6 +6,8 @@ import { getAdminStats } from "@/services/admin.service";
 import { AdminStats } from "@/types/adminTypes";
 import { getAdminUsers } from "@/services/user.service";
 import { AdminUser } from "@/types/dashboardTypes";
+import { getReports } from "@/services/report.service";
+import { Report } from "@/types/reportTypes";
 
 export const useDashboardAdminView = () => {
     const stateColor: Record<string, string> = {
@@ -22,6 +24,9 @@ export const useDashboardAdminView = () => {
     const [loading, setLoading] = useState(true);
     const [adminStats, setAdminStats] = useState<AdminStats | null>(null);
     const [users, setUsers] = useState<AdminUser[]>([]);
+    const [reports, setReports] = useState<Report[]>([]);
+    const [reportsLoading, setReportsLoading] = useState(true);
+    const [reportsError, setReportsError] = useState(false);
 
     useEffect(() => {
         getProjects()
@@ -33,25 +38,43 @@ export const useDashboardAdminView = () => {
             .catch(() => {});
         getAdminUsers()
             .then(setUsers)
-            .catch(() => {});        
+            .catch(() => {});
+        getReports()
+            .then((data) => {
+                const recentReports = [...data].sort(
+                    (a, b) =>
+                        new Date(b.created_at).getTime() -
+                        new Date(a.created_at).getTime(),
+                );
+                setReports(recentReports);
+            })
+            .catch(() => setReportsError(true))
+            .finally(() => setReportsLoading(false));
     }, []);
 
      const stats = [
         { 
             label: "Usuarios Registrados", 
-            value:  adminStats?.registered_users ?? 0, 
+            value:  adminStats?.registered_users ?? 0,
+            path: "/dashboard/users",
         },
         {
             label: "Proyectos Activos",
             value: projects.filter(
                 (p) => p.state === "OPEN" || p.state === "IN_PROGRESS",
             ).length,
+            path: "/dashboard/projects",
         },
         { 
             label: "Bugs Reportados", 
-            value: adminStats?.reported_bugs ?? 0, 
+            value: adminStats?.reported_bugs ?? 0,
+            path: "/dashboard/reports",
         },
-        { label: "Proyectos Totales", value: projects.length },
+        {
+            label: "Proyectos Totales",
+            value: projects.length,
+            path: "/dashboard/projects",
+        },
     ];
 
     return {
@@ -59,6 +82,9 @@ export const useDashboardAdminView = () => {
         router,
         projects,
         users,
+        reports,
+        reportsLoading,
+        reportsError,
         loading,
         stats
     }
