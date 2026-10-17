@@ -205,11 +205,16 @@ SOCIALACCOUNT_PROVIDERS = {
         },
         "METHOD": "oauth2",
         "VERIFIED_EMAIL": True,
-    }
+    },
+    "github": {
+        "APP": {
+            "client_id": os.environ.get("GITHUB_CLIENT_ID", ""),
+            "secret": os.environ.get("GITHUB_CLIENT_SECRET", ""),
+            "key": "",
+        },
+        "SCOPE": ["user:email"],
+    },
 }
-
-
-SITE_ID = 1
 
 FRONTEND_OAUTH_SUCCESS_URL = os.getenv(
     "FRONTEND_OAUTH_SUCCESS_URL",
