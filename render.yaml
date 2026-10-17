@@ -15,7 +15,7 @@ services:
       startCommand: >-
           sh -c 'python manage.py shell -c "from django.db import connection; cursor = connection.cursor(); cursor.execute(\"CREATE TABLE IF NOT EXISTS socialaccount_socialapp_sites (id SERIAL PRIMARY KEY, socialapp_id INTEGER NOT NULL, site_id INTEGER NOT NULL, UNIQUE(socialapp_id, site_id));\");" &&
           python manage.py migrate &&
-          python manage.py shell -c "from django.contrib.sites.models import Site; from allauth.socialaccount.models import SocialApp; site, _ = Site.objects.get_or_create(id=1, defaults={\"domain\": \"junior-bridge-api.onrender.com\", \"name\": \"Junior Bridge\"}); site.domain = \"junior-bridge-api.onrender.com\"; site.save(); [app.sites.add(site) for app in SocialApp.objects.all()]" &&
+          python manage.py shell -c "from django.contrib.sites.models import Site; from allauth.socialaccount.models import SocialApp; site, _ = Site.objects.get_or_create(id=1, defaults={\"domain\": \"junior-bridge-api-n1o6.onrender.com\", \"name\": \"Junior Bridge\"}); site.domain = \"junior-bridge-api-n1o6.onrender.com\"; site.save(); [app.sites.add(site) for app in SocialApp.objects.all()]" &&
           exec daphne -b 0.0.0.0 -p "$PORT" config.asgi:application'
       healthCheckPath: /api/auth/csrf/
       envVars:
@@ -49,11 +49,9 @@ services:
                 type: keyvalue
                 name: junior-bridge-redis
                 property: port
+          # Public URL: fromService "host" resolves to the internal hostname, not the onrender.com domain.
           - key: FRONTEND_URL
-            fromService:
-                type: web
-                name: junior-bridge-frontend
-                property: host
+            value: "https://junior-bridge-frontend-85z5.onrender.com"
           - key: GOOGLE_CLIENT_ID
             sync: false
           - key: GOOGLE_CLIENT_SECRET
@@ -100,8 +98,6 @@ services:
       buildCommand: npm ci && npm run build
       startCommand: npm run start
       envVars:
+          # Public URL: the browser cannot resolve the internal hostname from fromService "host".
           - key: NEXT_PUBLIC_API_BASE
-            fromService:
-                type: web
-                name: junior-bridge-api
-                property: host
+            value: "https://junior-bridge-api-n1o6.onrender.com"
