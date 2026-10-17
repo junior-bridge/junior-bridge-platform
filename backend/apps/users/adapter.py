@@ -24,6 +24,7 @@ class JuniorBridgeSocialAccountAdapter(DefaultSocialAccountAdapter):
 
     def populate_user(self, request, sociallogin, data):
         user = super().populate_user(request, sociallogin, data)
+        user.role = User.Role.TESTER
         process = request.session.get("oauth_process")
 
         if process == "signup":
@@ -67,6 +68,10 @@ class JuniorBridgeSocialAccountAdapter(DefaultSocialAccountAdapter):
         existing_user = User.objects.filter(email__iexact=verified_email).first()
 
         if existing_user:
+            if not existing_user.role:
+                existing_user.role = User.Role.TESTER
+                existing_user.save(update_fields=["role"])
+
             sociallogin.connect(request, existing_user)
 
         return super().pre_social_login(request, sociallogin)
