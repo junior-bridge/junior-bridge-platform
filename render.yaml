@@ -11,7 +11,7 @@ services:
       plan: free
       region: oregon
       rootDir: backend
-      buildCommand: pip install -r requirements.txt
+      buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
       startCommand: >-
           sh -c 'python manage.py shell -c "from django.db import connection; cursor = connection.cursor(); cursor.execute(\"CREATE TABLE IF NOT EXISTS socialaccount_socialapp_sites (id SERIAL PRIMARY KEY, socialapp_id INTEGER NOT NULL, site_id INTEGER NOT NULL, UNIQUE(socialapp_id, site_id));\");" &&
           python manage.py migrate &&
@@ -61,6 +61,30 @@ services:
           - key: GITHUB_CLIENT_ID
             sync: false
           - key: GITHUB_CLIENT_SECRET
+            sync: false
+          - key: AWS_STORAGE_BUCKET_NAME
+            sync: false
+          - key: AWS_S3_REGION_NAME
+            sync: false
+          - key: AWS_ACCESS_KEY_ID
+            sync: false
+          - key: AWS_SECRET_ACCESS_KEY
+            sync: false
+          - key: EMAIL_HOST
+            sync: false
+          - key: EMAIL_PORT
+            sync: false
+          - key: EMAIL_HOST_USER
+            sync: false
+          - key: EMAIL_HOST_PASSWORD
+            sync: false
+          - key: EMAIL_USE_TLS
+            value: "True"
+          - key: EMAIL_TIMEOUT
+            value: "10"
+          - key: DEFAULT_FROM_EMAIL
+            sync: false
+          - key: PAGESPEED_API_KEY
             sync: false
           - key: CORS_ALLOWED_ORIGINS
             value: "http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://127.0.0.1:3001,https://junior-bridge-frontend.onrender.com,https://junior-bridge-platform-jahb.vercel.app"
