@@ -188,22 +188,50 @@ class SocialOAuthStartView(APIView):
 class OAuthFinalizeView(View):
 
     def get(self, request):
+        # Si Allauth o Django no registran la sesión, rebotar a error
         if not request.user.is_authenticated:
+            logger.error("OAuthFinalizeView: request.user no está autenticado.")
             return redirect(
-                settings.FRONTEND_OAUTH_ERROR_URL
+                f"{settings.FRONTEND_OAUTH_ERROR_URL}?error=oauth_failed&reason=unauthenticated"
             )
 
-        response = create_auth_redirect_response(
-            request.user,
-            settings.FRONTEND_OAUTH_SUCCESS_URL,
+        user = request.user
+
+        # 1. Generar tokens JWT para SimpleJWT
+        refresh = RefreshToken.for_user(user)
+        access_token = str(refresh.access_token)
+        refresh_token = str(refresh)
+
+        # 2. Crear respuesta de redirección al Dashboard del Frontend
+        response = redirect(settings.FRONTEND_OAUTH_SUCCESS_URL)
+
+        # 3. Inyectar las cookies JWT explícitas para que profile/ las lea
+        response.set_cookie(
+            key="access_token",
+            value=access_token,
+            httponly=True,
+            secure=True,          # Requerido en HTTPS (Render)
+            samesite="None",      # Requerido interdominio
+            max_age=3600 * 24,
+            path="/",
         )
 
+        response.set_cookie(
+            key="refresh_token",
+            value=refresh_token,
+            httponly=True,
+            secure=True,
+            samesite="None",
+            max_age=3600 * 24 * 7,
+            path="/",
+        )
+        
         request.session.pop("oauth_process", None)
         request.session.pop("oauth_flow", None)
         request.session.save()
 
+        logger.info(f"OAuth finalizado con éxito para usuario {user.id} ({user.email}).")
         return response
-    
 
 @extend_schema(tags=['Authentication'])
 class RegisterView(APIView):
