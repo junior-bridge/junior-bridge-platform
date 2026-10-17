@@ -1,7 +1,9 @@
-﻿import { test, expect } from "@playwright/test";
+﻿import { DashboardPage } from "../pages/DashboardPage";
+import { test, expect } from "@playwright/test";
 import { LoginPage } from "../pages/LoginPage";
 
-test("el usuario inicia sesión y accede al dashboard", async ({ page }) => {
+
+test("TC-L-01: Inicio de sesión exitoso con credenciales válidas", async ({ page }) => {
     const user = {
         id: 1,
         name: "Cliente E2E",
@@ -108,25 +110,123 @@ test("el usuario inicia sesión y accede al dashboard", async ({ page }) => {
         });
     });
 
-    // Preparación del formulario.
+    // Preparación e inicio de sesión.
     const loginPage = new LoginPage(page);
 
     await loginPage.navigate();
-    await loginPage.emailInput.fill(user.email);
-    await loginPage.passwordInput.fill("PasswordE2E123!");
+    await loginPage.login(user.email, "PasswordE2E123!");
 
-    // Inicio de sesión.
-    await loginPage.submitButton.click();
-
-    // Espera a que se complete la navegación al dashboard.
+    // Verifica que se acceda al dashboard.
     await expect(page).toHaveURL(/\/dashboard\/?$/, {
         timeout: 10_000,
     });
 
-    // Verifica que el dashboard se haya renderizado.
+    // Verifica el saludo mediante el Page Object del dashboard.
+    const dashboardPage = new DashboardPage(page);
+
     await expect(
-        page.getByText("Hola, Cliente E2E")
-    ).toBeVisible();
+        await dashboardPage.getGreetingText()
+    ).toContain("Hola, Cliente E2E");
 
     console.log("[URL FINAL]", page.url());
 });
+
+
+const invalidLoginCases = [
+    {
+        description: "correo de Barbie con la contraseña indicada",
+        email: "barbie@gmail.com",
+        password: "Barbie123!",
+    },
+    {
+        description: "correo de cliente no válido con su contraseña indicada",
+        email: "client-novalido@juniorbridge.test",
+        password: "Clientnovalid123!",
+    },
+    {
+        description: "correo inexistente",
+        email: "usuario-inexistente.e2e@example.com",
+        password: "PasswordE2E123!",
+    },
+    {
+        description: "contraseña incorrecta",
+        email: "cliente.e2e@example.com",
+        password: "WrongPasswordE2E123!",
+    },
+];
+
+for (const scenario of invalidLoginCases) {
+    test(
+        `TC-L-02: Rechaza credenciales inválidas - ${scenario.description}`,
+        async ({ page }) => {
+            await page.route("http://localhost:8000/**", async (route) => {
+                const request = route.request();
+                const path = new URL(request.url()).pathname;
+
+                if (path === "/api/auth/csrf/") {
+                    await route.fulfill({
+                        status: 200,
+                        contentType: "application/json",
+                        body: JSON.stringify({
+                            csrfToken: "csrf-token-e2e",
+                        }),
+                    });
+                    return;
+                }
+
+                if (path === "/api/auth/login/") {
+                    expect(request.method()).toBe("POST");
+
+                    const body = request.postDataJSON() as {
+                        email: string;
+                        password: string;
+                    };
+
+                    expect(body.email).toBe(scenario.email);
+                    expect(body.password).toBe(scenario.password);
+
+                    await route.fulfill({
+                        status: 400,
+                        contentType: "application/json",
+                        body: JSON.stringify({
+                            detail: "Las credenciales son inválidas.",
+                        }),
+                    });
+                    return;
+                }
+
+                // Si el login falla, no debería ser necesario consultar
+                // el perfil autenticado.
+                if (path === "/api/auth/profile/") {
+                    await route.fulfill({
+                        status: 401,
+                        contentType: "application/json",
+                        body: JSON.stringify({
+                            detail: "No autenticado.",
+                        }),
+                    });
+                    return;
+                }
+
+                await route.fulfill({
+                    status: 200,
+                    contentType: "application/json",
+                    body: JSON.stringify([]),
+                });
+            });
+
+            const loginPage = new LoginPage(page);
+
+            await loginPage.navigate();
+            await loginPage.login(scenario.email, scenario.password);
+
+            await expect(page).toHaveURL(/\/login\/?$/);
+
+            await expect(
+                await loginPage.getErrorText(),
+            ).toBe("Las credenciales son inválidas.");
+
+            await expect(page).not.toHaveURL(/\/dashboard\/?$/);
+        },
+    );
+}
