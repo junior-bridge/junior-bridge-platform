@@ -1,0 +1,1101 @@
+{
+  "info": {
+    "_postman_id": "45e34f37-be9f-419e-aa30-8adca88b0a06",
+    "name": "Junior Bridge API - Sprint 4 (AUTH-APÍ)",
+    "description": "Colección de pruebas de API de JuniorBridge",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "27711332"
+  },
+  "item": [
+    {
+      "name": "00 - Auth",
+      "item": [
+        {
+          "name": "TC-API-01 / GET Token CSRF",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code es 200\", () => pm.response.to.have.status(200));\r\nconst body = pm.response.json();\r\npm.test(\"Contrato: campos presentes y con el tipo correcto\", () => {\r\n    pm.expect(body, \"falta el campo detail\").to.have.property(\"detail\");\r\n    pm.expect(body.detail, \"detail debe ser string\").to.be.a(\"string\");\r\n    pm.expect(body, \"falta el campo csrfToken\").to.have.property(\"csrfToken\");\r\n    pm.expect(body.csrfToken, \"csrfToken debe ser string\").to.be.a(\"string\");\r\n});\r\npm.collectionVariables.set(\"csrfToken\", body.csrfToken);"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{authUrl}}{{tokenUrl}}",
+              "host": [
+                "{{baseUrl}}{{authUrl}}{{tokenUrl}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TC-L-01 / Login Válido - Rol CLIENT",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code es 200\", () => pm.response.to.have.status(200));\r\nconst body = pm.response.json();\r\npm.test(\"La respuesta trae el objeto user\", () => pm.expect(body).to.have.property(\"user\"));\r\nconst user = body.user;\r\npm.test(\"Contrato: campos presentes y con el tipo correcto\", () => {\r\n    pm.expect(user, \"falta el campo id\").to.have.property(\"id\");\r\n    pm.expect(user.id, \"id debe ser number\").to.be.a(\"number\");\r\n    pm.expect(user, \"falta el campo email\").to.have.property(\"email\");\r\n    pm.expect(user.email, \"email debe ser string\").to.be.a(\"string\");\r\n    pm.expect(user, \"falta el campo name\").to.have.property(\"name\");\r\n    pm.expect(user.name, \"name debe ser string\").to.be.a(\"string\");\r\n    pm.expect(user, \"falta el campo surname\").to.have.property(\"surname\");\r\n    pm.expect(user.surname, \"surname debe ser string\").to.be.a(\"string\");\r\n    pm.expect(user, \"falta el campo role\").to.have.property(\"role\");\r\n    pm.expect(user.role, \"role debe ser string\").to.be.a(\"string\");\r\n    pm.expect(user, \"falta el campo reputation\").to.have.property(\"reputation\");\r\n    pm.expect(user.reputation, \"reputation debe ser string\").to.be.a(\"string\");\r\n    pm.expect(user, \"falta el campo date_joined\").to.have.property(\"date_joined\");\r\n    pm.expect(user.date_joined, \"date_joined debe ser string\").to.be.a(\"string\");\r\n    pm.expect(user, \"falta el campo created_at\").to.have.property(\"created_at\");\r\n    pm.expect(user.created_at, \"created_at debe ser string\").to.be.a(\"string\");\r\n    pm.expect(user, \"falta el campo updated_at\").to.have.property(\"updated_at\");\r\n    pm.expect(user.updated_at, \"updated_at debe ser string\").to.be.a(\"string\");\r\n    pm.expect(user, \"falta el campo profile_photo\").to.have.property(\"profile_photo\");\r\n    pm.expect(user.profile_photo === null || typeof user.profile_photo === \"string\", \"profile_photo debe ser string o null\").to.be.true;\r\n});\r\npm.test(\"El rol devuelto es CLIENT\", () => pm.expect(user.role).to.eql(\"CLIENT\"));\r\npm.test(\"Setea la cookie de autenticación (access_token)\", () => {\r\n    const setCookie = pm.response.headers.filter(h => h.key.toLowerCase() === \"set-cookie\").map(h => h.value).join(\";\");\r\n    pm.expect(setCookie).to.include(\"access_token\");\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"email\": \"{{clientEmail}}\",\r\n  \"password\":\"{{clientPassword}}\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{authUrl}}{{loginUrl}}",
+              "host": [
+                "{{baseUrl}}{{authUrl}}{{loginUrl}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TC-L-02 / Login con contraseña incorrecta",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code es 400\", () => pm.response.to.have.status(400));\r\nconst body = pm.response.json();\r\npm.test(\"400 con mensaje estructurado (objeto JSON)\", () => pm.expect(body).to.be.an(\"object\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"email\":\"{{clientEmail}}\",\r\n    \"password\":\"{{invalidPassword}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{authUrl}}{{loginUrl}}",
+              "host": [
+                "{{baseUrl}}{{authUrl}}{{loginUrl}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TC-L-04 / Login sin email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code es 400\", () => pm.response.to.have.status(400));\r\nconst body = pm.response.json();\r\npm.test(\"400 con mensaje estructurado: error por campo\", () => {\r\n    pm.expect(body).to.be.an(\"object\");\r\n    [\"email\"].forEach(f => pm.expect(body, \"falta el error del campo \" + f).to.have.property(f));\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"password\":\"{{clientPassword}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{authUrl}}{{loginUrl}}",
+              "host": [
+                "{{baseUrl}}{{authUrl}}{{loginUrl}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TC-L-04 / Login sin Contraseña",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code es 400\", () => pm.response.to.have.status(400));\r\nconst body = pm.response.json();\r\npm.test(\"400 con mensaje estructurado: error por campo\", () => {\r\n    pm.expect(body).to.be.an(\"object\");\r\n    [\"password\"].forEach(f => pm.expect(body, \"falta el error del campo \" + f).to.have.property(f));\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"email\":\"{{clientEmail}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{authUrl}}{{loginUrl}}",
+              "host": [
+                "{{baseUrl}}{{authUrl}}{{loginUrl}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "01 - Projects",
+      "item": [
+        {
+          "name": "Login CLIENT - Precondicion antes de los Tests",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code es 200\", () => pm.response.to.have.status(200));\r\nconst body = pm.response.json();\r\npm.test(\"La respuesta trae el objeto user\", () => pm.expect(body).to.have.property(\"user\"));\r\nconst user = body.user;\r\npm.test(\"Contrato: campos presentes y con el tipo correcto\", () => {\r\n    pm.expect(user, \"falta el campo id\").to.have.property(\"id\");\r\n    pm.expect(user.id, \"id debe ser number\").to.be.a(\"number\");\r\n    pm.expect(user, \"falta el campo email\").to.have.property(\"email\");\r\n    pm.expect(user.email, \"email debe ser string\").to.be.a(\"string\");\r\n    pm.expect(user, \"falta el campo name\").to.have.property(\"name\");\r\n    pm.expect(user.name, \"name debe ser string\").to.be.a(\"string\");\r\n    pm.expect(user, \"falta el campo surname\").to.have.property(\"surname\");\r\n    pm.expect(user.surname, \"surname debe ser string\").to.be.a(\"string\");\r\n    pm.expect(user, \"falta el campo role\").to.have.property(\"role\");\r\n    pm.expect(user.role, \"role debe ser string\").to.be.a(\"string\");\r\n    pm.expect(user, \"falta el campo reputation\").to.have.property(\"reputation\");\r\n    pm.expect(user.reputation, \"reputation debe ser string\").to.be.a(\"string\");\r\n    pm.expect(user, \"falta el campo date_joined\").to.have.property(\"date_joined\");\r\n    pm.expect(user.date_joined, \"date_joined debe ser string\").to.be.a(\"string\");\r\n    pm.expect(user, \"falta el campo created_at\").to.have.property(\"created_at\");\r\n    pm.expect(user.created_at, \"created_at debe ser string\").to.be.a(\"string\");\r\n    pm.expect(user, \"falta el campo updated_at\").to.have.property(\"updated_at\");\r\n    pm.expect(user.updated_at, \"updated_at debe ser string\").to.be.a(\"string\");\r\n    pm.expect(user, \"falta el campo profile_photo\").to.have.property(\"profile_photo\");\r\n    pm.expect(user.profile_photo === null || typeof user.profile_photo === \"string\", \"profile_photo debe ser string o null\").to.be.true;\r\n});\r\npm.test(\"El rol devuelto es CLIENT\", () => pm.expect(user.role).to.eql(\"CLIENT\"));\r\npm.test(\"Setea la cookie de autenticación (access_token)\", () => {\r\n    const setCookie = pm.response.headers.filter(h => h.key.toLowerCase() === \"set-cookie\").map(h => h.value).join(\";\");\r\n    pm.expect(setCookie).to.include(\"access_token\");\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"email\":\"{{clientEmail}}\",\r\n    \"password\":\"{{clientPassword}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{authUrl}}{{loginUrl}}",
+              "host": [
+                "{{baseUrl}}{{authUrl}}{{loginUrl}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TC-D-01 / Crear Proyectos con Datos Validos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code es 201\", () => pm.response.to.have.status(201));\r\nconst body = pm.response.json();\r\npm.test(\"Contrato: campos presentes y con el tipo correcto\", () => {\r\n    pm.expect(body, \"falta el campo id\").to.have.property(\"id\");\r\n    pm.expect(body.id, \"id debe ser number\").to.be.a(\"number\");\r\n    pm.expect(body, \"falta el campo title\").to.have.property(\"title\");\r\n    pm.expect(body.title, \"title debe ser string\").to.be.a(\"string\");\r\n    pm.expect(body, \"falta el campo description\").to.have.property(\"description\");\r\n    pm.expect(body.description, \"description debe ser string\").to.be.a(\"string\");\r\n    pm.expect(body, \"falta el campo repository\").to.have.property(\"repository\");\r\n    pm.expect(body.repository, \"repository debe ser string\").to.be.a(\"string\");\r\n    pm.expect(body, \"falta el campo demo_url\").to.have.property(\"demo_url\");\r\n    pm.expect(body.demo_url, \"demo_url debe ser string\").to.be.a(\"string\");\r\n    pm.expect(body, \"falta el campo technologies\").to.have.property(\"technologies\");\r\n    pm.expect(body.technologies, \"technologies debe ser string\").to.be.a(\"string\");\r\n    pm.expect(body, \"falta el campo modality\").to.have.property(\"modality\");\r\n    pm.expect(body.modality, \"modality debe ser string\").to.be.a(\"string\");\r\n    pm.expect(body, \"falta el campo state\").to.have.property(\"state\");\r\n    pm.expect(body.state, \"state debe ser string\").to.be.a(\"string\");\r\n    pm.expect(body, \"falta el campo client\").to.have.property(\"client\");\r\n    pm.expect(body.client, \"client debe ser number\").to.be.a(\"number\");\r\n    pm.expect(body, \"falta el campo created_at\").to.have.property(\"created_at\");\r\n    pm.expect(body.created_at, \"created_at debe ser string\").to.be.a(\"string\");\r\n    pm.expect(body, \"falta el campo updated_at\").to.have.property(\"updated_at\");\r\n    pm.expect(body.updated_at, \"updated_at debe ser string\").to.be.a(\"string\");\r\n    pm.expect(body, \"falta el campo finalized_at\").to.have.property(\"finalized_at\");\r\n    pm.expect(body.finalized_at === null || typeof body.finalized_at === \"string\", \"finalized_at debe ser string o null\").to.be.true;\r\n});\r\npm.test(\"El proyecto nace en estado PENDING\", () => pm.expect(body.state).to.eql(\"PENDING\"));\r\npm.test(\"La modalidad coincide con la enviada\", () => pm.expect(body.modality).to.eql(\"REMOTE\"));\r\npm.collectionVariables.set(\"projectId\", body.id);\r\npm.test(\"El título coincide con el enviado\", () => pm.expect(body.title).to.eql(\"Aplicación Mobile de E-commerce\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"title\": \"Aplicación Mobile de E-commerce\",\r\n  \"description\": \"app mobile para vender productos...\",\r\n  \"repository\": \"https://github.com/usuario/proyecto\",\r\n  \"demo_url\": \"https://demo.ejemplo.com\",\r\n  \"technologies\": \"React Native, Node.js, MongoDB\",\r\n  \"modality\": \"REMOTE\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{proyectsUrl}}",
+              "host": [
+                "{{baseUrl}}{{proyectsUrl}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TC-API-02 / GET Detalle del Proyecto",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code es 200\", () => pm.response.to.have.status(200));\r\nconst body = pm.response.json();\r\npm.test(\"Contrato: campos presentes y con el tipo correcto\", () => {\r\n    pm.expect(body, \"falta el campo id\").to.have.property(\"id\");\r\n    pm.expect(body.id, \"id debe ser number\").to.be.a(\"number\");\r\n    pm.expect(body, \"falta el campo title\").to.have.property(\"title\");\r\n    pm.expect(body.title, \"title debe ser string\").to.be.a(\"string\");\r\n    pm.expect(body, \"falta el campo description\").to.have.property(\"description\");\r\n    pm.expect(body.description, \"description debe ser string\").to.be.a(\"string\");\r\n    pm.expect(body, \"falta el campo repository\").to.have.property(\"repository\");\r\n    pm.expect(body.repository, \"repository debe ser string\").to.be.a(\"string\");\r\n    pm.expect(body, \"falta el campo demo_url\").to.have.property(\"demo_url\");\r\n    pm.expect(body.demo_url, \"demo_url debe ser string\").to.be.a(\"string\");\r\n    pm.expect(body, \"falta el campo technologies\").to.have.property(\"technologies\");\r\n    pm.expect(body.technologies, \"technologies debe ser string\").to.be.a(\"string\");\r\n    pm.expect(body, \"falta el campo modality\").to.have.property(\"modality\");\r\n    pm.expect(body.modality, \"modality debe ser string\").to.be.a(\"string\");\r\n    pm.expect(body, \"falta el campo state\").to.have.property(\"state\");\r\n    pm.expect(body.state, \"state debe ser string\").to.be.a(\"string\");\r\n    pm.expect(body, \"falta el campo client\").to.have.property(\"client\");\r\n    pm.expect(body.client, \"client debe ser number\").to.be.a(\"number\");\r\n    pm.expect(body, \"falta el campo created_at\").to.have.property(\"created_at\");\r\n    pm.expect(body.created_at, \"created_at debe ser string\").to.be.a(\"string\");\r\n    pm.expect(body, \"falta el campo updated_at\").to.have.property(\"updated_at\");\r\n    pm.expect(body.updated_at, \"updated_at debe ser string\").to.be.a(\"string\");\r\n    pm.expect(body, \"falta el campo finalized_at\").to.have.property(\"finalized_at\");\r\n    pm.expect(body.finalized_at === null || typeof body.finalized_at === \"string\", \"finalized_at debe ser string o null\").to.be.true;\r\n});\r\npm.test(\"Devuelve el proyecto pedido\", () => pm.expect(body.id).to.eql(Number(pm.collectionVariables.get(\"projectId\"))));"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "text"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{proyectsUrl}}{{projectId}}/",
+              "host": [
+                "{{baseUrl}}{{proyectsUrl}}{{projectId}}/"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TC-API-02/ PUT Actualizar el Proyecto",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code es 200\", () => pm.response.to.have.status(200));\r\nconst body = pm.response.json();\r\npm.test(\"Contrato: campos presentes y con el tipo correcto\", () => {\r\n    pm.expect(body, \"falta el campo id\").to.have.property(\"id\");\r\n    pm.expect(body.id, \"id debe ser number\").to.be.a(\"number\");\r\n    pm.expect(body, \"falta el campo title\").to.have.property(\"title\");\r\n    pm.expect(body.title, \"title debe ser string\").to.be.a(\"string\");\r\n    pm.expect(body, \"falta el campo description\").to.have.property(\"description\");\r\n    pm.expect(body.description, \"description debe ser string\").to.be.a(\"string\");\r\n    pm.expect(body, \"falta el campo repository\").to.have.property(\"repository\");\r\n    pm.expect(body.repository, \"repository debe ser string\").to.be.a(\"string\");\r\n    pm.expect(body, \"falta el campo demo_url\").to.have.property(\"demo_url\");\r\n    pm.expect(body.demo_url, \"demo_url debe ser string\").to.be.a(\"string\");\r\n    pm.expect(body, \"falta el campo technologies\").to.have.property(\"technologies\");\r\n    pm.expect(body.technologies, \"technologies debe ser string\").to.be.a(\"string\");\r\n    pm.expect(body, \"falta el campo modality\").to.have.property(\"modality\");\r\n    pm.expect(body.modality, \"modality debe ser string\").to.be.a(\"string\");\r\n    pm.expect(body, \"falta el campo state\").to.have.property(\"state\");\r\n    pm.expect(body.state, \"state debe ser string\").to.be.a(\"string\");\r\n    pm.expect(body, \"falta el campo client\").to.have.property(\"client\");\r\n    pm.expect(body.client, \"client debe ser number\").to.be.a(\"number\");\r\n    pm.expect(body, \"falta el campo created_at\").to.have.property(\"created_at\");\r\n    pm.expect(body.created_at, \"created_at debe ser string\").to.be.a(\"string\");\r\n    pm.expect(body, \"falta el campo updated_at\").to.have.property(\"updated_at\");\r\n    pm.expect(body.updated_at, \"updated_at debe ser string\").to.be.a(\"string\");\r\n    pm.expect(body, \"falta el campo finalized_at\").to.have.property(\"finalized_at\");\r\n    pm.expect(body.finalized_at === null || typeof body.finalized_at === \"string\", \"finalized_at debe ser string o null\").to.be.true;\r\n});\r\npm.test(\"El título fue reemplazado\", () => pm.expect(body.title).to.eql(\"Aplicación Mobile de E-commerce (Editado)\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"title\": \"Aplicación Mobile de E-commerce (Editado)\",\r\n  \"description\": \"app mobile para vender productos...\",\r\n  \"repository\": \"https://github.com/usuario/proyecto\",\r\n  \"demo_url\": \"https://demo.ejemplo.com\",\r\n  \"technologies\": \"React Native, Node.js, MongoDB\",\r\n  \"modality\": \"REMOTE\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{proyectsUrl}}{{projectId}}/",
+              "host": [
+                "{{baseUrl}}{{proyectsUrl}}{{projectId}}/"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TC-API-02 / PATCH Actualizar Parcialmente el Proyecto",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code es 200\", () => pm.response.to.have.status(200));\r\nconst body = pm.response.json();\r\npm.test(\"Contrato: campos presentes y con el tipo correcto\", () => {\r\n    pm.expect(body, \"falta el campo id\").to.have.property(\"id\");\r\n    pm.expect(body.id, \"id debe ser number\").to.be.a(\"number\");\r\n    pm.expect(body, \"falta el campo title\").to.have.property(\"title\");\r\n    pm.expect(body.title, \"title debe ser string\").to.be.a(\"string\");\r\n    pm.expect(body, \"falta el campo description\").to.have.property(\"description\");\r\n    pm.expect(body.description, \"description debe ser string\").to.be.a(\"string\");\r\n    pm.expect(body, \"falta el campo repository\").to.have.property(\"repository\");\r\n    pm.expect(body.repository, \"repository debe ser string\").to.be.a(\"string\");\r\n    pm.expect(body, \"falta el campo demo_url\").to.have.property(\"demo_url\");\r\n    pm.expect(body.demo_url, \"demo_url debe ser string\").to.be.a(\"string\");\r\n    pm.expect(body, \"falta el campo technologies\").to.have.property(\"technologies\");\r\n    pm.expect(body.technologies, \"technologies debe ser string\").to.be.a(\"string\");\r\n    pm.expect(body, \"falta el campo modality\").to.have.property(\"modality\");\r\n    pm.expect(body.modality, \"modality debe ser string\").to.be.a(\"string\");\r\n    pm.expect(body, \"falta el campo state\").to.have.property(\"state\");\r\n    pm.expect(body.state, \"state debe ser string\").to.be.a(\"string\");\r\n    pm.expect(body, \"falta el campo client\").to.have.property(\"client\");\r\n    pm.expect(body.client, \"client debe ser number\").to.be.a(\"number\");\r\n    pm.expect(body, \"falta el campo created_at\").to.have.property(\"created_at\");\r\n    pm.expect(body.created_at, \"created_at debe ser string\").to.be.a(\"string\");\r\n    pm.expect(body, \"falta el campo updated_at\").to.have.property(\"updated_at\");\r\n    pm.expect(body.updated_at, \"updated_at debe ser string\").to.be.a(\"string\");\r\n    pm.expect(body, \"falta el campo finalized_at\").to.have.property(\"finalized_at\");\r\n    pm.expect(body.finalized_at === null || typeof body.finalized_at === \"string\", \"finalized_at debe ser string o null\").to.be.true;\r\n});\r\npm.test(\"La descripción fue actualizada\", () => pm.expect(body.description).to.eql(\"Descripción modificada por PATCH\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"description\": \"Descripción modificada por PATCH\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{proyectsUrl}}{{projectId}}/",
+              "host": [
+                "{{baseUrl}}{{proyectsUrl}}{{projectId}}/"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TC-API-02 / GET Mis Proyectos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code es 200\", () => pm.response.to.have.status(200));\r\nconst body = pm.response.json();\r\npm.test(\"La respuesta es un array\", () => pm.expect(body).to.be.an(\"array\"));\r\nif (body.length > 0) {\r\n    const item = body[0];\r\n    pm.test(\"Contrato: campos presentes y con el tipo correcto\", () => {\r\n        pm.expect(item, \"falta el campo id\").to.have.property(\"id\");\r\n        pm.expect(item.id, \"id debe ser number\").to.be.a(\"number\");\r\n        pm.expect(item, \"falta el campo title\").to.have.property(\"title\");\r\n        pm.expect(item.title, \"title debe ser string\").to.be.a(\"string\");\r\n        pm.expect(item, \"falta el campo description\").to.have.property(\"description\");\r\n        pm.expect(item.description, \"description debe ser string\").to.be.a(\"string\");\r\n        pm.expect(item, \"falta el campo repository\").to.have.property(\"repository\");\r\n        pm.expect(item.repository, \"repository debe ser string\").to.be.a(\"string\");\r\n        pm.expect(item, \"falta el campo demo_url\").to.have.property(\"demo_url\");\r\n        pm.expect(item.demo_url, \"demo_url debe ser string\").to.be.a(\"string\");\r\n        pm.expect(item, \"falta el campo technologies\").to.have.property(\"technologies\");\r\n        pm.expect(item.technologies, \"technologies debe ser string\").to.be.a(\"string\");\r\n        pm.expect(item, \"falta el campo modality\").to.have.property(\"modality\");\r\n        pm.expect(item.modality, \"modality debe ser string\").to.be.a(\"string\");\r\n        pm.expect(item, \"falta el campo state\").to.have.property(\"state\");\r\n        pm.expect(item.state, \"state debe ser string\").to.be.a(\"string\");\r\n        pm.expect(item, \"falta el campo client\").to.have.property(\"client\");\r\n        pm.expect(item.client, \"client debe ser number\").to.be.a(\"number\");\r\n        pm.expect(item, \"falta el campo created_at\").to.have.property(\"created_at\");\r\n        pm.expect(item.created_at, \"created_at debe ser string\").to.be.a(\"string\");\r\n        pm.expect(item, \"falta el campo updated_at\").to.have.property(\"updated_at\");\r\n        pm.expect(item.updated_at, \"updated_at debe ser string\").to.be.a(\"string\");\r\n        pm.expect(item, \"falta el campo finalized_at\").to.have.property(\"finalized_at\");\r\n        pm.expect(item.finalized_at === null || typeof item.finalized_at === \"string\", \"finalized_at debe ser string o null\").to.be.true;\r\n    });\r\n}"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "text"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{proyectsUrl}}user-active/",
+              "host": [
+                "{{baseUrl}}{{proyectsUrl}}user-active"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TC-API-02 / DELETE proyecto PENDING",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code es 204\", () => pm.response.to.have.status(204));\r\npm.test(\"Sin cuerpo en la respuesta\", () => pm.expect(pm.response.text()).to.be.empty);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "text"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{proyectsUrl}}{{projectId}}/",
+              "host": [
+                "{{baseUrl}}{{proyectsUrl}}{{projectId}}/"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TC-API-02 / GET proyecto eliminado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code es 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "text"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{proyectsUrl}}{{projectId}}/",
+              "host": [
+                "{{baseUrl}}{{proyectsUrl}}{{projectId}}/"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TC-D-02 / Crear proyecto sin campos obligatorios",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code es 400\", () => pm.response.to.have.status(400));\r\nconst body = pm.response.json();\r\npm.test(\"400 con mensaje estructurado: error por campo\", () => {\r\n    pm.expect(body).to.be.an(\"object\");\r\n    [\"title\", \"repository\", \"demo_url\", \"technologies\"].forEach(f => pm.expect(body, \"falta el error del campo \" + f).to.have.property(f));\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"description\": \"Body incompleto\",\r\n  \"modality\": \"REMOTE\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{proyectsUrl}}",
+              "host": [
+                "{{baseUrl}}{{proyectsUrl}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TC-API-03 / Crear proyecto con modalidad invalida",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code es 400\", () => pm.response.to.have.status(400));\r\nconst body = pm.response.json();\r\npm.test(\"400 con mensaje estructurado: error por campo\", () => {\r\n    pm.expect(body).to.be.an(\"object\");\r\n    [\"modality\"].forEach(f => pm.expect(body, \"falta el error del campo \" + f).to.have.property(f));\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"title\": \"Proyecto Prueba Postman\",\r\n  \"description\": \"Proyecto creado desde la colección de Postman\",\r\n  \"repository\": \"https://github.com/ejemplo\",\r\n  \"demo_url\": \"https://ejemplo.com\",\r\n  \"technologies\": \"React, Django\",\r\n  \"modality\": \"NO_EXISTE\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{proyectsUrl}}",
+              "host": [
+                "{{baseUrl}}{{proyectsUrl}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login TESTER - Precondicion antes de los Tests",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code es 200\", () => pm.response.to.have.status(200));\r\nconst body = pm.response.json();\r\npm.test(\"La respuesta trae el objeto user\", () => pm.expect(body).to.have.property(\"user\"));\r\nconst user = body.user;\r\npm.test(\"Contrato: campos presentes y con el tipo correcto\", () => {\r\n    pm.expect(user, \"falta el campo id\").to.have.property(\"id\");\r\n    pm.expect(user.id, \"id debe ser number\").to.be.a(\"number\");\r\n    pm.expect(user, \"falta el campo email\").to.have.property(\"email\");\r\n    pm.expect(user.email, \"email debe ser string\").to.be.a(\"string\");\r\n    pm.expect(user, \"falta el campo name\").to.have.property(\"name\");\r\n    pm.expect(user.name, \"name debe ser string\").to.be.a(\"string\");\r\n    pm.expect(user, \"falta el campo surname\").to.have.property(\"surname\");\r\n    pm.expect(user.surname, \"surname debe ser string\").to.be.a(\"string\");\r\n    pm.expect(user, \"falta el campo role\").to.have.property(\"role\");\r\n    pm.expect(user.role, \"role debe ser string\").to.be.a(\"string\");\r\n    pm.expect(user, \"falta el campo reputation\").to.have.property(\"reputation\");\r\n    pm.expect(user.reputation, \"reputation debe ser string\").to.be.a(\"string\");\r\n    pm.expect(user, \"falta el campo date_joined\").to.have.property(\"date_joined\");\r\n    pm.expect(user.date_joined, \"date_joined debe ser string\").to.be.a(\"string\");\r\n    pm.expect(user, \"falta el campo created_at\").to.have.property(\"created_at\");\r\n    pm.expect(user.created_at, \"created_at debe ser string\").to.be.a(\"string\");\r\n    pm.expect(user, \"falta el campo updated_at\").to.have.property(\"updated_at\");\r\n    pm.expect(user.updated_at, \"updated_at debe ser string\").to.be.a(\"string\");\r\n    pm.expect(user, \"falta el campo profile_photo\").to.have.property(\"profile_photo\");\r\n    pm.expect(user.profile_photo === null || typeof user.profile_photo === \"string\", \"profile_photo debe ser string o null\").to.be.true;\r\n});\r\npm.test(\"El rol devuelto es TESTER\", () => pm.expect(user.role).to.eql(\"TESTER\"));\r\npm.test(\"Setea la cookie de autenticación (access_token)\", () => {\r\n    const setCookie = pm.response.headers.filter(h => h.key.toLowerCase() === \"set-cookie\").map(h => h.value).join(\";\");\r\n    pm.expect(setCookie).to.include(\"access_token\");\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"email\": \"{{testerEmail}}\",\r\n  \"password\": \"{{testerPassword}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{authUrl}}{{loginUrl}}",
+              "host": [
+                "{{baseUrl}}{{authUrl}}{{loginUrl}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TC-D-05 / Crear proyecto como TESTER",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code es 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"title\": \"Aplicación Mobile de E-commerce\",\r\n  \"description\": \"app mobile para vender productos...\",\r\n  \"repository\": \"https://github.com/usuario/proyecto\",\r\n  \"demo_url\": \"https://demo.ejemplo.com\",\r\n  \"technologies\": \"React Native, Node.js, MongoDB\",\r\n  \"modality\": \"REMOTE\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{proyectsUrl}}",
+              "host": [
+                "{{baseUrl}}{{proyectsUrl}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Logout - Precondicion antes de los Tests",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code es 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{authUrl}}logout/",
+              "host": [
+                "{{baseUrl}}{{authUrl}}logout"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TC-API-04 / Crear Proyecto sin Sesion",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code es 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"title\": \"Aplicación Mobile de E-commerce\",\r\n  \"description\": \"app mobile para vender productos...\",\r\n  \"repository\": \"https://github.com/usuario/proyecto\",\r\n  \"demo_url\": \"https://demo.ejemplo.com\",\r\n  \"technologies\": \"React Native, Node.js, MongoDB\",\r\n  \"modality\": \"REMOTE\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{proyectsUrl}}",
+              "host": [
+                "{{baseUrl}}{{proyectsUrl}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "02 - Notifications",
+      "item": [
+        {
+          "name": "Login CLIENT - Precondicion antes de los Tests",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code es 200\", () => pm.response.to.have.status(200));\r\nconst body = pm.response.json();\r\npm.test(\"La respuesta trae el objeto user\", () => pm.expect(body).to.have.property(\"user\"));\r\nconst user = body.user;\r\npm.test(\"Contrato: campos presentes y con el tipo correcto\", () => {\r\n    pm.expect(user, \"falta el campo id\").to.have.property(\"id\");\r\n    pm.expect(user.id, \"id debe ser number\").to.be.a(\"number\");\r\n    pm.expect(user, \"falta el campo email\").to.have.property(\"email\");\r\n    pm.expect(user.email, \"email debe ser string\").to.be.a(\"string\");\r\n    pm.expect(user, \"falta el campo name\").to.have.property(\"name\");\r\n    pm.expect(user.name, \"name debe ser string\").to.be.a(\"string\");\r\n    pm.expect(user, \"falta el campo surname\").to.have.property(\"surname\");\r\n    pm.expect(user.surname, \"surname debe ser string\").to.be.a(\"string\");\r\n    pm.expect(user, \"falta el campo role\").to.have.property(\"role\");\r\n    pm.expect(user.role, \"role debe ser string\").to.be.a(\"string\");\r\n    pm.expect(user, \"falta el campo reputation\").to.have.property(\"reputation\");\r\n    pm.expect(user.reputation, \"reputation debe ser string\").to.be.a(\"string\");\r\n    pm.expect(user, \"falta el campo date_joined\").to.have.property(\"date_joined\");\r\n    pm.expect(user.date_joined, \"date_joined debe ser string\").to.be.a(\"string\");\r\n    pm.expect(user, \"falta el campo created_at\").to.have.property(\"created_at\");\r\n    pm.expect(user.created_at, \"created_at debe ser string\").to.be.a(\"string\");\r\n    pm.expect(user, \"falta el campo updated_at\").to.have.property(\"updated_at\");\r\n    pm.expect(user.updated_at, \"updated_at debe ser string\").to.be.a(\"string\");\r\n    pm.expect(user, \"falta el campo profile_photo\").to.have.property(\"profile_photo\");\r\n    pm.expect(user.profile_photo === null || typeof user.profile_photo === \"string\", \"profile_photo debe ser string o null\").to.be.true;\r\n});\r\npm.test(\"El rol devuelto es CLIENT\", () => pm.expect(user.role).to.eql(\"CLIENT\"));\r\npm.test(\"Setea la cookie de autenticación (access_token)\", () => {\r\n    const setCookie = pm.response.headers.filter(h => h.key.toLowerCase() === \"set-cookie\").map(h => h.value).join(\";\");\r\n    pm.expect(setCookie).to.include(\"access_token\");\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"email\":\"{{clientEmail}}\",\r\n    \"password\":\"{{clientPassword}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{authUrl}}{{loginUrl}}",
+              "host": [
+                "{{baseUrl}}{{authUrl}}{{loginUrl}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TC-API-05 / Crear Notificación",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"notifMessage\", \"Prueba Postman\" + Date.now());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code es 201\", () => pm.response.to.have.status(201));\r\nconst body = pm.response.json();\r\npm.test(\"Contrato: campos presentes y con el tipo correcto\", () => {\r\n    pm.expect(body, \"falta el campo type\").to.have.property(\"type\");\r\n    pm.expect(body.type, \"type debe ser string\").to.be.a(\"string\");\r\n    pm.expect(body, \"falta el campo message\").to.have.property(\"message\");\r\n    pm.expect(body.message, \"message debe ser string\").to.be.a(\"string\");\r\n});\r\npm.test(\"El mensaje coincide con el enviado\", () => pm.expect(body.message).to.eql(pm.collectionVariables.get(\"notifMessage\")));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"type\": \"message\",\r\n  \"message\": \"{{notifMessage}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{notificationUrl}}",
+              "host": [
+                "{{baseUrl}}{{notificationUrl}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TC-API-05 / GET listado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code es 200\", () => pm.response.to.have.status(200));\r\nconst body = pm.response.json();\r\npm.test(\"La respuesta es un array\", () => pm.expect(body).to.be.an(\"array\"));\r\nconst created = body.find(x => x.message === pm.collectionVariables.get(\"notifMessage\"));\r\npm.test(\"La notificación creada aparece en el listado\", () => pm.expect(created, \"no se encontró la notificación creada\").to.not.be.undefined);\r\nif (created) {\r\n    pm.collectionVariables.set(\"notificationId\", created.id_notification);\r\n    pm.test(\"Contrato: campos presentes y con el tipo correcto\", () => {\r\n        pm.expect(created, \"falta el campo id_notification\").to.have.property(\"id_notification\");\r\n        pm.expect(created.id_notification, \"id_notification debe ser number\").to.be.a(\"number\");\r\n        pm.expect(created, \"falta el campo id_user\").to.have.property(\"id_user\");\r\n        pm.expect(created.id_user, \"id_user debe ser object\").to.be.a(\"object\");\r\n        pm.expect(created, \"falta el campo type\").to.have.property(\"type\");\r\n        pm.expect(created.type, \"type debe ser string\").to.be.a(\"string\");\r\n        pm.expect(created, \"falta el campo message\").to.have.property(\"message\");\r\n        pm.expect(created.message, \"message debe ser string\").to.be.a(\"string\");\r\n        pm.expect(created, \"falta el campo is_read\").to.have.property(\"is_read\");\r\n        pm.expect(created.is_read, \"is_read debe ser boolean\").to.be.a(\"boolean\");\r\n        pm.expect(created, \"falta el campo created_at\").to.have.property(\"created_at\");\r\n        pm.expect(created.created_at, \"created_at debe ser string\").to.be.a(\"string\");\r\n    });\r\n}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{notificationUrl}}",
+              "host": [
+                "{{baseUrl}}{{notificationUrl}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TC-API-05 / GET detalle",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code es 200\", () => pm.response.to.have.status(200));\r\nconst body = pm.response.json();\r\npm.test(\"Contrato: campos presentes y con el tipo correcto\", () => {\r\n    pm.expect(body, \"falta el campo id_notification\").to.have.property(\"id_notification\");\r\n    pm.expect(body.id_notification, \"id_notification debe ser number\").to.be.a(\"number\");\r\n    pm.expect(body, \"falta el campo id_user\").to.have.property(\"id_user\");\r\n    pm.expect(body.id_user, \"id_user debe ser object\").to.be.a(\"object\");\r\n    pm.expect(body, \"falta el campo type\").to.have.property(\"type\");\r\n    pm.expect(body.type, \"type debe ser string\").to.be.a(\"string\");\r\n    pm.expect(body, \"falta el campo message\").to.have.property(\"message\");\r\n    pm.expect(body.message, \"message debe ser string\").to.be.a(\"string\");\r\n    pm.expect(body, \"falta el campo is_read\").to.have.property(\"is_read\");\r\n    pm.expect(body.is_read, \"is_read debe ser boolean\").to.be.a(\"boolean\");\r\n    pm.expect(body, \"falta el campo created_at\").to.have.property(\"created_at\");\r\n    pm.expect(body.created_at, \"created_at debe ser string\").to.be.a(\"string\");\r\n});\r\npm.test(\"Devuelve la notificación pedida\", () => pm.expect(body.id_notification).to.eql(Number(pm.collectionVariables.get(\"notificationId\"))));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{notificationUrl}}{{notificationId}}/",
+              "host": [
+                "{{baseUrl}}{{notificationUrl}}{{notificationId}}/"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TC-API-05 / PUT marcar como leída (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code es 200\", () => pm.response.to.have.status(200));\r\nconst body = pm.response.json();\r\npm.test(\"is_read quedó en true\", () => pm.expect(body.is_read).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"is_read\": true\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{notificationUrl}}{{notificationId}}/",
+              "host": [
+                "{{baseUrl}}{{notificationUrl}}{{notificationId}}/"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TC-API-05 / PATCH marcar como no leída",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code es 200\", () => pm.response.to.have.status(200));\r\nconst body = pm.response.json();\r\npm.test(\"is_read quedó en false\", () => pm.expect(body.is_read).to.eql(false));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"is_read\": false\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{notificationUrl}}{{notificationId}}/",
+              "host": [
+                "{{baseUrl}}{{notificationUrl}}{{notificationId}}/"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TC-API-05 / DELETE notificación",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code es 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{notificationUrl}}{{notificationId}}/",
+              "host": [
+                "{{baseUrl}}{{notificationUrl}}{{notificationId}}/"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TC-API-05 / GET notificación eliminada",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code es 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{notificationUrl}}{{notificationId}}/",
+              "host": [
+                "{{baseUrl}}{{notificationUrl}}{{notificationId}}/"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TC-API-06 /Crear notificación sin type ni message",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code es 400\", () => pm.response.to.have.status(400));\r\nconst body = pm.response.json();\r\npm.test(\"400 con mensaje estructurado: error por campo\", () => {\r\n    pm.expect(body).to.be.an(\"object\");\r\n    [\"type\", \"message\"].forEach(f => pm.expect(body, \"falta el error del campo \" + f).to.have.property(f));\r\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{notificationUrl}}",
+              "host": [
+                "{{baseUrl}}{{notificationUrl}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Logout - Precondicion antes de los tests",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code es 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{authUrl}}logout/",
+              "host": [
+                "{{baseUrl}}{{authUrl}}logout"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TC-API-07 / Listar notificaciones sin sesión",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code es 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{notificationUrl}}",
+              "host": [
+                "{{baseUrl}}{{notificationUrl}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "exec": [
+          "const method = pm.request.method.toUpperCase();\r",
+          "if ([\"POST\", \"PUT\", \"PATCH\", \"DELETE\"].includes(method)) {\r",
+          "    let token = null;\r",
+          "    try { token = pm.cookies.get(\"csrftoken\"); } catch (e) { token = null; }\r",
+          "    token = token || pm.collectionVariables.get(\"csrfToken\");\r",
+          "    if (token) {\r",
+          "        pm.request.headers.upsert({ key: \"X-CSRFToken\", value: token });\r",
+          "    }\r",
+          "}"
+        ],
+        "type": "text/javascript"
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "exec": [
+          "pm.test(\"Tiempo de respuesta menor a 2000 ms\", () => pm.expect(pm.response.responseTime).to.be.below(2000));"
+        ],
+        "type": "text/javascript"
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "csrfToken",
+      "value": ""
+    },
+    {
+      "key": "projectId",
+      "value": ""
+    },
+    {
+      "key": "notifMessage",
+      "value": ""
+    },
+    {
+      "key": "notificationId",
+      "value": ""
+    }
+  ]
+}
