@@ -202,3 +202,42 @@ class RatingAPITests(APITestCase):
             response.status_code,
             status.HTTP_405_METHOD_NOT_ALLOWED,
         )
+
+    def test_tester_can_get_my_reputation(self):
+        # Arrange
+        rating = self.create_rating()
+        self.tester_user.reputation = 5.0
+        self.tester_user.save(update_fields=["reputation"])
+        self.client.force_authenticate(user=self.tester_user)
+        url = reverse("my-reputation")
+
+        # Act
+        response = self.client.get(url)
+
+        # Assert
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["total_ratings"], 1)
+        self.assertEqual(response.data["reputation"], 5.0)
+        self.assertEqual(len(response.data["ratings"]), 1)
+        self.assertEqual(response.data["ratings"][0]["stars"], rating.stars)
+        self.assertEqual(
+            response.data["ratings"][0]["project_title"],
+            "Completed project",
+        )
+        self.assertEqual(
+            response.data["ratings"][0]["entrepreneur_name"],
+            "Client User",
+        )
+
+    def test_my_reputation_requires_authentication(self):
+        # Arrange
+        url = reverse("my-reputation")
+
+        # Act
+        response = self.client.get(url)
+
+        # Assert
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_401_UNAUTHORIZED,
+        )

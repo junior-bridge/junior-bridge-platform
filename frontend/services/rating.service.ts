@@ -1,4 +1,4 @@
-import { CreateRatingData, Rating } from "@/types/ratingTypes";
+import { CreateRatingData, Rating, TesterReputation } from "@/types/ratingTypes";
 import { getCsrfToken } from "./auth.service";
 import { apiFetch } from "./index.service";
 
@@ -27,4 +27,8 @@ export async function updateRating(
         method: "PUT",
         body: JSON.stringify(data),
     });
+}
+
+export async function getMyReputation(): Promise<TesterReputation> {
+    return apiFetch<TesterReputation>("/api/rating/my-reputation/");
 }
