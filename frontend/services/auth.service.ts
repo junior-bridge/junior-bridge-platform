@@ -19,3 +19,11 @@ export async function startOAuth(
         }),
     });
 }
+
+export async function getWebSocketTicket(): Promise<string> {
+    const data = await apiFetch<{ ticket: string }>("/api/auth/ws-ticket/", {
+        method: "POST",
+    });
+
+    return data.ticket;
+}

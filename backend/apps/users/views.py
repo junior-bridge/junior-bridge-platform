@@ -42,9 +42,11 @@ from .serializers import (
     UserSerializer,
 )
 from .services import (
+    WS_TICKET_TTL,
     clear_auth_cookies,
     create_auth_redirect_response,
     create_auth_response,
+    create_ws_ticket,
     set_auth_cookies,
     validate_oauth_flow,
     validate_oauth_process,
@@ -80,6 +82,36 @@ class CsrfTokenView(APIView):
                 "detail": "CSRF cookie establecida.",
                 "csrfToken": get_token(request),
             },
+            status=status.HTTP_200_OK,
+        )
+
+
+@extend_schema(tags=['Authentication / Token'])
+class WebSocketTicketView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="Obtener ticket de un solo uso para WebSocket",
+        description=(
+            "Devuelve un ticket efímero y de un solo uso que el navegador puede "
+            "pasar por query string para autenticar la conexión WebSocket. "
+            "Los rewrites de Next no proxean WebSockets, por lo que la conexión "
+            "es cross-site y las cookies HttpOnly no viajan."
+        ),
+        responses={
+            200: inline_serializer(
+                name="WebSocketTicketResponse",
+                fields={
+                    "ticket": serializers.CharField(),
+                    "expires_in": serializers.IntegerField(),
+                },
+            ),
+        },
+    )
+    def post(self, request):
+        ticket = create_ws_ticket(request.user.id)
+        return Response(
+            {"ticket": ticket, "expires_in": WS_TICKET_TTL},
             status=status.HTTP_200_OK,
         )
 
@@ -209,9 +241,9 @@ class OAuthFinalizeView(View):
         response.set_cookie(
             key="access_token",
             value=access_token,
-            httponly=True,
-            secure=True,          # Requerido en HTTPS (Render)
-            samesite="None",      # Requerido interdominio
+            httponly=settings.AUTH_COOKIE_HTTPONLY,
+            secure=settings.AUTH_COOKIE_SECURE,
+            samesite=settings.AUTH_COOKIE_SAMESITE,
             max_age=3600 * 24,
             path="/",
         )
@@ -219,9 +251,9 @@ class OAuthFinalizeView(View):
         response.set_cookie(
             key="refresh_token",
             value=refresh_token,
-            httponly=True,
-            secure=True,
-            samesite="None",
+            httponly=settings.AUTH_COOKIE_HTTPONLY,
+            secure=settings.AUTH_COOKIE_SECURE,
+            samesite=settings.AUTH_COOKIE_SAMESITE,
             max_age=3600 * 24 * 7,
             path="/",
         )
