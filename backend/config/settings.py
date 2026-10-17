@@ -35,6 +35,8 @@ if FRONTEND_URL and "://" not in FRONTEND_URL:
     FRONTEND_URL = f"https://{FRONTEND_URL}"
 FRONTEND_URL = FRONTEND_URL or "http://localhost:3000"
 
+PUBLIC_HOST = os.getenv("PUBLIC_HOST", "junior-bridge-frontend.onrender.com")
+
 
 # Redirecciones dinámicas
 LOGIN_REDIRECT_URL = f"{FRONTEND_URL}/dashboard"
@@ -53,6 +55,7 @@ ALLOWED_HOSTS = csv_env(
         if host
     ],
 )
+ALLOWED_HOSTS += [PUBLIC_HOST]
 
 # Application definition
 
@@ -95,6 +98,7 @@ AUTH_USER_MODEL = "users.User"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "apps.users.middleware.ProxyHostMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -225,7 +229,6 @@ FRONTEND_OAUTH_ERROR_URL = os.getenv(
     f"{FRONTEND_URL}/login",
 )
 
-SOCIALACCOUNT_LOGIN_ON_GET = True
 SOCIALACCOUNT_ADAPTER = "apps.users.adapter.JuniorBridgeSocialAccountAdapter"
 # Django REST Framework
 
@@ -296,11 +299,11 @@ CSRF_TRUSTED_ORIGINS = [
 # Browsers reject SameSite=None without Secure, so fall back to Lax in that case.
 AUTH_COOKIE_SECURE = bool_env("AUTH_COOKIE_SECURE", default=True)
 AUTH_COOKIE_HTTPONLY = True
-AUTH_COOKIE_SAMESITE = "None" if AUTH_COOKIE_SECURE else "Lax"
+AUTH_COOKIE_SAMESITE = os.getenv("AUTH_COOKIE_SAMESITE", "Lax")
 
 CSRF_COOKIE_SECURE = bool_env("CSRF_COOKIE_SECURE", default=True)
 CSRF_COOKIE_HTTPONLY = False
-CSRF_COOKIE_SAMESITE = "None" if CSRF_COOKIE_SECURE else "Lax"
+CSRF_COOKIE_SAMESITE = os.getenv("CSRF_COOKIE_SAMESITE", "Lax")
 
 
 
@@ -374,6 +377,14 @@ if not REDIS_URL:
     redis_host = os.getenv("REDIS_HOST", "redis").strip()
     redis_port = os.getenv("REDIS_PORT", "6379").strip()
     REDIS_URL = f"redis://{redis_host}:{redis_port}/0"
+
+# Cache en Redis para los tickets de un solo uso de WebSockets.
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": REDIS_URL,
+    },
+}
 
 CHANNEL_LAYERS = {
     "default": {

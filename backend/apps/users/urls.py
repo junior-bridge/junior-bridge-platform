@@ -12,6 +12,7 @@ from .views import (
     ProfileView,
     ProfilePhotoView,
     RegisterView,
+    WebSocketTicketView,
 )
 
 
@@ -31,6 +32,7 @@ urlpatterns = [
         name="password-reset-confirm",
     ),
     path("token/refresh/", CookieTokenRefreshView.as_view(),name="token-refresh",),
+    path("ws-ticket/", WebSocketTicketView.as_view(), name="ws-ticket"),
     path("profile/", ProfileView.as_view(), name="auth-profile"),
     path("profile/photo/", ProfilePhotoView.as_view(), name="auth-profile-photo"),
     path("oauth/<str:provider>/start/", SocialOAuthStartView.as_view(), name="social-oauth-start"),
