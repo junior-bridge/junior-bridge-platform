@@ -1,3 +1,4 @@
+
 import { test, expect, type Page } from "@playwright/test";
 import { NewProjectPage } from "../pages/NewProjectPage";
 
@@ -35,9 +36,10 @@ async function mockAuthenticatedClient(page: Page) {
     });
 }
 
-test.describe("Publicaci�n de proyectos", () => {
+test.describe("Publicación de proyectos", () => {
     test("muestra los campos del formulario", async ({ page }) => {
         await mockAuthenticatedClient(page);
+
         const projectPage = new NewProjectPage(page);
 
         await projectPage.navigate();
@@ -51,43 +53,50 @@ test.describe("Publicaci�n de proyectos", () => {
         await expect(projectPage.submitButton).toBeVisible();
     });
 
-    test("impide publicar con campos obligatorios vac�os", async ({ page }) => {
+    test("impide publicar con campos obligatorios vacíos", async ({ page }) => {
         await mockAuthenticatedClient(page);
 
         let projectRequestSent = false;
+
         await page.route("**/api/projects/", async (route) => {
             if (route.request().method() === "POST") {
                 projectRequestSent = true;
             }
+
             await route.continue();
         });
 
         const projectPage = new NewProjectPage(page);
+
         await projectPage.navigate();
         await projectPage.submitButton.click();
 
         await expect(projectPage.titleInput).toBeVisible();
         await expect(page).toHaveURL(/\/dashboard\/projects\/new$/);
+
         expect(projectRequestSent).toBe(false);
     });
 
-    test("rechaza una URL de repositorio inv�lida", async ({ page }) => {
+    test("rechaza una URL de repositorio inválida", async ({ page }) => {
         await mockAuthenticatedClient(page);
+
         const projectPage = new NewProjectPage(page);
 
         await projectPage.navigate();
         await projectPage.fillValidForm();
-        await projectPage.repositoryInput.fill("https://ejemplo.org/repositorio");
+        await projectPage.repositoryInput.fill(
+            "https://ejemplo.org/repositorio"
+        );
         await projectPage.submitButton.click();
 
-const repositoryError =
-    projectPage.repositoryInput.locator("xpath=following-sibling::span");
+        const repositoryError =
+            projectPage.repositoryInput.locator("xpath=following-sibling::span");
 
-    await expect(repositoryError).toHaveClass(/text-red-500/);
-    await expect(repositoryError).toContainText("comience con http");
+        await expect(repositoryError).toHaveClass(/text-red-500/);
+        await expect(repositoryError).toContainText("comience con http");
     });
 
-    test("muestra confirmaci�n cuando la API crea el proyecto", async ({ page }) => {
+    test("muestra confirmación cuando la API crea el proyecto", async ({ page }) => {
         await mockAuthenticatedClient(page);
 
         let submittedProject: Record<string, unknown> | null = null;
@@ -116,6 +125,7 @@ const repositoryError =
         });
 
         const projectPage = new NewProjectPage(page);
+
         await projectPage.navigate();
         await projectPage.fillValidForm();
         await projectPage.submitButton.click();
@@ -130,10 +140,11 @@ const repositoryError =
         });
 
         await page.getByRole("button", { name: "Aceptar" }).click();
+
         await expect(page).toHaveURL(/\/dashboard\/projects$/);
     });
 
-    test("informa cuando falla la creaci�n del proyecto", async ({ page }) => {
+    test("informa cuando falla la creación del proyecto", async ({ page }) => {
         await mockAuthenticatedClient(page);
 
         await page.route("**/api/projects/", async (route) => {
@@ -152,6 +163,7 @@ const repositoryError =
         });
 
         const projectPage = new NewProjectPage(page);
+
         await projectPage.navigate();
         await projectPage.fillValidForm();
         await projectPage.submitButton.click();
@@ -160,6 +172,67 @@ const repositoryError =
             page.getByText("No se pudo crear el proyecto")
         ).toBeVisible();
     });
+
+    test("el proyecto creado aparece en el listado del cliente", async ({ page }) => {
+        await mockAuthenticatedClient(page);
+
+        const createdProject = {
+            id: 101,
+            title: "Proyecto de prueba E2E",
+            description: "Proyecto creado durante una prueba automatizada",
+            repository_url: "https://github.com/usuario/proyecto",
+            demo_url: "",
+            technologies: "Python, Django",
+            modality: "REMOTE",
+            state: "PENDING",
+            client: 1,
+            created_at: "2026-01-01T00:00:00Z",
+            updated_at: "2026-01-01T00:00:00Z",
+            finalized_at: null,
+        };
+
+        // Simulamos la creación del proyecto.
+        await page.route("**/api/projects/", async (route) => {
+            if (route.request().method() === "POST") {
+                await route.fulfill({
+                    status: 201,
+                    contentType: "application/json",
+                    body: JSON.stringify(createdProject),
+                });
+                return;
+            }
+
+            await route.continue();
+        });
+
+        // Simulamos el listado de proyectos del cliente.
+        await page.route("**/api/projects/user-active/", async (route) => {
+            await route.fulfill({
+                status: 200,
+                contentType: "application/json",
+                body: JSON.stringify([createdProject]),
+            });
+        });
+
+        const projectPage = new NewProjectPage(page);
+
+        await projectPage.navigate();
+        await projectPage.fillValidForm();
+        await projectPage.submitButton.click();
+
+        await expect(
+            page.getByRole("heading", { name: "Proyecto creado" })
+        ).toBeVisible();
+
+        await page.getByRole("button", { name: "Aceptar" }).click();
+
+        await expect(page).toHaveURL(/\/dashboard\/projects$/);
+
+        // Verificamos que el proyecto aparezca en el listado.
+        await expect(
+            page.getByRole("heading", {
+                name: "Proyecto de prueba E2E",
+            })
+        ).toBeVisible();
+    });
 });
-
-
