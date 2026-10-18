@@ -1,15 +1,16 @@
-from rest_framework import status
+from rest_framework import serializers, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.postulations.models import Postulation
+from apps.users.permissions import IsTester
 
 from .models import Rating
-from .serializers import RatingSerializer
+from .serializers import RatingSerializer, TesterRatingSerializer
 from .services import update_tester_reputation
 
-from drf_spectacular.utils import extend_schema, OpenApiResponse
+from drf_spectacular.utils import extend_schema, OpenApiResponse, inline_serializer
 
 
 @extend_schema(tags=['Rating'])
@@ -160,5 +161,45 @@ class RatingUpdateView(APIView):
         )
         return Response(
             RatingSerializer(rating).data,
+            status=status.HTTP_200_OK,
+        )
+
+
+@extend_schema(tags=['Rating'])
+class TesterReputationView(APIView):
+    permission_classes = [IsTester]
+
+    @extend_schema(
+        summary="Get my reputation as tester",
+        description=(
+            "Returns the authenticated tester's reputation summary and the "
+            "list of ratings received on completed projects."
+        ),
+        responses={
+            200: inline_serializer(
+                name="TesterReputationResponse",
+                fields={
+                    "reputation": serializers.FloatField(),
+                    "total_ratings": serializers.IntegerField(),
+                    "ratings": TesterRatingSerializer(many=True),
+                },
+            ),
+            401: OpenApiResponse(description="Authentication credentials were not provided."),
+            403: OpenApiResponse(description="Only testers can access this resource."),
+        },
+    )
+    def get(self, request):
+        ratings = list(
+            Rating.objects.filter(id_postulation__id_tester=request.user)
+            .select_related("id_postulation__id_project__client")
+            .order_by("-created_at", "-id_rating")
+        )
+
+        return Response(
+            {
+                "reputation": float(request.user.reputation or 0),
+                "total_ratings": len(ratings),
+                "ratings": TesterRatingSerializer(ratings, many=True).data,
+            },
             status=status.HTTP_200_OK,
         )

@@ -4,24 +4,37 @@ services:
             context: ./backend
         env_file:
             - .env
+        environment:
+            MONGODB_URI: ${MONGODB_URI:-mongodb://mongodb:27017/}
+            SEED_TEST_USERS: ${SEED_TEST_USERS:-false}
         ports:
             - "8000:8000"
         volumes:
             - ./backend:/app
-        command: sh -c "python manage.py migrate && python manage.py create_google_social_app && python manage.py create_github_social_app && daphne -b 0.0.0.0 -p 8000 config.asgi:application"
+        command: sh -c "python manage.py migrate && python manage.py create_test_users && python manage.py create_google_social_app && python manage.py create_github_social_app && daphne -b 0.0.0.0 -p 8000 config.asgi:application"
         depends_on:
             postgres:
                 condition: service_healthy
             mongodb:
-                condition: service_started
+                condition: service_healthy
             redis:
                 condition: service_healthy
+        healthcheck:
+            test:
+                - CMD
+                - python
+                - -c
+                - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/auth/csrf/', timeout=3)"
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 30s
 
     frontend:
         build:
             context: ./frontend
             args:
-                - NEXT_PUBLIC_API_BASE=${NEXT_PUBLIC_API_BASE}
+                - NEXT_PUBLIC_API_BASE=${NEXT_PUBLIC_API_BASE:-http://localhost:8000}
         ports:
             - "3000:3000"
         volumes:
@@ -31,7 +44,8 @@ services:
         environment:
             - WATCHPACK_POLLING=true
         depends_on:
-            - backend
+            backend:
+                condition: service_healthy
 
     postgres:
         image: postgres:17
@@ -57,6 +71,11 @@ services:
             - "27017:27017"
         volumes:
             - mongodb_data_junior_bridge:/data/db
+        healthcheck:
+            test: [ "CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')" ]
+            interval: 10s
+            timeout: 5s
+            retries: 5
 
     redis:
         image: redis:7-alpine
@@ -70,6 +89,17 @@ services:
             interval: 10s
             timeout: 5s
             retries: 5
+    newman:
+        build: ./tests/api
+        profiles: [ "tests" ]
+        depends_on:
+            backend:
+                condition: service_healthy
+        volumes:
+            - ./tests/api:/repo/tests/api:ro
+            - ./reportes:/repo/reportes
+        command: >
+            run tests/api/coleccion.postman_collection.json -e tests/api/entorno.local.json --env-var baseUrl=http://backend:8000 -r cli,htmlextra,junit --reporter-htmlextra-export reportes/newman.html --reporter-junit-export reportes/newman.xml
 
 volumes:
     postgres_data_junior_bridge:

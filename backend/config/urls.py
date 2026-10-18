@@ -34,7 +34,6 @@ urlpatterns = [
 
     path("accounts/", include("allauth.urls")),
     path("api/rating/", include("apps.rating.urls")),
-    path("api/reports/", include("apps.reports.urls")),
     path("api/admin/", include("apps.admin_dashboard.urls")),
 
     path('api/', include(router.urls)),

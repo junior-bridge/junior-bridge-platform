@@ -18,7 +18,7 @@ export const useDashboardTesterView = (user: User | null) => {
         REJECTED: "bg-red-100 text-red-600",
     };
     const router = useRouter();
-    const [availableProjects, setAvailableProjects] = useState<Project[]>([]);
+    const [projects, setProjects] = useState<Project[]>([]);
     const [myPostulations, setMyPostulations] = useState<Postulation[]>([]);
     const [loading, setLoading] = useState(true);
     const [applying, setApplying] = useState<number | null>(null);
@@ -30,11 +30,7 @@ export const useDashboardTesterView = (user: User | null) => {
                     getProjects(),
                     getUserPostulations(),
                 ]);
-                setAvailableProjects(
-                    projs.filter(
-                        (p) => p.state === "OPEN" || p.state === "IN_PROGRESS",
-                    ),
-                );
+                setProjects(projs);
                 setMyPostulations(posts);
             } catch {
             } finally {
@@ -50,19 +46,30 @@ export const useDashboardTesterView = (user: User | null) => {
     const pendingPostulations = myPostulations.filter(
         (p) => p.status === "pending",
     );
+    const availableProjects = projects.filter((p) => p.state === "OPEN");
 
 
     const stats = [
         {
             label: "Proyectos Completados",
             value: myPostulations.filter((p) => p.status === "accepted").length,
+            path: "/dashboard/projects",
         },
-        { label: "Bugs Reportados", value: "—" },
+        {
+            label: "Bugs Reportados",
+            value: "—",
+            path: "/dashboard/reports",
+        },
         {
             label: "Reputación",
             value: user?.reputation ? `${user?.reputation} ★` : "—",
+            path: "/dashboard/reputation",
         },
-        { label: "Postulaciones Activas", value: pendingPostulations.length },
+        {
+            label: "Postulaciones Activas",
+            value: pendingPostulations.length,
+            path: "/dashboard/projects",
+        },
     ];
 
     const appliedProjectIds = new Set(myPostulations.map((p) => p.id_project));
@@ -94,6 +101,7 @@ export const useDashboardTesterView = (user: User | null) => {
         stateColor,
         router,
         availableProjects,
+        projects,
         myPostulations,
         loading,
         applying,

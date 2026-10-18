@@ -1,0 +1,17 @@
+{
+  "name": "Junior Bridge - Local",
+  "values": [
+    { "key": "baseUrl", "value": "http://localhost:8000", "type": "default", "enabled": true },
+    { "key": "authUrl", "value": "/api/auth/", "type": "default", "enabled": true },
+    { "key": "tokenUrl", "value": "csrf/", "type": "default", "enabled": true },
+    { "key": "loginUrl", "value": "login/", "type": "default", "enabled": true },
+    { "key": "proyectsUrl", "value": "/api/projects/", "type": "default", "enabled": true },
+    { "key": "notificationUrl", "value": "/api/notifications/", "type": "default", "enabled": true },
+    { "key": "clientEmail", "value": "client@juniorbridge.test", "type": "default", "enabled": true },
+    { "key": "clientPassword", "value": "Client123!", "type": "secret", "enabled": true },
+    { "key": "invalidPassword", "value": "WrongPassword123!", "type": "secret", "enabled": true },
+    { "key": "testerEmail", "value": "tester@juniorbridge.test", "type": "default", "enabled": true },
+    { "key": "testerPassword", "value": "Tester123!", "type": "secret", "enabled": true }
+  ],
+  "_postman_variable_scope": "environment"
+}

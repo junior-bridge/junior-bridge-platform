@@ -17,6 +17,7 @@ export default function TesterDashboard({ userName }: Props) {
         stateColor,
         router,
         availableProjects,
+        projects,
         myPostulations,
         loading,
         applying,
@@ -47,6 +48,7 @@ export default function TesterDashboard({ userName }: Props) {
                         key={stat.label}
                         label={stat.label}
                         value={stat.value}
+                        onDetailClick={() => router.push(stat.path)}
                     />
                 ))}
             </div>
@@ -60,7 +62,7 @@ export default function TesterDashboard({ userName }: Props) {
                             </h2>
                             <div className="flex flex-col gap-3">
                                 {activePostulations.map((post) => {
-                                    const proj = availableProjects.find(
+                                    const proj = projects.find(
                                         (p) => p.id === post.id_project,
                                     );
                                     return (

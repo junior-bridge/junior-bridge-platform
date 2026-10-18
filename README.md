@@ -1,4 +1,3 @@
-
 <div align="center">
   <h1><strong style="font-size: 24px;">JuniorBridge</strong></h1>
 </div>
@@ -13,6 +12,84 @@
 Es un proyecto desarrollado por **El Palomar** para aplicar conocimientos adquiridos en distintas áreas del desarrollo de software, gestión de proyectos, arquitectura de sistemas y metodologías ágiles.
 
 Actualmente existe una brecha importante entre la formación académica y el acceso al primer empleo dentro de la industria IT. JuniorBridge busca convertirse en ese puente, permitiendo que los estudiantes obtengan experiencia real mientras ayudan a emprendedores a mejorar la calidad de sus productos digitales.
+
+---
+
+# 🌐 Producción
+
+| Servicio | URL |
+| --- | --- |
+| Frontend | https://junior-bridge-frontend-85z5.onrender.com |
+| API | https://junior-bridge-api-n1o6.onrender.com |
+| Swagger UI | https://junior-bridge-api-n1o6.onrender.com/api/docs/ |
+| ReDoc | https://junior-bridge-api-n1o6.onrender.com/api/redoc/ |
+| Esquema OpenAPI | https://junior-bridge-api-n1o6.onrender.com/api/schema/ |
+| Admin de Django | https://junior-bridge-api-n1o6.onrender.com/admin/ |
+
+> Los servicios usan el plan gratuito de Render por lo tanto las peticiones pueden llegar a demorar entre 30-40 segundos.
+
+---
+
+# ⚡ Inicio rápido
+
+Requisitos: Git y Docker Desktop (con Docker Compose).
+
+1. Clonar el repositorio:
+
+   ```bash
+   git clone <url-del-repositorio>
+   cd junior-bridge-platform
+   ```
+
+2. Crear el archivo de entorno a partir del ejemplo:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+3. Completar en `.env` como mínimo `SECRET_KEY`, `POSTGRES_PASSWORD` y las credenciales OAuth (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`). Ver [🔑 Variables de entorno](#-variables-de-entorno).
+
+   > [!IMPORTANTISIMO]
+   > Al arrancar, el backend ejecuta `create_google_social_app` y `create_github_social_app`, que fallan si faltan esas credenciales. En ese caso el contenedor no llega a iniciar Daphne.
+
+4. Levantar todos los servicios:
+
+   ```bash
+   docker compose up --build
+   ```
+
+5. Abrir la aplicación:
+
+   | Servicio | URL local |
+   | --- | --- |
+   | Frontend | http://localhost:3000 |
+   | API | http://localhost:8000 |
+   | Swagger UI | http://localhost:8000/api/docs/ |
+   | ReDoc | http://localhost:8000/api/redoc/ |
+   | Admin de Django | http://localhost:8000/admin/ |
+
+### Qué levanta Docker Compose
+
+| Servicio | Imagen / build | Puerto en el host |
+| --- | --- | --- |
+| `backend` | `./backend` (Python 3.12, Daphne) | `8000` |
+| `frontend` | `./frontend` (Node 22, `npm run dev`) | `3000` |
+| `postgres` | `postgres:17` | `5433`|
+| `mongodb` | `mongo:8` | `27017` |
+| `redis` | `redis:7-alpine` | `6379` |
+| `newman` | `./tests/api` (solo con el perfil `tests`) | — |
+
+Al iniciar, el backend ejecuta en orden: `migrate`, `create_test_users`, `create_google_social_app`, `create_github_social_app` y, por último, `daphne` en el puerto `8000`.
+
+### Usuarios de prueba
+
+El comando `create_test_users` crea una cuenta CLIENT y otra TESTER solo si `SEED_TEST_USERS=true` (por defecto es `false`). Los emails y las contraseñas por defecto están definidos en [`create_test_users.py`](backend/apps/users/management/commands/create_test_users.py) y se pueden reemplazar con `TEST_CLIENT_EMAIL`, `TEST_CLIENT_PASSWORD`, `TEST_TESTER_EMAIL` y `TEST_TESTER_PASSWORD`.
+
+Para crear un administrador:
+
+```bash
+docker compose exec backend python manage.py createsuperuser
+```
 
 ---
 
@@ -112,7 +189,7 @@ Todo esto desde una interfaz intuitiva, moderna y accesible.
 ### 🐞 Reportes de Bugs
 
 - Registro estructurado de errores
-- Adjuntar capturas de pantalla
+- Adjuntar hasta 5 imágenes de evidencia por reporte
 - Pasos para reproducir
 - Nivel de criticidad o riesgo
 
@@ -146,7 +223,7 @@ JuniorBridge contempla el desarrollo completo del flujo de testing dentro de la 
 
 ✔ Notificaciones
 
-✔ Geolocalización
+✔ Auditoria de Proyectos
 
 ✔ Exportación de reportes
 
@@ -166,42 +243,282 @@ JuniorBridge contempla el desarrollo completo del flujo de testing dentro de la 
 
 Estas funcionalidades quedan planteadas como futuras versiones del producto.
 
+## Almacenamiento de evidencias
+
+En desarrollo, las imágenes se guardan localmente en `backend/media`. Para
+producción, se puede configurar un bucket privado de AWS S3 definiendo
+`AWS_STORAGE_BUCKET_NAME` y `AWS_S3_REGION_NAME` en el entorno del backend.
+La aplicación genera enlaces temporales para que quienes tienen acceso al
+reporte puedan ver sus imágenes. En AWS, se recomienda asignar permisos S3 al
+rol de la aplicación en vez de guardar credenciales en el repositorio.
+Para desarrollo local fuera de AWS, el SDK puede autenticarse mediante
+`AWS_ACCESS_KEY_ID` y `AWS_SECRET_ACCESS_KEY` (y `AWS_SESSION_TOKEN` si se usan
+credenciales temporales); nunca se deben copiar credenciales reales al
+`.env.example` ni subirlas al repositorio. El backend entrega las imágenes por
+rutas autenticadas y comprueba el acceso de cada usuario al reporte.
+
+Cada reporte admite hasta 5 imágenes JPG, PNG o WEBP, de hasta 5 MB cada una;
+el backend las redimensiona a un máximo de 1920 px y las recomprime antes de
+guardarlas. Las fotos de perfil aceptan JPG, PNG o WEBP, también hasta 5 MB, y
+se optimizan a un máximo de 512 px.
+
+La exportación de reportes a Excel, PDF y CSV se describe en [Exportación de reportes de bugs](docs/exportacion-reportes.md).
+
 ---
 
 # 🛠️ Stack Tecnológico
 
 ### Backend
 
-- Django
+- Python 3.12
+- Django 6
 - Django REST Framework
+- Simple JWT (autenticación con cookies)
+- django-allauth (OAuth con Google y GitHub)
+- drf-spectacular (OpenAPI, Swagger UI y ReDoc)
+- Django Channels y Daphne (ASGI y WebSockets para notificaciones)
+- WhiteNoise (archivos estáticos)
+- django-storages con AWS S3 (imágenes, opcional)
+- openpyxl y ReportLab (exportación a Excel y PDF)
 
 ### Frontend
 
-- React
-- Next.js
+- Node.js 22
+- Next.js 16
+- React 19
+- TypeScript
+- Tailwind CSS 4
 
 ### Bases de Datos
 
-- PostgreSQL
-- MongoDB
+- PostgreSQL (Supabase en producción)
+- MongoDB (reportes de bugs)
+- Redis (capa de canales para WebSockets; Key Value de Render en producción)
+- [Configuración de PostgreSQL en Supabase](docs/configuracion-supabase.md)
 
 ### Infraestructura
 
 - Docker
 - Docker Compose
-- Redis
+- Render (Blueprint en `render.yaml`)
 
 ### Integraciones
 
 - Google OAuth
 - GitHub OAuth
-- Google Maps API
-- Mailtrap
+- Google PageSpeed Insights (auditorías de proyectos)
+- Mailtrap (email en desarrollo)
+- Brevo SMTP (email en producción)
+
+### Testing
+
+- Tests de Django (`manage.py test`) con Coverage
+- Newman (colección Postman de la API)
+- Playwright (E2E)
+
+### Email
+
+El backend envía email por SMTP configurado con variables de entorno
+(`EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`,
+`EMAIL_USE_TLS`, `DEFAULT_FROM_EMAIL`, `EMAIL_TIMEOUT`). Ver `.env.example`.
+
+- **Sin `EMAIL_HOST`**: los emails se imprimen en la consola del backend.
+- **Desarrollo**: Mailtrap sandbox (`sandbox.smtp.mailtrap.io`, puerto `2525`).
+  Los emails quedan en la bandeja de Mailtrap y no llegan a casillas reales.
+- **Producción**: Brevo SMTP en el puerto `2525`, porque el plan gratuito de
+  Render bloquea los puertos 25, 465 y 587. Los emails llegan a casillas
+  reales. `DEFAULT_FROM_EMAIL` debe ser un remitente verificado en Brevo.
 
 ### Control de Versiones
 
 - Git
 - GitHub
+
+---
+
+# 🧰 Instalación sin Docker
+
+Requiere Python 3.12 ([`backend/.python-version`](backend/.python-version)) y Node.js 22 ([`frontend/.node-version`](frontend/.node-version)). El backend necesita PostgreSQL, MongoDB y Redis; la forma más simple es levantar solo esos servicios con Docker:
+
+```bash
+docker compose up -d postgres mongodb redis
+```
+
+### Backend
+
+1. Crear el entorno virtual e instalar las dependencias:
+
+   ```bash
+   cd backend
+   python -m venv .venv
+   source .venv/bin/activate  
+   pip install -r requirements.txt
+   ```
+
+2. Ajustar en `.env` (en la raíz del repositorio) los hosts para conectarse desde fuera de Docker:
+
+   ```env
+   POSTGRES_HOST=localhost
+   POSTGRES_PORT=5433
+   MONGODB_URI=mongodb://localhost:27017/
+   REDIS_URL=redis://localhost:6379/0
+   ```
+
+3. Migrar y arrancar el servidor ASGI:
+
+   ```bash
+   python manage.py migrate
+   daphne -b 0.0.0.0 -p 8000 config.asgi:application
+   ```
+
+### Frontend
+
+```bash
+cd frontend
+npm ci
+npm run dev
+```
+
+Sin variables propias, el frontend llama a la API en `http://localhost:8000`.
+
+| Script | Uso |
+| --- | --- |
+| `npm run dev` | Servidor de desarrollo |
+| `npm run build` | Build de producción |
+| `npm run start` | Sirve el build de producción |
+| `npm run lint` | ESLint |
+| `npm run test:e2e` | Playwright |
+
+---
+
+# 🔑 Variables de entorno
+
+El backend lee las variables del archivo `.env` de la raíz (ver [`.env.example`](.env.example)).
+
+### Django y seguridad
+
+| Variable | Requerida | Para qué sirve |
+| --- | --- | --- |
+| `SECRET_KEY` | Sí | Clave secreta de Django. |
+| `DEBUG` | No | Modo debug. Por defecto `False`. |
+| `ALLOWED_HOSTS` | No | Hosts permitidos, separados por coma. |
+| `CORS_ALLOWED_ORIGINS` | No | Orígenes CORS permitidos, separados por coma. |
+| `AUTH_COOKIE_SECURE` | No | Marca `Secure` en las cookies de autenticación. Por defecto `true`; usar `false` solo con clientes HTTP locales como Newman. |
+| `CSRF_COOKIE_SECURE` | No | Igual que la anterior, para la cookie CSRF. |
+
+### Bases de datos
+
+| Variable | Requerida | Para qué sirve |
+| --- | --- | --- |
+| `POSTGRES_DB` | Sí | Nombre de la base PostgreSQL. |
+| `POSTGRES_USER` | Sí | Usuario de PostgreSQL. |
+| `POSTGRES_PASSWORD` | Sí | Contraseña de PostgreSQL. |
+| `POSTGRES_HOST` | Sí | Host (`postgres` dentro de Docker). |
+| `POSTGRES_PORT` | Sí | Puerto (`5432` dentro de Docker). |
+| `POSTGRES_SSLMODE` | No | Modo SSL. Por defecto `prefer`; `require` en Supabase. |
+| `MONGODB_URI` | No | URI de MongoDB. Por defecto `mongodb://mongodb:27017/`. |
+| `MONGODB_DATABASE` | No | Base de MongoDB. Por defecto `junior_bridge`. |
+| `REDIS_URL` | No | URL de Redis para WebSockets. Si falta, se arma con `REDIS_HOST` y `REDIS_PORT`. |
+
+### Frontend y redirecciones
+
+| Variable | Requerida | Para qué sirve |
+| --- | --- | --- |
+| `FRONTEND_URL` | No | URL pública del frontend. Por defecto `http://localhost:3000`. |
+| `FRONTEND_OAUTH_SUCCESS_URL` | No | Destino tras un login OAuth correcto. Por defecto `FRONTEND_URL/dashboard`. |
+| `FRONTEND_OAUTH_ERROR_URL` | No | Destino tras un login OAuth fallido. Por defecto `FRONTEND_URL/login`. |
+| `FRONTEND_PASSWORD_RESET_URL` | No | Página para restablecer la contraseña. |
+| `PASSWORD_RESET_TIMEOUT` | No | Validez del enlace de restablecimiento, en segundos. Por defecto `3600`. |
+| `NEXT_PUBLIC_API_BASE` | No | Base de la API para el navegador. Por defecto `http://localhost:8000`|
+| `API_PROXY_TARGET` | Solo en producción | Origen de la API al que Next.js redirige `/api/*` y `/accounts/*`. |
+| `NEXT_PUBLIC_WS_BASE` | Solo en producción | Origen del WebSocket de notificaciones (por ejemplo `wss://...`). |
+
+### OAuth
+
+| Variable | Requerida | Para qué sirve |
+| --- | --- | --- |
+| `GOOGLE_CLIENT_ID` | Sí con Docker Compose | ID de cliente OAuth de Google. |
+| `GOOGLE_CLIENT_SECRET` | Sí con Docker Compose | Secreto de cliente OAuth de Google. |
+| `GITHUB_CLIENT_ID` | Sí con Docker Compose | ID de cliente OAuth de GitHub. |
+| `GITHUB_CLIENT_SECRET` | Sí con Docker Compose | Secreto de cliente OAuth de GitHub. |
+| `ACCOUNT_DEFAULT_HTTP_PROTOCOL` | Sí en local | Esquema de las URLs de callback OAuth (`http` o `https`). En local debe ser `http`; si se omite vale `https`, que es lo que usa producción. |
+
+### Email
+
+| Variable | Requerida | Para qué sirve |
+| --- | --- | --- |
+| `EMAIL_HOST` | No | Servidor SMTP. Sin valor, los emails se imprimen en la consola. |
+| `EMAIL_PORT` | No | Puerto SMTP. Por defecto `587`. |
+| `EMAIL_HOST_USER` | No | Usuario SMTP. |
+| `EMAIL_HOST_PASSWORD` | No | Contraseña SMTP. |
+| `EMAIL_USE_TLS` | No | Usar TLS. Por defecto `True`. |
+| `DEFAULT_FROM_EMAIL` | No | Remitente.|
+| `EMAIL_TIMEOUT` | No | Timeout SMTP en segundos. Por defecto `10`. |
+
+### Almacenamiento (AWS S3)
+
+| Variable | Requerida | Para qué sirve |
+| --- | --- | --- |
+| `AWS_STORAGE_BUCKET_NAME` | No | Si se define, las imágenes se guardan en S3; si no, en `backend/media`. |
+| `AWS_S3_REGION_NAME` | No | Región del bucket. |
+| `AWS_ACCESS_KEY_ID` | No | Credencial de AWS (fuera de AWS). |
+| `AWS_SECRET_ACCESS_KEY` | No | Credencial de AWS (fuera de AWS). |
+| `AWS_SESSION_TOKEN` | No | Solo con credenciales temporales. |
+
+### Otros
+
+| Variable | Requerida | Para qué sirve |
+| --- | --- | --- |
+| `PAGESPEED_API_KEY` | No | API key de PageSpeed Insights. Sin ella la cuota es menor. |
+| `PAGESPEED_TIMEOUT` | No | Timeout de las auditorías en segundos. Por defecto `120`. |
+| `SEED_TEST_USERS` | No | Con `true`, crea los usuarios de prueba al iniciar. Por defecto `false`. |
+
+---
+
+# 🧪 Tests
+
+| Suite | Herramienta | Ubicación |
+| --- | --- | --- |
+| Backend | Tests de Django + Coverage | `backend/apps` |
+| API | Newman (Postman) | [`tests/api/`](tests/api/) |
+| E2E | Playwright | [`frontend/e2e/`](frontend/e2e/) |
+
+### Backend
+
+Los tests necesitan PostgreSQL, por eso se recomienda ejecutarlos dentro de Docker Compose:
+
+```bash
+docker compose exec backend python manage.py test
+```
+
+Con cobertura (configurada en [`backend/.coveragerc`](backend/.coveragerc), que mide `apps` y excluye migraciones y tests):
+
+```bash
+docker compose exec backend coverage run manage.py test
+docker compose exec backend coverage report
+```
+
+### API con Newman
+
+La colección usa las cuentas de prueba, así que requiere `SEED_TEST_USERS=true`. Como Newman llama a `http://backend:8000` sin HTTPS, también requiere `AUTH_COOKIE_SECURE=false` y `CSRF_COOKIE_SECURE=false` en el `.env` local.
+
+```bash
+docker compose --profile tests run --rm newman
+```
+
+Los reportes quedan en `reportes/newman.html` y `reportes/newman.xml`.
+
+### Frontend
+
+```bash
+cd frontend
+npm run lint
+npm run build
+```
+
+### E2E con Playwright
+
+Los flujos críticos corren contra un stack Docker aislado que gestiona [`run-e2e.ps1`](frontend/e2e/support/run-e2e.ps1) (PowerShell) con las acciones `Prepare`, `Up`, `Test` y `Stop`. Las credenciales y las evidencias se guardan fuera del repositorio. Los pasos completos están en [`frontend/e2e/README.md`](frontend/e2e/README.md) y los resultados, en el [informe E2E](docs/informe-e2e-flujos-criticos.md).
 
 ---
 
@@ -218,7 +535,7 @@ Preparación de versiones candidatas para entrega.
 🔶 **develop**
 Integración continua de funcionalidades.
 
-🔧 **feature/***
+🔧 **feature/\***
 Ramas utilizadas para cada funcionalidad o historia de usuario.
 
 ---
@@ -253,12 +570,10 @@ Estudiantes de la Tecnicatura Superior en Desarrollo de Software - ISPC
 - Carlos Huallpa
 - Ezequiel Gonzáles
 
-
 <p align="center">
   <!-- Imagen del equipo -->
   <img width="500" alt="El Palomar" src="https://github.com/user-attachments/assets/07d60560-4f9b-43d1-b0cd-b9dbf757e7bf" />
 </p>
-
 
 ### 💡 Nuestro objetivo
 

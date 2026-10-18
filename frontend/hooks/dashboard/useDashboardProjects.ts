@@ -29,8 +29,20 @@ export const useDashboardProjects=({user,isClient,isTester,isAdmin}  :{ user: Us
     };
     const [projects, setProjects] = useState<Project[]>([]);
     const [postulations, setMyPostulations] = useState<Postulation[]>([]);
-    const [searchTerm, setSearchTerm] = useState("");
+    const [searchTerm, setSearchTermState] = useState("");
+    const [dateFilter, setDateFilterState] = useState("");
+
+    const setSearchTerm = (value: string) => {
+        setSearchTermState(value);
+        setCurrentPage(1);
+    };
+    const setDateFilter = (value: string) => {
+        setDateFilterState(value);
+        setCurrentPage(1);
+    };
     const [loading, setLoading] = useState(true);
+    const [currentPage, setCurrentPage] = useState(1);
+    const projectsPerPage = 10;
     const [applyingId, setApplyingId] = useState<number | null>(null);
     const [updatingProjectId, setUpdatingProjectId] = useState<number | null>(null);
     const [postulationToWithdraw, setPostulationToWithdraw] = useState<Postulation | null>(null);
@@ -122,13 +134,23 @@ export const useDashboardProjects=({user,isClient,isTester,isAdmin}  :{ user: Us
         postulations.map((postulation) => [postulation.id_project, postulation]),
     );
     
-    const filteredProjects = projects.filter(
-            (p) =>
-                p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                p.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                p.technologies.toLowerCase().includes(searchTerm.toLowerCase()),
+    const filteredProjects = projects.filter((p) => {
+        const term = searchTerm.toLowerCase();
+        const matchesText =
+            p.title.toLowerCase().includes(term) ||
+            p.description.toLowerCase().includes(term) ||
+            p.technologies.toLowerCase().includes(term);
+        const matchesDate =
+            !dateFilter || p.created_at.slice(0, 10) === dateFilter;
+
+        return matchesText && matchesDate;
+    });
+    const totalPages = Math.ceil(filteredProjects.length / projectsPerPage);
+
+    const paginatedProjects = filteredProjects.slice(
+        (currentPage - 1) * projectsPerPage,
+        currentPage * projectsPerPage,
     );
-    
     async function handleApply(projectId: number) {
             setApplyingId(projectId);
             setMessage("");
@@ -333,6 +355,8 @@ export const useDashboardProjects=({user,isClient,isTester,isAdmin}  :{ user: Us
         statusColors,
         searchTerm,
         setSearchTerm,
+        dateFilter,
+        setDateFilter,
         loading,
         ratingsByProject,
         applyingId,
@@ -344,6 +368,10 @@ export const useDashboardProjects=({user,isClient,isTester,isAdmin}  :{ user: Us
         handleCreateRating,
         postulationsByProject,
         filteredProjects,
+        currentPage,
+        totalPages,
+        paginatedProjects,
+        setCurrentPage,
         postulationToWithdraw,
         setPostulationToWithdraw,
         withdrawingId,

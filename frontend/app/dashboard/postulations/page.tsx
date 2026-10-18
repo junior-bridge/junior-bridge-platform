@@ -2,6 +2,7 @@
 import { useUser } from "@/context/UserContext";
 import { Star } from "lucide-react";
 import { useDashboardPostulations } from "@/hooks/dashboard/useDashboardPostulations";
+import ListFilters from "@/components/dashboard/ListFilters";
 
 export default function PostulationsPage() {
     const { user } = useUser();
@@ -12,6 +13,11 @@ export default function PostulationsPage() {
         handleReject,
         loading,
         postulations,
+        filteredPostulations,
+        searchTerm,
+        setSearchTerm,
+        dateFilter,
+        setDateFilter,
         statusColors,
         statusLabels,
     }=useDashboardPostulations(user);
@@ -31,14 +37,24 @@ export default function PostulationsPage() {
                 </p>
             </div>
 
+            <ListFilters
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                dateFilter={dateFilter}
+                onDateChange={setDateFilter}
+                placeholder="Buscar postulación..."
+            />
+
             {loading ? (
                 <p className="text-sm text-gray-400 py-8 text-center">
                     Cargando postulaciones...
                 </p>
-            ) : postulations.length === 0 ? (
+            ) : filteredPostulations.length === 0 ? (
                 <div className="bg-white rounded-xl p-8 text-center shadow-sm">
                     <p className="text-sm text-gray-400">
-                        No hay postulaciones registradas.
+                        {postulations.length === 0
+                            ? "No hay postulaciones registradas."
+                            : "No se encontraron postulaciones."}
                     </p>
                 </div>
             ) : (
@@ -66,7 +82,7 @@ export default function PostulationsPage() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {postulations.map((p) => {
+                                    {filteredPostulations.map((p) => {
                                         const testerInitial = p.tester_name?.trim()?.[0]?.toUpperCase() ?? "T";
                                         const repNumber = p.tester_reputation
                                             ? Number(p.tester_reputation)
@@ -198,7 +214,7 @@ export default function PostulationsPage() {
 
                     {user.role === "TESTER" && (
                         <div className="flex flex-col gap-4">
-                            {postulations.map((p) => (
+                            {filteredPostulations.map((p) => (
                                 <div
                                     key={p.id_postulation}
                                     className="bg-white rounded-xl p-5 shadow-sm flex items-center justify-between"

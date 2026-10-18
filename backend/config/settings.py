@@ -14,6 +14,8 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
+from config.env import bool_env, csv_env, http_protocol_env, positive_int_env
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -26,10 +28,31 @@ load_dotenv()
 SECRET_KEY = os.environ["SECRET_KEY"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = bool_env("DEBUG", default=False)
 
-ALLOWED_HOSTS = []
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:3000").rstrip("/")
+if FRONTEND_URL and "://" not in FRONTEND_URL:
+    FRONTEND_URL = f"https://{FRONTEND_URL}"
+FRONTEND_URL = FRONTEND_URL or "http://localhost:3000"
 
+
+# Redirecciones dinámicas
+LOGIN_REDIRECT_URL = f"{FRONTEND_URL}/dashboard"
+ACCOUNT_LOGOUT_REDIRECT_URL = f"{FRONTEND_URL}/login"
+
+ALLOWED_HOSTS = csv_env(
+    "ALLOWED_HOSTS",
+    [
+        host
+        for host in [
+            os.getenv("RENDER_EXTERNAL_HOSTNAME", "").strip(),
+            "localhost",
+            "127.0.0.1",
+            "backend",
+        ]
+        if host
+    ],
+)
 
 # Application definition
 
@@ -44,6 +67,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    'django.contrib.sites',
 
     "corsheaders",
     "rest_framework",
@@ -65,14 +89,15 @@ INSTALLED_APPS = [
     "apps.notifications",
 
 ]
-
+SITE_ID = 1
 AUTH_USER_MODEL = "users.User"
 
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "corsheaders.middleware.CorsMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -116,6 +141,9 @@ DATABASES = {
         "PASSWORD": os.environ["POSTGRES_PASSWORD"],
         "HOST": os.environ["POSTGRES_HOST"],
         "PORT": os.environ["POSTGRES_PORT"],
+        "OPTIONS": {
+            "sslmode": os.getenv("POSTGRES_SSLMODE", "prefer"),
+        },
     }
 }
 
@@ -145,6 +173,7 @@ AUTHENTICATION_BACKENDS = [
 
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 ACCOUNT_USER_MODEL_EMAIL_FIELD = "email"
+ACCOUNT_EMAIL_VERIFICATION = "none"
 
 ACCOUNT_LOGIN_METHODS = {"email"}
 
@@ -154,17 +183,59 @@ ACCOUNT_SIGNUP_FIELDS = [
     "password2*",
 ]
 
-SOCIALACCOUNT_ADAPTER = "apps.users.adapter.JuniorBridgeSocialAccountAdapter"
-SOCIALACCOUNT_EMAIL_AUTHENTICATION = False
+SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
 SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
-SOCIALACCOUNT_LOGIN_ON_GET = False
+SOCIALACCOUNT_LOGIN_ON_GET = True
 
+# Scheme allauth uses for OAuth callback URLs. Production keeps the https
+# default; local development over plain HTTP sets it to "http" in .env.
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = http_protocol_env("ACCOUNT_DEFAULT_HTTP_PROTOCOL")
+SOCIALACCOUNT_PROVIDERS = {
+    "google": {
+        "APP": {
+            "client_id": os.environ.get("GOOGLE_CLIENT_ID", ""),
+            "secret": os.environ.get("GOOGLE_CLIENT_SECRET", ""),
+            "key": "",
+        },
+        "SCOPE": [
+            "profile",
+            "email",
+        ],
+        "AUTH_PARAMS": {
+            "access_type": "online",
+        },
+        "METHOD": "oauth2",
+        "VERIFIED_EMAIL": True,
+    },
+    # Configured from env vars like Google, so no SocialApp row is needed.
+    # Do not also create a GitHub SocialApp in the database: allauth would
+    # find two apps and raise MultipleObjectsReturned.
+    "github": {
+        "APP": {
+            "client_id": os.environ.get("GITHUB_CLIENT_ID", ""),
+            "secret": os.environ.get("GITHUB_CLIENT_SECRET", ""),
+            "key": "",
+        },
+        "SCOPE": [
+            "user:email",
+        ],
+    },
+}
 
 
 SITE_ID = 1
 
-FRONTEND_OAUTH_SUCCESS_URL = os.environ["FRONTEND_OAUTH_SUCCESS_URL"]
-FRONTEND_OAUTH_ERROR_URL = os.environ["FRONTEND_OAUTH_ERROR_URL"]
+FRONTEND_OAUTH_SUCCESS_URL = os.getenv(
+    "FRONTEND_OAUTH_SUCCESS_URL",
+    f"{FRONTEND_URL}/dashboard",
+)
+FRONTEND_OAUTH_ERROR_URL = os.getenv(
+    "FRONTEND_OAUTH_ERROR_URL",
+    f"{FRONTEND_URL}/login",
+)
+
 SOCIALACCOUNT_LOGIN_ON_GET = True
 SOCIALACCOUNT_ADAPTER = "apps.users.adapter.JuniorBridgeSocialAccountAdapter"
 # Django REST Framework
@@ -200,40 +271,48 @@ SIMPLE_JWT = {
 
 AUTH_COOKIE_NAME = "access_token"
 
+# CAMBIOS DE PRODUCCION:
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_PORT = True
+
 # CORS
-
 CORS_ALLOW_CREDENTIALS = True
-
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://localhost:3001",
-    "http://127.0.0.1:3001",
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https:\/\/.*\.onrender\.com$",
+    r"^https:\/\/.*\.vercel\.app$",
+    r"^http:\/\/localhost:\d+$",
+    r"^http:\/\/127\.0\.0\.1:\d+$",
 ]
-
+CORS_ALLOWED_ORIGINS = csv_env(
+    "CORS_ALLOWED_ORIGINS",
+    [
+        FRONTEND_URL,
+        "https://junior-bridge-frontend.onrender.com",
+        "https://junior-bridge-platform-jahb.vercel.app",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ],
+)
 
 # CSRF
-
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://localhost:3001",
-    "http://127.0.0.1:3001",
-    # "https://app.juniorbridge.com",  # Producción
+    "https://junior-bridge-frontend.onrender.com",
+    "https://junior-bridge-platform-jahb.vercel.app",
+    "https://*.onrender.com",
 ]
 
-
-# Cookie security
-# Producción: DEBUG=False → AUTH_COOKIE_SECURE=True
-
-AUTH_COOKIE_SECURE = not DEBUG
+# Cookie security (Ajustado para producción interdominio)
+# Set to false only for local HTTP clients (e.g. Newman against http://backend:8000).
+# Browsers reject SameSite=None without Secure, so fall back to Lax in that case.
+AUTH_COOKIE_SECURE = bool_env("AUTH_COOKIE_SECURE", default=True)
 AUTH_COOKIE_HTTPONLY = True
-AUTH_COOKIE_SAMESITE = "Lax"
+AUTH_COOKIE_SAMESITE = "None" if AUTH_COOKIE_SECURE else "Lax"
 
-# CSRF cookie
-CSRF_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = bool_env("CSRF_COOKIE_SECURE", default=True)
 CSRF_COOKIE_HTTPONLY = False
-CSRF_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_SAMESITE = "None" if CSRF_COOKIE_SECURE else "Lax"
+
 
 
 # Internationalization
@@ -257,6 +336,42 @@ STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
 
+# collectstatic target; WhiteNoise serves it when DEBUG=False (Render).
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
+AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")
+AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME")
+
+if AWS_STORAGE_BUCKET_NAME:
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.s3.S3Storage",
+            "OPTIONS": {
+                "bucket_name": AWS_STORAGE_BUCKET_NAME,
+                "region_name": AWS_S3_REGION_NAME,
+                "location": "media",
+                "default_acl": None,
+                "file_overwrite": False,
+                "querystring_auth": True,
+            },
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+        },
+    }
+else:
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+        },
+    }
+
 MONGODB_URI = os.getenv(
     "MONGODB_URI",
     "mongodb://mongodb:27017/"
@@ -268,11 +383,17 @@ MONGODB_DATABASE = os.getenv(
 )
 
 
+REDIS_URL = os.getenv("REDIS_URL", "").strip()
+if not REDIS_URL:
+    redis_host = os.getenv("REDIS_HOST", "redis").strip()
+    redis_port = os.getenv("REDIS_PORT", "6379").strip()
+    REDIS_URL = f"redis://{redis_host}:{redis_port}/0"
+
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("redis", 6379)], 
+            "hosts": [REDIS_URL],
         },
     },
 }
@@ -281,6 +402,36 @@ CHANNEL_LAYERS = {
 WEBSOCKET_ACCEPT_ALL = False  # Requerir autenticación
 WEBSOCKET_TIMEOUT = 300  # 5 minutos de inactividad
 
-# Email settings
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-DEFAULT_FROM_EMAIL = "noreply@juniorbridge.com"
+# Email configuration (provider-agnostic SMTP).
+# With EMAIL_HOST set, mail goes through SMTP: Mailtrap sandbox in development,
+# Brevo SMTP relay in production. Without it, the console backend is used.
+EMAIL_HOST = os.getenv("EMAIL_HOST", "")
+
+if EMAIL_HOST:
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    EMAIL_PORT = positive_int_env("EMAIL_PORT", 587)
+    EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
+    EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+    EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True").strip().lower() in ("1", "true", "yes")
+else:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+# Must be a sender (or domain) verified in the email provider, e.g. Brevo.
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL") or "noreply@juniorbridge.com"
+
+# Seconds before an SMTP connection gives up, so a slow server cannot block requests.
+EMAIL_TIMEOUT = positive_int_env("EMAIL_TIMEOUT", 10)
+
+# Google PageSpeed Insights. The API key is optional (keyless requests have a
+# lower quota); the timeout is in seconds because audits can take 10-30s.
+PAGESPEED_API_KEY = os.getenv("PAGESPEED_API_KEY", "")
+PAGESPEED_TIMEOUT = positive_int_env("PAGESPEED_TIMEOUT", 120)
+
+FRONTEND_PASSWORD_RESET_URL = os.getenv(
+    "FRONTEND_PASSWORD_RESET_URL",
+    f"{FRONTEND_URL}/reset-password",
+)
+
+PASSWORD_RESET_TIMEOUT = int(
+    os.getenv("PASSWORD_RESET_TIMEOUT", "3600")
+)

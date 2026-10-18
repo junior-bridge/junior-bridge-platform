@@ -4,7 +4,7 @@ import { User } from "@/types";
 import { Postulation } from "@/types/postulationTypes";
 import { Report } from "@/types/reportTypes";
 import { getUserPostulations } from "@/services/postulation.service";
-import { createReport, getPostulationReports } from "@/services/report.service";
+import { createReport, getReports } from "@/services/report.service";
 import Swal from "sweetalert2";
 
 // Estado inicial del formulario de reporte; se reutiliza al cerrar/cancelar y después de crear.
@@ -14,14 +14,14 @@ const initialReportForm: {
     description: string;
     stepsToReproduce: string;
     severity: "low" | "medium" | "high" | "critical";
-    evidenceFile: File | null;
+    evidenceFiles: File[];
 } = {
     postulationId: "",
     title: "",
     description: "",
     stepsToReproduce: "",
     severity: "medium",
-    evidenceFile: null,
+    evidenceFiles: [],
 };
 
 export const useDashboardReports = (user:User | null) => {
@@ -50,6 +50,8 @@ export const useDashboardReports = (user:User | null) => {
         CLOSED: "RESUELTO",
     };
     const [reports, setReports] = useState<Report[]>([]);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [dateFilter, setDateFilter] = useState("");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -67,7 +69,7 @@ export const useDashboardReports = (user:User | null) => {
         setModalError(null);
         setFormErrors({});
         setForm(initialReportForm);
-    }, []);
+    }, [setForm, setFormErrors, setIsModalOpen, setModalError]);
 
     // Cierre iniciado por el usuario (X, Cancelar, backdrop, Escape).
     // Mientras se envía el reporte no se permite cerrar, para no perder el resultado del submit.
@@ -100,22 +102,21 @@ export const useDashboardReports = (user:User | null) => {
         let isMounted = true;
 
         if (!user) return;
+        const isTester = user.role === "TESTER";
 
         async function initFetch() {
             try {
                 setError(null);
-                const postulations = await getUserPostulations();
+                const [userReports, postulations] = await Promise.all([
+                    getReports(),
+                    isTester
+                        ? getUserPostulations()
+                        : Promise.resolve([]),
+                ]);
 
                 if (!isMounted) return;
                 setUserPostulations(postulations);
-
-                const reportsPromises = postulations.map((p) =>
-                    getPostulationReports(p.id_postulation).catch(() => []),
-                );
-                const reportsNested = await Promise.all(reportsPromises);
-
-                if (!isMounted) return;
-                setReports(reportsNested.flat());
+                setReports(userReports);
             } catch (err) {
                 if (!isMounted) return;
                 console.error("Error cargando reportes:", err);
@@ -143,15 +144,8 @@ export const useDashboardReports = (user:User | null) => {
             setError(null);
             setLoading(true);
 
-            const postulations = await getUserPostulations();
-            setUserPostulations(postulations);
-
-            const reportsPromises = postulations.map((p) =>
-                getPostulationReports(p.id_postulation).catch(() => []),
-            );
-            const reportsNested = await Promise.all(reportsPromises);
-
-            setReports(reportsNested.flat());
+            const userReports = await getReports();
+            setReports(userReports);
         } catch (err) {
             console.error("Error cargando reportes:", err);
             setError(
@@ -163,6 +157,23 @@ export const useDashboardReports = (user:User | null) => {
             setLoading(false);
         }
     }, []);
+
+    const filteredReports = reports.filter((report) => {
+        const term = searchTerm.toLowerCase();
+        const severityLabel = severityLabels[report.severity] ?? report.severity;
+        const statusLabel =
+            statusLabels[report.state ?? "PENDING"] ?? report.state ?? "";
+        const matchesText =
+            report.title.toLowerCase().includes(term) ||
+            report.description.toLowerCase().includes(term) ||
+            severityLabel.toLowerCase().includes(term) ||
+            statusLabel.toLowerCase().includes(term) ||
+            String(report.id_postulation).includes(term);
+        const matchesDate =
+            !dateFilter || report.created_at.slice(0, 10) === dateFilter;
+
+        return matchesText && matchesDate;
+    });
 
 
     async function handleCreateReport(e: React.FormEvent) {
@@ -181,6 +192,14 @@ export const useDashboardReports = (user:User | null) => {
         if (!form.stepsToReproduce.trim()) {
             nextErrors.stepsToReproduce =
                 "Los pasos para reproducir son obligatorios.";
+        }
+        if (form.evidenceFiles.length > 5) {
+            setModalError("Podés adjuntar hasta 5 imágenes por reporte.");
+            return;
+        }
+        if (form.evidenceFiles.some((file) => file.size > 5 * 1024 * 1024)) {
+            setModalError("Cada imagen debe pesar 5 MB o menos.");
+            return;
         }
 
         setFormErrors(nextErrors);
@@ -201,7 +220,7 @@ export const useDashboardReports = (user:User | null) => {
                     description: form.description.trim(),
                     severity: form.severity,
                     steps_to_reproduce: steps,
-                    capture_evidence: form.evidenceFile ?? undefined,
+                    evidence_images: form.evidenceFiles,
                 });
             } catch (err) {
                 console.error("Error al crear reporte:", err);
@@ -251,6 +270,11 @@ export const useDashboardReports = (user:User | null) => {
         severityLabels,
         statusLabels,
         reports,
+        filteredReports,
+        searchTerm,
+        setSearchTerm,
+        dateFilter,
+        setDateFilter,
         loading,
         error,
         isModalOpen,
@@ -258,6 +282,7 @@ export const useDashboardReports = (user:User | null) => {
         closeReportModal,
         submitting,
         modalError,
+        setModalError,
         formErrors,
         setFormErrors,
         userPostulations,

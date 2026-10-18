@@ -2,9 +2,12 @@
 
 import Link from "next/link";
 import { useUser } from "@/context/UserContext";
-import { Plus, Search } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useDashboardProjects } from "@/hooks/dashboard/useDashboardProjects";
-import { useState } from "react";
+import { useProjectAudit } from "@/hooks/dashboard/useProjectAudit";
+import ProjectAuditPanel from "@/components/dashboard/ProjectAuditPanel";
+import ListFilters from "@/components/dashboard/ListFilters";
+import { Fragment, useState } from "react";
 
 
 
@@ -17,6 +20,12 @@ export default function ProjectsPage() {
         statusColors,
         searchTerm,
         setSearchTerm,
+        dateFilter,
+        setDateFilter,
+        currentPage,
+        totalPages,
+        paginatedProjects,
+        setCurrentPage,
         loading,
         ratingsByProject,
         applyingId,
@@ -35,8 +44,24 @@ export default function ProjectsPage() {
         message,
         messageError,
     } = useDashboardProjects({ user, isClient, isTester, isAdmin });
+    const { getAuditState, toggleAudit, setAuditStrategy, handleRunAudit } =
+        useProjectAudit();
 
     if (!user) return null;
+
+    function renderAuditPanel(projectId: number, canRun: boolean) {
+        return (
+            <ProjectAuditPanel
+                state={getAuditState(projectId)}
+                canRun={canRun}
+                onToggle={() => toggleAudit(projectId)}
+                onRun={() => handleRunAudit(projectId)}
+                onStrategyChange={(strategy) =>
+                    setAuditStrategy(projectId, strategy)
+                }
+            />
+        );
+    }
 
     return (
         <div className="px-4 sm:px-6 py-4 sm:py-6">
@@ -62,16 +87,13 @@ export default function ProjectsPage() {
                 )}
             </div>
 
-            <div className="flex items-center gap-2 bg-white rounded-full px-4 py-2 w-full sm:w-72 border border-gray-200 mb-6">
-                <Search size={15} className="text-gray-400" />
-                <input
-                    type="text"
-                    placeholder="Buscar proyecto..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="bg-transparent text-sm outline-none w-full placeholder-gray-400"
-                />
-            </div>
+            <ListFilters
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                dateFilter={dateFilter}
+                onDateChange={setDateFilter}
+                placeholder="Buscar proyecto..."
+            />
 
             {message && (
                 <p
@@ -95,9 +117,10 @@ export default function ProjectsPage() {
                 <>
                     {isClient && (
                         <div className="flex flex-col gap-4">
-                            {filteredProjects.map((p) => (
+                            {paginatedProjects.map((p) => (
                                 <div
                                     key={p.id}
+                                    data-testid={`project-${p.id}`}
                                     className="bg-white rounded-xl p-5 shadow-sm"
                                 >
                                     <div className="flex items-start justify-between mb-3">
@@ -201,6 +224,10 @@ export default function ProjectsPage() {
                                             )}
                                         </div>
                                     )}
+                                    {renderAuditPanel(
+                                        p.id,
+                                        p.client === user.id,
+                                    )}
                                 </div>
                             ))}
                         </div>
@@ -208,13 +235,15 @@ export default function ProjectsPage() {
 
                     {isTester && (
                         <div className="flex flex-col gap-4">
-                            {filteredProjects.map((p) => {
+                            {paginatedProjects.map((p) => {
                                 const postulation = postulationsByProject.get(p.id);
                                 return (
                                     <div
                                         key={p.id}
-                                        className="bg-white rounded-xl p-5 shadow-sm flex items-center justify-between"
+                                        data-testid={`project-${p.id}`}
+                                        className="bg-white rounded-xl p-5 shadow-sm"
                                     >
+                                    <div className="flex items-center justify-between">
                                         <div>
                                             <div className="flex items-center gap-2 mb-1">
                                                 <h3 className="font-bold text-gray-800">
@@ -304,6 +333,8 @@ export default function ProjectsPage() {
                                             </button>
                                         )}
                                     </div>
+                                    {renderAuditPanel(p.id, false)}
+                                    </div>
                                 );
                             })}
                         </div>
@@ -332,11 +363,9 @@ export default function ProjectsPage() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filteredProjects.map((p) => (
-                                        <tr
-                                            key={p.id}
-                                            className="border-b border-gray-50 last:border-0 hover:bg-gray-50"
-                                        >
+                                    {paginatedProjects.map((p) => (
+                                        <Fragment key={p.id}>
+                                            <tr className="border-b border-gray-50 last:border-0 hover:bg-gray-50">
                                             <td className="px-4 py-3 text-gray-400 text-xs">
                                                 #{p.id}
                                             </td>
@@ -379,11 +408,54 @@ export default function ProjectsPage() {
                                                 )}
                                             </td>
                                         </tr>
+                                        <tr className="border-b border-gray-50 last:border-0">
+                                            <td colSpan={6} className="px-4 pb-3">
+                                                {renderAuditPanel(p.id, true)}
+                                            </td>
+                                        </tr>
+                                        </Fragment>
                                     ))}
                                 </tbody>
                             </table>
                         </div>
                     )}
+                    
+
+                    {!loading && filteredProjects.length > 0 && (
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4">
+                            <p className="text-sm text-gray-500">
+                                Página {currentPage} de {totalPages}
+                            </p>
+
+                            <div className="flex items-center gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setCurrentPage((page) => Math.max(1, page - 1))
+                                    }
+                                    disabled={currentPage === 1}
+                                    className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                                >
+                                    Anterior
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setCurrentPage((page) =>
+                                            Math.min(totalPages, page + 1),
+                                        )
+                                    }
+                                    disabled={currentPage === totalPages}
+                                    className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                                >
+                                    Siguiente
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+
                 </>
             )}
 
@@ -426,8 +498,8 @@ export default function ProjectsPage() {
 
             {ratingProjectId !== null && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-                    <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
-                        <h2 className="text-lg font-bold text-gray-800">
+                    <div role="dialog" aria-modal="true" aria-labelledby="rating-title" className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+                        <h2 id="rating-title" className="text-lg font-bold text-gray-800">
                             Calificar proyecto
                         </h2>
 
@@ -448,6 +520,8 @@ export default function ProjectsPage() {
                                         <button
                                             key={star}
                                             type="button"
+                                            aria-label={`${star} estrellas`}
+                                            aria-pressed={star <= ratingStars}
                                             onClick={() => setRatingStars(star)}
                                             className={`text-3xl transition-colors ${
                                                 star <= ratingStars

@@ -242,3 +242,9 @@ Thumbs.db
 # Docker
 *.log
 docker-data/
+# Resultados de pruebas Playwright
+frontend/test-results/
+frontend/playwright-report/
+
+# Django collectstatic output
+backend/staticfiles/

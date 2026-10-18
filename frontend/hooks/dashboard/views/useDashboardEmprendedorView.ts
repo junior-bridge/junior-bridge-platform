@@ -90,14 +90,17 @@ export const useDashboardEmprendedorView = () => {
         {
             label: "Proyectos Publicados",
             value: projects.length,
+            path: "/dashboard/projects",
         },
         {
             label: "Postulaciones Nuevas",
             value: pendingPostulations,
+            path: "/dashboard/postulations",
         },
         {
             label: "Reportes Recibidos",
             value: reports.length,
+            path: "/dashboard/reports",
         },
         {
             label: "Testers Calificados",

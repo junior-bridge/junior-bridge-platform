@@ -95,6 +95,12 @@ class User(AbstractUser):
         blank=True
     )
 
+    profile_photo = models.ImageField(
+        upload_to="users/profile/",
+        blank=True,
+        null=True,
+    )
+
     role = models.CharField(
         max_length=10,
         choices=Role.choices

@@ -1,0 +1,115 @@
+services:
+    - type: keyvalue
+      name: junior-bridge-redis
+      plan: free
+      region: oregon
+      ipAllowList: []
+
+    - type: web
+      name: junior-bridge-api
+      runtime: python
+      plan: free
+      region: oregon
+      rootDir: backend
+      buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+      startCommand: >-
+          sh -c 'python manage.py shell -c "from django.db import connection; cursor = connection.cursor(); cursor.execute(\"CREATE TABLE IF NOT EXISTS socialaccount_socialapp_sites (id SERIAL PRIMARY KEY, socialapp_id INTEGER NOT NULL, site_id INTEGER NOT NULL, UNIQUE(socialapp_id, site_id));\");" &&
+          python manage.py migrate &&
+          python manage.py shell -c "from django.contrib.sites.models import Site; from allauth.socialaccount.models import SocialApp; site, _ = Site.objects.get_or_create(id=1, defaults={\"domain\": \"junior-bridge-api-n1o6.onrender.com\", \"name\": \"Junior Bridge\"}); site.domain = \"junior-bridge-api-n1o6.onrender.com\"; site.save(); [app.sites.add(site) for app in SocialApp.objects.all()]" &&
+          exec daphne -b 0.0.0.0 -p "$PORT" config.asgi:application'
+      healthCheckPath: /api/auth/csrf/
+      envVars:
+          - key: SECRET_KEY
+            sync: false
+          - key: DEBUG
+            value: "False"
+          - key: POSTGRES_DB
+            sync: false
+          - key: POSTGRES_USER
+            sync: false
+          - key: POSTGRES_PASSWORD
+            sync: false
+          - key: POSTGRES_HOST
+            sync: false
+          - key: POSTGRES_PORT
+            value: "5432"
+          - key: POSTGRES_SSLMODE
+            value: require
+          - key: MONGODB_URI
+            sync: false
+          - key: MONGODB_DATABASE
+            value: junior_bridge
+          - key: REDIS_HOST
+            fromService:
+                type: keyvalue
+                name: junior-bridge-redis
+                property: host
+          - key: REDIS_PORT
+            fromService:
+                type: keyvalue
+                name: junior-bridge-redis
+                property: port
+          # Public URL: fromService "host" resolves to the internal hostname, not the onrender.com domain.
+          - key: FRONTEND_URL
+            value: "https://junior-bridge-frontend-85z5.onrender.com"
+          # The frontend proxy forwards its own host (USE_X_FORWARDED_HOST), so both hosts are allowed.
+          - key: ALLOWED_HOSTS
+            value: "junior-bridge-api-n1o6.onrender.com,junior-bridge-frontend-85z5.onrender.com,localhost,127.0.0.1"
+          - key: GOOGLE_CLIENT_ID
+            sync: false
+          - key: GOOGLE_CLIENT_SECRET
+            sync: false
+          - key: GITHUB_CLIENT_ID
+            sync: false
+          - key: GITHUB_CLIENT_SECRET
+            sync: false
+          - key: AWS_STORAGE_BUCKET_NAME
+            sync: false
+          - key: AWS_S3_REGION_NAME
+            sync: false
+          - key: AWS_ACCESS_KEY_ID
+            sync: false
+          - key: AWS_SECRET_ACCESS_KEY
+            sync: false
+          - key: EMAIL_HOST
+            sync: false
+          - key: EMAIL_PORT
+            sync: false
+          - key: EMAIL_HOST_USER
+            sync: false
+          - key: EMAIL_HOST_PASSWORD
+            sync: false
+          - key: EMAIL_USE_TLS
+            value: "True"
+          - key: EMAIL_TIMEOUT
+            value: "10"
+          - key: DEFAULT_FROM_EMAIL
+            sync: false
+          - key: PAGESPEED_API_KEY
+            sync: false
+          - key: CORS_ALLOWED_ORIGINS
+            value: "http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://127.0.0.1:3001,https://junior-bridge-frontend.onrender.com,https://junior-bridge-platform-jahb.vercel.app"
+          - key: CSRF_TRUSTED_ORIGINS
+            value: "http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://127.0.0.1:3001,https://junior-bridge-frontend.onrender.com,https://junior-bridge-platform-jahb.vercel.app,https://junior-bridge-api.onrender.com"
+
+    - type: web
+      name: junior-bridge-frontend
+      runtime: node
+      plan: free
+      region: oregon
+      rootDir: frontend
+      buildCommand: npm ci && npm run build
+      startCommand: npm run start
+      envVars:
+          # Same-origin mode: the browser calls relative /api and /accounts URLs on the
+          # frontend origin, and Next.js rewrites proxy them to API_PROXY_TARGET, so the
+          # API cookies stay first-party (onrender.com is on the Public Suffix List).
+          - key: NEXT_PUBLIC_API_BASE
+            value: "/"
+          # Public URL: the internal hostname from fromService "host" is not used here.
+          - key: API_PROXY_TARGET
+            value: "https://junior-bridge-api-n1o6.onrender.com"
+          # The notifications WebSocket stays direct to the API for now, because Next.js
+          # rewrites do not proxy WebSocket upgrades. Ticket-based auth is planned in T4.
+          - key: NEXT_PUBLIC_WS_BASE
+            value: "wss://junior-bridge-api-n1o6.onrender.com"

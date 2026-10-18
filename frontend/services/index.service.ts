@@ -1,5 +1,16 @@
 import { ApiError } from "@/types";
-import { getCookie } from "./auth.service";
+import { clearCsrfToken, getCsrfToken } from "@/lib/csrf";
+import { API_BASE } from "@/lib/apiBase";
+
+export class ApiRequestError extends Error {
+    readonly data: ApiError;
+
+    constructor(message: string, data: ApiError) {
+        super(message);
+        this.name = "ApiRequestError";
+        this.data = data;
+    }
+}
 
 export async function apiFetch<T>(
     endpoint: string,
@@ -14,19 +25,20 @@ export async function apiFetch<T>(
     }
 
     if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
-        const csrfToken = getCookie("csrftoken");
-
-        if (!csrfToken) {
-            throw new Error("No se encontró el token CSRF.");
-        }
-
-        headers.set("X-CSRFToken", csrfToken);
+        headers.set("X-CSRFToken", await getCsrfToken());
     }
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}${endpoint}`, {
-        ...options,
-        headers,
-        credentials: "include",
-    });
+    let response: Response;
+    try {
+        response = await fetch(`${API_BASE}${endpoint}`, {
+            ...options,
+            headers,
+            credentials: "include",
+        });
+    } finally {
+        if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
+            clearCsrfToken();
+        }
+    }
 
     if (!response.ok) {
         let error: ApiError = {
@@ -41,7 +53,7 @@ export async function apiFetch<T>(
             Array.isArray(error.non_field_errors) &&
             typeof error.non_field_errors[0] === "string"
         ) {
-            throw new Error(error.non_field_errors[0]);
+            throw new ApiRequestError(error.non_field_errors[0], error);
         }
 
         if (
@@ -52,15 +64,17 @@ export async function apiFetch<T>(
                     message.toLowerCase().includes("already exists"),
             )
         ) {
-            throw new Error(
+            throw new ApiRequestError(
                 "Ya existe un usuario registrado con ese correo electrónico.",
+                error,
             );
         }
 
-        throw new Error(
+        throw new ApiRequestError(
             typeof error.detail === "string"
                 ? error.detail
                 : "No se pudo completar la solicitud.",
+            error,
         );
     }
 

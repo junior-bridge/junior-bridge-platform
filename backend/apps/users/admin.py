@@ -14,7 +14,7 @@ class UserAdmin(admin.ModelAdmin):
             'fields': ('email', 'password', 'is_active', 'is_staff', 'is_superuser')
         }),
         ('Información Personal', {
-            'fields': ('name', 'surname', 'dni', 'phone', 'sex', 'date_of_birth', 'zona')
+            'fields': ('name', 'surname', 'dni', 'phone', 'sex', 'date_of_birth', 'zona', 'profile_photo')
         }),
         ('Rol y Reputación', {
             'fields': ('role', 'reputation')

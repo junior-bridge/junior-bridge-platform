@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { RegisterFieldErrors } from "@/types/registerTypes";
 import { startOAuth } from "@/services/auth.service";
+import { API_BASE } from "@/lib/apiBase";
 import { registerUser } from "@/services/register.service";
 
 export const useRegister = (setUser: (user: User | null) => void) => {
@@ -107,7 +108,7 @@ export const useRegister = (setUser: (user: User | null) => void) => {
         try {
             const response = await startOAuth(provider, "signup", flow);
 
-            window.location.href = `${process.env.NEXT_PUBLIC_API_BASE}${response.login_url}`;
+            window.location.href = `${API_BASE}${response.login_url}`;
         } catch (err) {
             if (err instanceof Error) {
                 setError(err.message);

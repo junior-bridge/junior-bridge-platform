@@ -1,11 +1,11 @@
 'use client';
 
 import { Bell, Trash2, Check } from 'lucide-react';
-import { useNotifications } from '../hooks/useNotification';
 import { useState } from 'react';
+import { useNotificationsContext } from '@/context/NotificationContext';
 
 export function NotificationBell() {
-  const { notifications, unreadCount, isConnected, markAsRead, deleteNotification } = useNotifications();
+  const { notifications, unreadCount, isConnected, markAsRead, deleteNotification } = useNotificationsContext();
   const [showDropdown, setShowDropdown] = useState(false);
 
   return (
