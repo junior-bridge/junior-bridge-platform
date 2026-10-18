@@ -1,71 +1,63 @@
 "use client";
 
-import { useUser } from "@/context/UserContext";
 import { Star } from "lucide-react";
+import { useUser } from "@/context/UserContext";
+import { useReputation } from "@/hooks/dashboard/useReputation";
+import Loader from "@/components/ui/Loader";
 
-const ratings = [
-    {
-        project: "Plataforma Educativa",
-        emprendedor: "Carlos Ruiz",
-        stars: 5,
-        quality: 5,
-        punctuality: 5,
-        compliance: 5,
-        comment: "Excelente reporte, muy detallado.",
-        date: "Jul 2026",
-    },
-    {
-        project: "App Delivery",
-        emprendedor: "Pedro Ruiz",
-        stars: 4,
-        quality: 4,
-        punctuality: 4,
-        compliance: 4,
-        comment: "Buena puntualidad y calidad general.",
-        date: "Jun 2026",
-    },
-    {
-        project: "Marketplace B2B",
-        emprendedor: "Laura Sosa",
-        stars: 4,
-        quality: 5,
-        punctuality: 3,
-        compliance: 4,
-        comment: "Cumplió con todos los entregables.",
-        date: "May 2026",
-    },
-];
-
-function StarRow({ label, value }: { label: string; value: number }) {
+function Stars({ value, size = 14 }: { value: number; size?: number }) {
     return (
-        <div className="flex items-center justify-between">
-            <span className="text-xs text-gray-500">{label}</span>
-            <div className="flex gap-0.5">
-                {[1, 2, 3, 4, 5].map((i) => (
-                    <Star
-                        key={i}
-                        size={11}
-                        fill={i <= value ? "#f97316" : "none"}
-                        stroke={i <= value ? "#f97316" : "#d1d5db"}
-                    />
-                ))}
-            </div>
+        <div className="flex gap-0.5">
+            {[1, 2, 3, 4, 5].map((i) => (
+                <Star
+                    key={i}
+                    size={size}
+                    fill={i <= value ? "#f97316" : "none"}
+                    stroke={i <= value ? "#f97316" : "#d1d5db"}
+                />
+            ))}
         </div>
     );
 }
 
+function SummaryCard({ label, value }: { label: string; value: string }) {
+    return (
+        <div className="bg-white rounded-xl p-4 shadow-sm">
+            <p className="text-[10px] text-gray-400 font-semibold tracking-wide uppercase mb-2">
+                {label}
+            </p>
+            <p className="text-2xl font-bold text-gray-800">{value}</p>
+        </div>
+    );
+}
+
+function formatDate(iso: string): string {
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) return "";
+    return date.toLocaleDateString("es-AR", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+    });
+}
+
 export default function ReputationPage() {
     const { user } = useUser();
-    if (!user || user.role !== "TESTER")
+    const { reputation, loading, error } = useReputation();
+
+    if (!user || user.role !== "TESTER") {
         return (
             <div className="px-4 sm:px-6 py-4 sm:py-6">
-                <p className="text-gray-500">
-                    Esta sección es solo para testers.
-                </p>
+                <p className="text-gray-500">Esta sección es solo para testers.</p>
             </div>
         );
+    }
 
-    const reputationValue = user.reputation ? Number(user.reputation) : 0;
+    const ratings = reputation?.ratings ?? [];
+    const average = reputation?.reputation ?? 0;
+    const totalRatings = reputation?.total_ratings ?? 0;
+    const maxStars = ratings.length ? Math.max(...ratings.map((r) => r.stars)) : 0;
+    const minStars = ratings.length ? Math.min(...ratings.map((r) => r.stars)) : 0;
 
     return (
         <div className="px-4 sm:px-6 py-4 sm:py-6">
@@ -78,99 +70,84 @@ export default function ReputationPage() {
                 </p>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
-                {[
-                    {
-                        label: "Promedio General",
-                        value:
-                            reputationValue > 0
-                                ? `${reputationValue.toFixed(1)} ★`
-                                : "—",
-                    },
-                    {
-                        label: "Proyectos Calificados",
-                        value: reputationValue > 0 ? "1" : "0",
-                    },
-                    {
-                        label: "Calidad de Reporte",
-                        value:
-                            reputationValue > 0
-                                ? `${reputationValue.toFixed(1)} ★`
-                                : "—",
-                    },
-                    {
-                        label: "Puntualidad",
-                        value:
-                            reputationValue > 0
-                                ? `${reputationValue.toFixed(1)} ★`
-                                : "—",
-                    },
-                ].map((s) => (
-                    <div
-                        key={s.label}
-                        className="bg-white rounded-xl p-4 shadow-sm"
-                    >
-                        <p className="text-[10px] text-gray-400 font-semibold tracking-wide uppercase mb-2">
-                            {s.label}
-                        </p>
-                        <p className="text-2xl font-bold text-gray-800">
-                            {s.value}
-                        </p>
+            {loading ? (
+                <div className="flex justify-center py-20">
+                    <Loader
+                        size={40}
+                        color="#e07b39"
+                        label="Cargando tu reputación..."
+                    />
+                </div>
+            ) : error ? (
+                <div className="bg-white rounded-xl p-8 shadow-sm text-center">
+                    <p className="text-gray-500">
+                        No se pudo cargar tu reputación. Intentá nuevamente.
+                    </p>
+                </div>
+            ) : (
+                <>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
+                        <SummaryCard
+                            label="Promedio General"
+                            value={average > 0 ? `${average.toFixed(1)} ★` : "—"}
+                        />
+                        <SummaryCard
+                            label="Calificaciones Recibidas"
+                            value={String(totalRatings)}
+                        />
+                        <SummaryCard
+                            label="Calificación Más Alta"
+                            value={maxStars > 0 ? `${maxStars} ★` : "—"}
+                        />
+                        <SummaryCard
+                            label="Calificación Más Baja"
+                            value={minStars > 0 ? `${minStars} ★` : "—"}
+                        />
                     </div>
-                ))}
-            </div>
 
-            <div className="flex flex-col gap-4">
-                {ratings.map((r) => (
-                    <div
-                        key={r.project}
-                        className="bg-white rounded-xl p-5 shadow-sm"
-                    >
-                        <div className="flex items-start justify-between mb-3">
-                            <div>
-                                <h3 className="font-bold text-gray-800">
-                                    {r.project}
-                                </h3>
-                                <p className="text-xs text-gray-400">
-                                    por {r.emprendedor} · {r.date}
-                                </p>
-                            </div>
-                            <div className="flex items-center gap-1">
-                                {[1, 2, 3, 4, 5].map((i) => (
-                                    <Star
-                                        key={i}
-                                        size={14}
-                                        fill={i <= r.stars ? "#f97316" : "none"}
-                                        stroke={
-                                            i <= r.stars ? "#f97316" : "#d1d5db"
-                                        }
-                                    />
-                                ))}
-                                <span className="text-sm font-bold text-gray-700 ml-1">
-                                    {r.stars}.0
-                                </span>
-                            </div>
+                    {ratings.length === 0 ? (
+                        <div className="bg-white rounded-xl p-8 shadow-sm text-center">
+                            <p className="text-gray-500">
+                                Todavía no tenés calificaciones. Completá proyectos
+                                para que los emprendedores te califiquen.
+                            </p>
                         </div>
-                        <div className="flex flex-col gap-1 mb-3">
-                            <StarRow
-                                label="Calidad del reporte"
-                                value={r.quality}
-                            />
-                            <StarRow
-                                label="Puntualidad"
-                                value={r.punctuality}
-                            />
-                            <StarRow
-                                label="Cumplimiento"
-                                value={r.compliance}
-                            />
+                    ) : (
+                        <div className="flex flex-col gap-4">
+                            {ratings.map((r) => (
+                                <div
+                                    key={r.id_rating}
+                                    className="bg-white rounded-xl p-5 shadow-sm"
+                                >
+                                    <div className="flex items-start justify-between gap-4 mb-3">
+                                        <div>
+                                            <h3 className="font-bold text-gray-800">
+                                                {r.project_title}
+                                            </h3>
+                                            <p className="text-xs text-gray-400">
+                                                por {r.entrepreneur_name} ·{" "}
+                                                {formatDate(r.created_at)}
+                                            </p>
+                                        </div>
+                                        <div className="flex items-center gap-1 shrink-0">
+                                            <Stars value={r.stars} />
+                                            <span className="text-sm font-bold text-gray-700 ml-1">
+                                                {r.stars}.0
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {r.comment && (
+                                        <p className="text-xs text-gray-500 italic border-t border-gray-50 pt-2">
+                                            “{r.comment}”
+                                        </p>
+                                    )}
+                                </div>
+                            ))}
                         </div>
-                        <p className="text-xs text-gray-500 italic border-t border-gray-50 pt-2">
-                            "{r.comment}"
-                        </p>
-                    </div>
-                ))}
-            </div>
+                    )}
+                </>
+            )}
         </div>
     );
 }

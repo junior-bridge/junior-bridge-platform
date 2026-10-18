@@ -47,6 +47,7 @@ export default function TesterDashboard({ userName }: Props) {
                         key={stat.label}
                         label={stat.label}
                         value={stat.value}
+                        onDetailClick={() => router.push(stat.path)}
                     />
                 ))}
             </div>

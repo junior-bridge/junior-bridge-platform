@@ -56,13 +56,23 @@ export const useDashboardTesterView = (user: User | null) => {
         {
             label: "Proyectos Completados",
             value: myPostulations.filter((p) => p.status === "accepted").length,
+            path: "/dashboard/projects",
         },
-        { label: "Bugs Reportados", value: "—" },
+        {
+            label: "Bugs Reportados",
+            value: "—",
+            path: "/dashboard/reports",
+        },
         {
             label: "Reputación",
             value: user?.reputation ? `${user?.reputation} ★` : "—",
+            path: "/dashboard/reputation",
         },
-        { label: "Postulaciones Activas", value: pendingPostulations.length },
+        {
+            label: "Postulaciones Activas",
+            value: pendingPostulations.length,
+            path: "/dashboard/projects",
+        },
     ];
 
     const appliedProjectIds = new Set(myPostulations.map((p) => p.id_project));

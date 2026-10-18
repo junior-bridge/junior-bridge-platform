@@ -202,3 +202,101 @@ class RatingAPITests(APITestCase):
             response.status_code,
             status.HTTP_405_METHOD_NOT_ALLOWED,
         )
+
+    def test_tester_can_get_my_reputation(self):
+        # Arrange
+        rating = self.create_rating()
+        self.tester_user.reputation = 5.0
+        self.tester_user.save(update_fields=["reputation"])
+        self.client.force_authenticate(user=self.tester_user)
+        url = reverse("my-reputation")
+
+        # Act
+        response = self.client.get(url)
+
+        # Assert
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["total_ratings"], 1)
+        self.assertEqual(response.data["reputation"], 5.0)
+        self.assertEqual(len(response.data["ratings"]), 1)
+        self.assertEqual(response.data["ratings"][0]["stars"], rating.stars)
+        self.assertEqual(
+            response.data["ratings"][0]["project_title"],
+            "Completed project",
+        )
+        self.assertEqual(
+            response.data["ratings"][0]["entrepreneur_name"],
+            "Client User",
+        )
+
+    def test_my_reputation_requires_authentication(self):
+        # Arrange
+        url = reverse("my-reputation")
+
+        # Act
+        response = self.client.get(url)
+
+        # Assert
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_401_UNAUTHORIZED,
+        )
+
+    def test_client_cannot_get_tester_reputation(self):
+        # Arrange
+        self.client.force_authenticate(user=self.client_user)
+        url = reverse("my-reputation")
+
+        # Act
+        response = self.client.get(url)
+
+        # Assert
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_tester_only_gets_own_ratings(self):
+        # Arrange
+        own_rating = self.create_rating()
+        other_tester = User.objects.create_user(
+            email="rating-other-tester@example.com",
+            password="test-password",
+            name="Other",
+            surname="Tester",
+            role=User.Role.TESTER,
+        )
+        other_postulation = Postulation.objects.create(
+            id_project=self.project,
+            id_tester=other_tester,
+            status=Postulation.State.ACCEPTED,
+        )
+        Rating.objects.create(
+            id_postulation=other_postulation,
+            stars=3,
+            comment="Another tester rating.",
+        )
+        self.client.force_authenticate(user=self.tester_user)
+        url = reverse("my-reputation")
+
+        # Act
+        response = self.client.get(url)
+
+        # Assert
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["total_ratings"], 1)
+        self.assertEqual(
+            response.data["ratings"][0]["id_rating"],
+            own_rating.id_rating,
+        )
+
+    def test_my_reputation_post_method_is_not_allowed(self):
+        # Arrange
+        self.client.force_authenticate(user=self.tester_user)
+        url = reverse("my-reputation")
+
+        # Act
+        response = self.client.post(url, {}, format="json")
+
+        # Assert
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_405_METHOD_NOT_ALLOWED,
+        )
