@@ -5,6 +5,35 @@ import { API_BASE, API_WEBSOCKET_BASE } from '@/lib/apiBase';
 
 const NOTIFICATIONS_API = `${API_BASE}/api/notifications`;
 
+// Fetches a short-lived WebSocket ticket through the same-origin API, so the
+// socket can authenticate when the browser blocks the API's third-party cookie.
+// Returns null on any failure; the socket then falls back to the cookie.
+async function fetchWsTicket(): Promise<string | null> {
+  try {
+    const response = await fetch(`${NOTIFICATIONS_API}/ws-ticket/`, {
+      credentials: 'include',
+      cache: 'no-store',
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const data: unknown = await response.json();
+    if (
+      typeof data === 'object' &&
+      data !== null &&
+      typeof (data as { ticket?: unknown }).ticket === 'string'
+    ) {
+      return (data as { ticket: string }).ticket;
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 type Notification = {
   notification_id: string;
   title: string;
@@ -93,10 +122,18 @@ export function useNotifications() {
     }
   }, []);
 
-  const connect = useCallback(() => {
-    shouldReconnectRef.current = true;
+  const openSocket = useCallback(async () => {
+    const ticket = await fetchWsTicket();
 
-    const wsUrl = `${API_WEBSOCKET_BASE}/ws/notifications/`;
+    // disconnect() may have run while the ticket request was in flight.
+    if (!shouldReconnectRef.current) {
+      return;
+    }
+
+    const baseUrl = `${API_WEBSOCKET_BASE}/ws/notifications/`;
+    const wsUrl = ticket
+      ? `${baseUrl}?ticket=${encodeURIComponent(ticket)}`
+      : baseUrl;
 
     try {
       const ws = new WebSocket(wsUrl);
@@ -188,6 +225,11 @@ export function useNotifications() {
       setIsConnected(false);
     }
   }, []);
+
+  const connect = useCallback(() => {
+    shouldReconnectRef.current = true;
+    void openSocket();
+  }, [openSocket]);
 
   useEffect(() => {
     connectRef.current = connect;

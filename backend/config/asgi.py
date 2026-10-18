@@ -1,4 +1,5 @@
 import os
+from urllib.parse import parse_qs
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 
 from django.core.asgi import get_asgi_application
@@ -27,6 +28,28 @@ def get_user_from_token(token_str):
         return AnonymousUser()
 
 
+@database_sync_to_async
+def get_user_from_ticket(ticket):
+    from django.contrib.auth.models import AnonymousUser
+    from apps.notifications.ws_ticket import user_id_from_ticket
+    from apps.users.models import User
+
+    user_id = user_id_from_ticket(ticket)
+    if user_id is None:
+        return AnonymousUser()
+
+    try:
+        return User.objects.get(id=user_id, is_active=True)
+    except User.DoesNotExist:
+        return AnonymousUser()
+
+
+def ticket_from_scope(scope):
+    query = parse_qs(scope.get('query_string', b'').decode())
+    values = query.get('ticket')
+    return values[0] if values else None
+
+
 class JWTCookieAuthMiddleware:
     def __init__(self, inner):
         self.inner = inner
@@ -49,7 +72,12 @@ class JWTCookieAuthMiddleware:
         if token:
             scope['user'] = await get_user_from_token(token)
         else:
-            scope['user'] = AnonymousUser()
+            # Fallback for browsers that block the third-party cookie.
+            ticket = ticket_from_scope(scope)
+            if ticket:
+                scope['user'] = await get_user_from_ticket(ticket)
+            else:
+                scope['user'] = AnonymousUser()
         
         await self.inner(scope, receive, send)
 

@@ -1,4 +1,5 @@
 from drf_spectacular.utils import extend_schema, extend_schema_view
+from rest_framework.decorators import action
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
@@ -12,6 +13,7 @@ import json
 import logging
 
 from apps.notifications.models import Notification
+from apps.notifications.ws_ticket import WS_TICKET_MAX_AGE_SECONDS, issue_ticket
 from apps.notifications.serializers import (
     NotificationListSerializer,
     NotificationCreateSerializer,
@@ -45,6 +47,19 @@ class NotificationViewSet(ModelViewSet):
         
         return queryset
   
+    @extend_schema(
+        summary="Issue WebSocket ticket",
+        description="Return a short-lived signed ticket to authenticate the notifications WebSocket via ?ticket=.",
+    )
+    @action(detail=False, methods=['get'], url_path='ws-ticket')
+    def ws_ticket(self, request):
+        response = Response({
+            'ticket': issue_ticket(request.user),
+            'expires_in': WS_TICKET_MAX_AGE_SECONDS,
+        })
+        response['Cache-Control'] = 'no-store'
+        return response
+
     def get_serializer_class(self):
 
         

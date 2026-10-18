@@ -95,6 +95,7 @@ AUTH_USER_MODEL = "users.User"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -206,15 +207,23 @@ SOCIALACCOUNT_PROVIDERS = {
         "METHOD": "oauth2",
         "VERIFIED_EMAIL": True,
     },
+    # Configured from env vars like Google, so no SocialApp row is needed.
+    # Do not also create a GitHub SocialApp in the database: allauth would
+    # find two apps and raise MultipleObjectsReturned.
     "github": {
         "APP": {
             "client_id": os.environ.get("GITHUB_CLIENT_ID", ""),
             "secret": os.environ.get("GITHUB_CLIENT_SECRET", ""),
             "key": "",
         },
-        "SCOPE": ["user:email"],
+        "SCOPE": [
+            "user:email",
+        ],
     },
 }
+
+
+SITE_ID = 1
 
 FRONTEND_OAUTH_SUCCESS_URL = os.getenv(
     "FRONTEND_OAUTH_SUCCESS_URL",
@@ -325,6 +334,9 @@ STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
 
+# collectstatic target; WhiteNoise serves it when DEBUG=False (Render).
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
@@ -345,7 +357,7 @@ if AWS_STORAGE_BUCKET_NAME:
             },
         },
         "staticfiles": {
-            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+            "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
         },
     }
 else:
@@ -354,7 +366,7 @@ else:
             "BACKEND": "django.core.files.storage.FileSystemStorage",
         },
         "staticfiles": {
-            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+            "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
         },
     }
 
