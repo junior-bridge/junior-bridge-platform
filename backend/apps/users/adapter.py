@@ -18,6 +18,18 @@ logger = logging.getLogger(__name__)
 
 class JuniorBridgeSocialAccountAdapter(DefaultSocialAccountAdapter):
 
+    def list_apps(self, request, provider=None, client_id=None):
+        # Apps from settings.SOCIALACCOUNT_PROVIDERS are unsaved (pk is None).
+        # For those providers, ignore SocialApp rows: leftover rows (e.g. created
+        # by local docker-compose on a shared DB) would raise MultipleObjectsReturned.
+        apps = super().list_apps(request, provider=provider, client_id=client_id)
+        settings_providers = {app.provider for app in apps if app.pk is None}
+        return [
+            app
+            for app in apps
+            if app.pk is None or app.provider not in settings_providers
+        ]
+
     def is_auto_signup_allowed(self, request, sociallogin):
         return True
 
