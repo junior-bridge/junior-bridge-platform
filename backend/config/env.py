@@ -29,6 +29,17 @@ def bool_env(name, default=False):
     return default
 
 
+def http_protocol_env(name, default="https"):
+    """Read "http" or "https" from the environment.
+
+    Any other value returns the default, so production keeps https unless a
+    local .env explicitly opts into http.
+    """
+    raw = os.getenv(name, "").strip().lower()
+
+    return raw if raw in {"http", "https"} else default
+
+
 def csv_env(name, default):
     """Read a comma-separated list from the environment."""
     raw = os.getenv(name, "").strip()

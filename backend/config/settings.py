@@ -14,7 +14,7 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-from config.env import bool_env, csv_env, positive_int_env
+from config.env import bool_env, csv_env, http_protocol_env, positive_int_env
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -189,7 +189,9 @@ SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
 SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
 SOCIALACCOUNT_LOGIN_ON_GET = True
 
-ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"
+# Scheme allauth uses for OAuth callback URLs. Production keeps the https
+# default; local development over plain HTTP sets it to "http" in .env.
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = http_protocol_env("ACCOUNT_DEFAULT_HTTP_PROTOCOL")
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
         "APP": {
