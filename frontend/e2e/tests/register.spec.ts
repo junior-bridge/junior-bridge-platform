@@ -1,8 +1,11 @@
 ﻿import { test, expect } from "@playwright/test";
 import { RegisterPage } from "../pages/RegisterPage";
+import { checkA11y } from "../utils/a11y";
 
 test.describe("Registro", () => {
-    test("muestra los campos obligatorios para emprendedores", async ({ page }) => {
+    test("muestra los campos obligatorios para emprendedores", async ({
+        page,
+    }) => {
         const registerPage = new RegisterPage(page);
 
         await registerPage.navigate();
@@ -17,25 +20,55 @@ test.describe("Registro", () => {
 
         await expect(registerPage.nameInput).toHaveAttribute("required", "");
         await expect(registerPage.emailInput).toHaveAttribute("required", "");
-        await expect(registerPage.passwordInput).toHaveAttribute("required", "");
+        await expect(registerPage.passwordInput).toHaveAttribute(
+            "required",
+            "",
+        );
     });
 
-    test("muestra las opciones de registro para Tester Junior", async ({ page }) => {
+    test("muestra las opciones de registro para Tester Junior", async ({
+        page,
+    }) => {
         const registerPage = new RegisterPage(page);
 
         await registerPage.navigate();
         await registerPage.testerRoleButton.click();
 
         await expect(
-            page.getByText("Registro como Tester Junior")
+            page.getByText("Registro como Tester Junior"),
         ).toBeVisible();
 
         await expect(registerPage.submitButton).toHaveCount(0);
         await expect(
-            page.getByRole("button", { name: /Contin.*con Google/i })
+            page.getByRole("button", { name: /Contin.*con Google/i }),
         ).toBeVisible();
         await expect(
-            page.getByRole("button", { name: /Contin.*con GitHub/i })
+            page.getByRole("button", { name: /Contin.*con GitHub/i }),
         ).toBeVisible();
+    });
+});
+test.describe("Accesibilidad (axe-core)", () => {
+    test("formulario de registro para emprendedores", async ({
+        page,
+    }, testInfo) => {
+        const registerPage = new RegisterPage(page);
+
+        await registerPage.navigate();
+        await expect(registerPage.submitButton).toBeVisible();
+
+        await checkA11y(page, testInfo, "registro-emprendedor");
+    });
+
+    test("registro para Tester Junior", async ({ page }, testInfo) => {
+        const registerPage = new RegisterPage(page);
+
+        await registerPage.navigate();
+        await registerPage.testerRoleButton.click();
+        await expect(
+            page.getByText("Registro como Tester Junior"),
+        ).toBeVisible();
+        await page.waitForTimeout(500);
+
+        await checkA11y(page, testInfo, "registro-tester-junior");
     });
 });
