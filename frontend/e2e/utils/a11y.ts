@@ -11,9 +11,15 @@ export async function checkA11y(page: Page, testInfo: TestInfo, label: string) {
         contentType: "application/json",
     });
 
-    const resumen = results.violations.map(
-        (v) =>
-            `[${v.impact}] ${v.id}: ${v.help} (${v.nodes.length} elemento/s)`,
+    const resumen = results.violations.flatMap((violation) =>
+        violation.nodes.map((node, index) =>
+            [
+                `[${violation.impact}] ${violation.id}: ${violation.help}`,
+                `  Elemento ${index + 1}: ${node.target.join(", ")}`,
+                `  HTML: ${node.html}`,
+                `  Detalle: ${node.failureSummary ?? "Axe no proporcionó detalles adicionales."}`,
+            ].join("\n"),
+        ),
     );
 
     expect

@@ -1,7 +1,8 @@
 
 import { test, expect } from "@playwright/test";
+import { checkA11y } from "../utils/a11y";
 
-test("el cliente acepta una postulación pendiente", async ({ page }) => {
+test("el cliente acepta una postulación pendiente", async ({ page }, testInfo) => {
     const postulation = {
         id_postulation: 25,
         id_project: 10,
@@ -101,8 +102,10 @@ test("el cliente acepta una postulación pendiente", async ({ page }) => {
 
     await expect(page.getByText("Tester E2E")).toBeVisible();
     await expect(page.getByText("PENDIENTE")).toBeVisible();
+    await checkA11y(page, testInfo, "postulacion-pendiente");
 
     await page.getByRole("button", { name: "Aceptar" }).click();
 
     await expect(page.getByText("ACEPTADO")).toBeVisible();
+    await checkA11y(page, testInfo, "postulacion-aceptada");
 });
