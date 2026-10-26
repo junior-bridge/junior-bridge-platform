@@ -1,4 +1,5 @@
 import { test, expect, evidence, responseFor } from "../fixtures/critical.fixture";
+import { checkA11y } from "../utils/a11y";
 
 test("finaliza la entrega, completa el proyecto y persiste calificación y reputación", async ({ page, seed, session, projects, api, snapshot }, info) => {
     // Arrange: IN_PROGRESS, postulación aceptada y una calificación previa de otro proyecto.
@@ -9,6 +10,7 @@ test("finaliza la entrega, completa el proyecto y persiste calificación y reput
     await projects.navigate();
     await projects.find(seed.project.title);
     await expect(projects.state(projectId, "IN_PROGRESS")).toBeVisible();
+    await checkA11y(page, info, "proyecto-entrega-en-progreso");
     expect((await api.post(`/api/projects/${projectId}/complete/`)).status()).toBe(403);
     expect((await api.post(path, { stars: 4, comment })).status()).toBe(403);
 
@@ -22,6 +24,7 @@ test("finaliza la entrega, completa el proyecto y persiste calificación y reput
     await page.reload();
     await projects.find(seed.project.title);
     await expect(projects.state(projectId, "IN_REVIEW")).toBeVisible();
+    await checkA11y(page, info, "proyecto-entrega-en-revision");
     await evidence(page, info, "01-entrega-en-revision");
 
     await session.logout();
@@ -36,6 +39,7 @@ test("finaliza la entrega, completa el proyecto y persiste calificación y reput
     await projects.navigate();
     await projects.find(seed.project.title);
     await expect(projects.state(projectId, "IN_REVIEW")).toBeVisible();
+    await checkA11y(page, info, "proyecto-cliente-en-revision");
     expect((await api.post(`/api/projects/${projectId}/finish-delivery/`)).status()).toBe(403);
     const completion = page.waitForResponse(responseFor(`/api/projects/${projectId}/complete/`, "POST"));
     await projects.complete(projectId);
@@ -45,6 +49,7 @@ test("finaliza la entrega, completa el proyecto y persiste calificación y reput
     await page.reload();
     await projects.find(seed.project.title);
     await expect(projects.state(projectId, "COMPLETED")).toBeVisible();
+    await checkA11y(page, info, "proyecto-completado");
     const persisted = await snapshot();
     expect(persisted.projects.find(project => project.id === projectId)).toMatchObject({ state: "COMPLETED", finalized_at: expect.any(String) });
     await evidence(page, info, "02-proyecto-completado");
@@ -52,6 +57,7 @@ test("finaliza la entrega, completa el proyecto y persiste calificación y reput
     await expect(projects.ratingButton(projectId)).toBeVisible();
     await projects.openRating(projectId);
     await expect(projects.ratingDialog).toBeVisible();
+    await checkA11y(page, info, "calificacion-formulario");
     await projects.fillRating(4, comment);
     await expect(projects.star(4)).toHaveAttribute("aria-pressed", "true");
     await expect(projects.star(5)).toHaveAttribute("aria-pressed", "false");
@@ -62,6 +68,7 @@ test("finaliza la entrega, completa el proyecto y persiste calificación y reput
     await expect(projects.rated).toBeVisible();
     await expect(projects.ratingComment(projectId, comment)).toBeVisible();
     await expect(projects.ratingButton(projectId)).toHaveCount(0);
+    await checkA11y(page, info, "calificacion-guardada");
     await page.reload();
     await projects.find(seed.project.title);
     await expect(projects.ratingComment(projectId, comment)).toBeVisible();

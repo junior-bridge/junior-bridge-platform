@@ -1,9 +1,10 @@
 ﻿import { DashboardPage } from "../pages/DashboardPage";
 import { test, expect } from "@playwright/test";
 import { LoginPage } from "../pages/LoginPage";
+import { checkA11y } from "../utils/a11y";
 
 
-test("TC-L-01: Inicio de sesión exitoso con credenciales válidas", async ({ page }) => {
+test("TC-L-01: Inicio de sesión exitoso con credenciales válidas", async ({ page }, testInfo) => {
     const user = {
         id: 1,
         name: "Cliente E2E",
@@ -114,6 +115,7 @@ test("TC-L-01: Inicio de sesión exitoso con credenciales válidas", async ({ pa
     const loginPage = new LoginPage(page);
 
     await loginPage.navigate();
+    await checkA11y(page, testInfo, "login-formulario");
     await loginPage.login(user.email, "PasswordE2E123!");
 
     // Verifica que se acceda al dashboard.
@@ -127,6 +129,7 @@ test("TC-L-01: Inicio de sesión exitoso con credenciales válidas", async ({ pa
     await expect(
         await dashboardPage.getGreetingText()
     ).toContain("Hola, Cliente E2E");
+    await checkA11y(page, testInfo, "dashboard-cliente");
 
     console.log("[URL FINAL]", page.url());
 });
@@ -158,7 +161,7 @@ const invalidLoginCases = [
 for (const scenario of invalidLoginCases) {
     test(
         `TC-L-02: Rechaza credenciales inválidas - ${scenario.description}`,
-        async ({ page }) => {
+        async ({ page }, testInfo) => {
             await page.route("http://localhost:8000/**", async (route) => {
                 const request = route.request();
                 const path = new URL(request.url()).pathname;
@@ -227,6 +230,7 @@ for (const scenario of invalidLoginCases) {
             ).toBe("Las credenciales son inválidas.");
 
             await expect(page).not.toHaveURL(/\/dashboard\/?$/);
+            await checkA11y(page, testInfo, "login-credenciales-invalidas");
         },
     );
 }

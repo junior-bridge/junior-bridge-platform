@@ -2,6 +2,7 @@ import { test, expect, evidence, responseFor } from "../fixtures/critical.fixtur
 import { downloadAndRead } from "../support/exports";
 import { orm } from "../support/runtime";
 import { type ExportFormat } from "../pages/ReportsPage";
+import { checkA11y } from "../utils/a11y";
 
 const formats: ExportFormat[] = ["csv", "xlsx", "pdf"];
 
@@ -10,6 +11,7 @@ test("filtra y descarga CSV, XLSX y PDF reales sin datos ajenos", async ({ page,
     await session.loginAs("tester");
     await reports.navigate();
     await expect(reports.rows).toHaveCount(2);
+    await checkA11y(page, info, "exportacion-listado-reportes");
     for (const report of seed.reports) await expect(reports.row(report.title)).toBeVisible();
     await expect(reports.row(seed.foreignReport.title)).toHaveCount(0);
 
@@ -17,6 +19,7 @@ test("filtra y descarga CSV, XLSX y PDF reales sin datos ajenos", async ({ page,
     const query = "filtro_café_ñ";
     await reports.filter(query);
     await expect(reports.rows).toHaveCount(1);
+    await checkA11y(page, info, "exportacion-filtro-texto");
     await evidence(page, info, "01-filtro-texto");
     for (const format of formats) {
         await downloadAndRead(page, reports, local, info, format, "texto", [seed.reports[0]], seed, { q: query, date: "" });
@@ -32,6 +35,7 @@ test("filtra y descarga CSV, XLSX y PDF reales sin datos ajenos", async ({ page,
     await reports.filter("", date);
     await expect(reports.rows).toHaveCount(1);
     await expect(reports.row(seed.reports[1].title)).toBeVisible();
+    await checkA11y(page, info, "exportacion-filtro-fecha");
     await evidence(page, info, "02-filtro-fecha");
     for (const format of formats) {
         await downloadAndRead(page, reports, local, info, format, "fecha", [seed.reports[1]], seed, { q: "", date });
@@ -39,6 +43,7 @@ test("filtra y descarga CSV, XLSX y PDF reales sin datos ajenos", async ({ page,
     await reports.filter("sin-coincidencias");
     await expect(reports.rows).toHaveCount(0);
     await expect(reports.exportButton).toBeDisabled();
+    await checkA11y(page, info, "exportacion-sin-coincidencias");
 });
 
 test("un usuario sin reportes tiene la exportación deshabilitada", async ({ page, session, reports, api }, info) => {
@@ -48,6 +53,7 @@ test("un usuario sin reportes tiene la exportación deshabilitada", async ({ pag
     // Assert.
     await expect(reports.empty).toBeVisible();
     await expect(reports.exportButton).toBeDisabled();
+    await checkA11y(page, info, "exportacion-sin-reportes");
     const result = await api.get("/api/reports/");
     expect(result.status()).toBe(200);
     expect(await result.json()).toEqual([]);
@@ -73,6 +79,7 @@ test("un HTTP 400 real muestra el error y no genera descargas", async ({ page, s
         await reports.chooseExport(format);
         expect((await response).status()).toBe(400);
         await expect(reports.exportError).toBeVisible();
+        await checkA11y(page, info, `exportacion-error-400-${format}`);
         await evidence(page, info, `error-400-${format}`);
         await reports.acceptMessage();
         await expect(reports.exportButton).toBeEnabled();
@@ -94,6 +101,7 @@ test("sin autenticación la API rechaza exportar y la UI no descarga", async ({ 
         await reports.chooseExport(format);
         expect((await response).status()).toBe(401);
         await expect(reports.exportError).toBeVisible();
+        await checkA11y(page, info, `exportacion-error-401-${format}`);
         await reports.acceptMessage();
         await expect(reports.exportButton).toBeEnabled();
         expect(downloads).toEqual([]);
