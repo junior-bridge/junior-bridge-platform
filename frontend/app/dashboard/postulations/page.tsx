@@ -20,8 +20,8 @@ export default function PostulationsPage() {
         setDateFilter,
         statusColors,
         statusLabels,
-    }=useDashboardPostulations(user);
-   
+    } = useDashboardPostulations(user);
+
     if (!user) return null;
 
     return (
@@ -30,7 +30,7 @@ export default function PostulationsPage() {
                 <h1 className="text-2xl font-bold text-gray-800">
                     Postulaciones
                 </h1>
-                <p className="text-gray-500 text-sm mt-1">
+                <p className="text-gray-600 text-sm mt-1">
                     {user.role === "CLIENT"
                         ? "Testers que se postularon a tus proyectos"
                         : "Tus postulaciones a proyectos"}
@@ -46,12 +46,12 @@ export default function PostulationsPage() {
             />
 
             {loading ? (
-                <p className="text-sm text-gray-400 py-8 text-center">
+                <p className="text-sm text-gray-600 py-8 text-center">
                     Cargando postulaciones...
                 </p>
             ) : filteredPostulations.length === 0 ? (
                 <div className="bg-white rounded-xl p-8 text-center shadow-sm">
-                    <p className="text-sm text-gray-400">
+                    <p className="text-sm text-gray-600">
                         {postulations.length === 0
                             ? "No hay postulaciones registradas."
                             : "No se encontraron postulaciones."}
@@ -63,7 +63,7 @@ export default function PostulationsPage() {
                         <div className="bg-white rounded-xl shadow-sm overflow-x-auto">
                             <table className="w-full text-sm">
                                 <thead>
-                                    <tr className="text-[10px] text-gray-400 uppercase tracking-wide border-b border-gray-100 bg-gray-50">
+                                    <tr className="text-[10px] text-gray-600 uppercase tracking-wide border-b border-gray-100 bg-gray-50">
                                         {[
                                             "Tester",
                                             "Proyecto",
@@ -83,7 +83,10 @@ export default function PostulationsPage() {
                                 </thead>
                                 <tbody>
                                     {filteredPostulations.map((p) => {
-                                        const testerInitial = p.tester_name?.trim()?.[0]?.toUpperCase() ?? "T";
+                                        const testerInitial =
+                                            p.tester_name
+                                                ?.trim()?.[0]
+                                                ?.toUpperCase() ?? "T";
                                         const repNumber = p.tester_reputation
                                             ? Number(p.tester_reputation)
                                             : 0;
@@ -102,7 +105,7 @@ export default function PostulationsPage() {
                                                                 {p.tester_name?.trim() ||
                                                                     `Tester #${p.id_tester}`}
                                                             </p>
-                                                            <p className="text-gray-400 text-[10px]">
+                                                            <p className="text-gray-600 text-[10px]">
                                                                 {p.tester_email ??
                                                                     ""}
                                                             </p>
@@ -139,7 +142,7 @@ export default function PostulationsPage() {
                                                                 />
                                                             ),
                                                         )}
-                                                        <span className="text-xs text-gray-500 ml-1">
+                                                        <span className="text-xs text-gray-600 ml-1">
                                                             {repNumber > 0
                                                                 ? repNumber.toFixed(
                                                                       1,
@@ -148,7 +151,7 @@ export default function PostulationsPage() {
                                                         </span>
                                                     </div>
                                                 </td>
-                                                <td className="px-4 py-3 text-gray-400 text-xs">
+                                                <td className="px-4 py-3 text-gray-600 text-xs">
                                                     {new Date(
                                                         p.postulation_date,
                                                     ).toLocaleDateString(
@@ -157,7 +160,7 @@ export default function PostulationsPage() {
                                                 </td>
                                                 <td className="px-4 py-3">
                                                     <span
-                                                        className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${statusColors[p.status] ?? "bg-gray-100 text-gray-500"}`}
+                                                        className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${statusColors[p.status] ?? "bg-gray-100 text-gray-600"}`}
                                                     >
                                                         {statusLabels[
                                                             p.status
@@ -177,7 +180,7 @@ export default function PostulationsPage() {
                                                                     actionLoading ===
                                                                     p.id_postulation
                                                                 }
-                                                                className="text-[10px] font-semibold px-2.5 py-1 rounded-lg bg-green-600 text-white hover:opacity-90 transition disabled:opacity-60"
+                                                                className="text-[10px] font-semibold px-2.5 py-1 rounded-lg bg-green-800 text-white hover:bg-green-900 transition disabled:opacity-60"
                                                             >
                                                                 {actionLoading ===
                                                                 p.id_postulation
@@ -194,7 +197,7 @@ export default function PostulationsPage() {
                                                                     actionLoading ===
                                                                     p.id_postulation
                                                                 }
-                                                                className="text-[10px] font-semibold px-2.5 py-1 rounded-lg bg-red-100 text-red-600 hover:opacity-90 transition disabled:opacity-60"
+                                                                className="text-[10px] font-semibold px-2.5 py-1 rounded-lg bg-red-100 text-red-800 hover:bg-red-200 transition disabled:opacity-60"
                                                             >
                                                                 {actionLoading ===
                                                                 p.id_postulation
@@ -226,13 +229,13 @@ export default function PostulationsPage() {
                                                     `Proyecto #${p.id_project}`}
                                             </h3>
                                             <span
-                                                className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${statusColors[p.status] ?? "bg-gray-100 text-gray-500"}`}
+                                                className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${statusColors[p.status] ?? "bg-gray-100 text-gray-600"}`}
                                             >
                                                 {statusLabels[p.status] ??
                                                     p.status}
                                             </span>
                                         </div>
-                                        <p className="text-xs text-gray-400">
+                                        <p className="text-xs text-gray-600">
                                             Postulado:{" "}
                                             {new Date(
                                                 p.postulation_date,

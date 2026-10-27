@@ -1,4 +1,3 @@
-
 import { test, expect, type Page } from "@playwright/test";
 import { NewProjectPage } from "../pages/NewProjectPage";
 import { checkA11y } from "../utils/a11y";
@@ -55,7 +54,9 @@ test.describe("Publicación de proyectos", () => {
         await checkA11y(page, testInfo, "nuevo-proyecto-formulario");
     });
 
-    test("impide publicar con campos obligatorios vacíos", async ({ page }, testInfo) => {
+    test("impide publicar con campos obligatorios vacíos", async ({
+        page,
+    }, testInfo) => {
         await mockAuthenticatedClient(page);
 
         let projectRequestSent = false;
@@ -80,7 +81,9 @@ test.describe("Publicación de proyectos", () => {
         expect(projectRequestSent).toBe(false);
     });
 
-    test("rechaza una URL de repositorio inválida", async ({ page }, testInfo) => {
+    test("rechaza una URL de repositorio inválida", async ({
+        page,
+    }, testInfo) => {
         await mockAuthenticatedClient(page);
 
         const projectPage = new NewProjectPage(page);
@@ -88,19 +91,22 @@ test.describe("Publicación de proyectos", () => {
         await projectPage.navigate();
         await projectPage.fillValidForm();
         await projectPage.repositoryInput.fill(
-            "https://ejemplo.org/repositorio"
+            "https://ejemplo.org/repositorio",
         );
         await projectPage.submitButton.click();
 
-        const repositoryError =
-            projectPage.repositoryInput.locator("xpath=following-sibling::span");
+        const repositoryError = projectPage.repositoryInput.locator(
+            "xpath=following-sibling::span",
+        );
 
-        await expect(repositoryError).toHaveClass(/text-red-500/);
+        await expect(repositoryError).toHaveClass(/text-red-700/);
         await expect(repositoryError).toContainText("comience con http");
         await checkA11y(page, testInfo, "nuevo-proyecto-url-invalida");
     });
 
-    test("muestra confirmación cuando la API crea el proyecto", async ({ page }, testInfo) => {
+    test("muestra confirmación cuando la API crea el proyecto", async ({
+        page,
+    }, testInfo) => {
         await mockAuthenticatedClient(page);
 
         let submittedProject: Record<string, unknown> | null = null;
@@ -135,8 +141,17 @@ test.describe("Publicación de proyectos", () => {
         await projectPage.submitButton.click();
 
         await expect(
-            page.getByRole("heading", { name: "Proyecto creado" })
+            page.getByRole("heading", { name: "Proyecto creado" }),
         ).toBeVisible();
+        await expect(page.locator(".swal2-popup")).toHaveCSS("opacity", "1");
+        await expect(page.locator("#swal2-html-container")).toHaveCSS(
+            "color",
+            "rgb(41, 37, 36)",
+        );
+        await expect(page.locator(".swal2-confirm")).toHaveCSS(
+            "background-color",
+            "rgb(22, 101, 52)",
+        );
         await checkA11y(page, testInfo, "nuevo-proyecto-confirmacion");
 
         expect(submittedProject).toMatchObject({
@@ -149,7 +164,9 @@ test.describe("Publicación de proyectos", () => {
         await expect(page).toHaveURL(/\/dashboard\/projects$/);
     });
 
-    test("informa cuando falla la creación del proyecto", async ({ page }, testInfo) => {
+    test("informa cuando falla la creación del proyecto", async ({
+        page,
+    }, testInfo) => {
         await mockAuthenticatedClient(page);
 
         await page.route("**/api/projects/", async (route) => {
@@ -174,12 +191,15 @@ test.describe("Publicación de proyectos", () => {
         await projectPage.submitButton.click();
 
         await expect(
-            page.getByText("No se pudo crear el proyecto")
+            page.getByText("No se pudo crear el proyecto"),
         ).toBeVisible();
+        await expect(page.locator(".swal2-popup")).toHaveCSS("opacity", "1");
         await checkA11y(page, testInfo, "nuevo-proyecto-error");
     });
 
-    test("el proyecto creado aparece en el listado del cliente", async ({ page }, testInfo) => {
+    test("el proyecto creado aparece en el listado del cliente", async ({
+        page,
+    }, testInfo) => {
         await mockAuthenticatedClient(page);
 
         const createdProject = {
@@ -227,7 +247,7 @@ test.describe("Publicación de proyectos", () => {
         await projectPage.submitButton.click();
 
         await expect(
-            page.getByRole("heading", { name: "Proyecto creado" })
+            page.getByRole("heading", { name: "Proyecto creado" }),
         ).toBeVisible();
 
         await page.getByRole("button", { name: "Aceptar" }).click();
@@ -238,7 +258,7 @@ test.describe("Publicación de proyectos", () => {
         await expect(
             page.getByRole("heading", {
                 name: "Proyecto de prueba E2E",
-            })
+            }),
         ).toBeVisible();
         await checkA11y(page, testInfo, "proyectos-listado-cliente");
     });

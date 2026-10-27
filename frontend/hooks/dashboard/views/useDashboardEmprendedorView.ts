@@ -4,19 +4,19 @@ import { getPostulationReports } from "@/services/report.service";
 import { Postulation } from "@/types/postulationTypes";
 import { Project } from "@/types/projectTypes";
 import { Report } from "@/types/reportTypes";
-import {useRouter} from "next/navigation";
-import {useState, useEffect} from "react";
+import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 
 export const useDashboardEmprendedorView = () => {
     const stateColor: Record<string, string> = {
-        PENDING: "bg-gray-100 text-gray-500",
+        PENDING: "bg-gray-100 text-gray-600",
         OPEN: "bg-blue-100 text-blue-700",
         IN_PROGRESS: "bg-green-100 text-green-700",
         IN_REVIEW: "bg-orange-100 text-orange-600",
         COMPLETED: "bg-teal-100 text-teal-700",
         REJECTED: "bg-red-100 text-red-600",
     };
-    
+
     const stateProgress: Record<string, number> = {
         PENDING: 10,
         OPEN: 25,
@@ -116,7 +116,7 @@ export const useDashboardEmprendedorView = () => {
         reports,
         loading,
         activeCount,
-        pendingPostulations,  
-        stats
-    }
-}
+        pendingPostulations,
+        stats,
+    };
+};

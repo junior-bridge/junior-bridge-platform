@@ -3,7 +3,6 @@
 import Image from "next/image";
 import Link from "next/link";
 
-
 import AuthCard from "@/components/ui/AuthCard";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
@@ -28,9 +27,8 @@ export default function RegisterPage() {
         oauthLoading,
         isEntrepreneur,
         handleRegister,
-        handleOAuth
-    } = useRegister(setUser)
-
+        handleOAuth,
+    } = useRegister(setUser);
 
     return (
         <AuthCard
@@ -78,7 +76,7 @@ export default function RegisterPage() {
             <div className="flex items-center gap-3 mb-5">
                 <hr className="flex-1 border-gray-200" />
 
-                <span className="text-xs text-gray-400">o regístrate</span>
+                <span className="text-xs text-gray-600">o regístrate</span>
 
                 <hr className="flex-1 border-gray-200" />
             </div>
@@ -108,7 +106,7 @@ export default function RegisterPage() {
                                 onChange={(event) => {
                                     setForm((current) => ({
                                         ...current,
-                                        name: event.target.value
+                                        name: event.target.value,
                                     }));
                                     setFieldErrors((current) => ({
                                         ...current,
@@ -130,7 +128,7 @@ export default function RegisterPage() {
                                 onChange={(event) => {
                                     setForm((current) => ({
                                         ...current,
-                                        surname: event.target.value
+                                        surname: event.target.value,
                                     }));
                                     setFieldErrors((current) => ({
                                         ...current,
@@ -153,7 +151,7 @@ export default function RegisterPage() {
                             onChange={(event) => {
                                 setForm((current) => ({
                                     ...current,
-                                    email: event.target.value
+                                    email: event.target.value,
                                 }));
                                 setFieldErrors((current) => ({
                                     ...current,
@@ -175,7 +173,7 @@ export default function RegisterPage() {
                             onChange={(event) => {
                                 setForm((current) => ({
                                     ...current,
-                                    password: event.target.value
+                                    password: event.target.value,
                                 }));
                                 setFieldErrors((current) => ({
                                     ...current,
@@ -198,7 +196,7 @@ export default function RegisterPage() {
                             onChange={(event) => {
                                 setForm((current) => ({
                                     ...current,
-                                    confirmPassword: event.target.value
+                                    confirmPassword: event.target.value,
                                 }));
                                 setFieldErrors((current) => ({
                                     ...current,
@@ -211,7 +209,7 @@ export default function RegisterPage() {
                             helperText="Repetí exactamente la contraseña anterior."
                         />
 
-                        <label className="flex items-start gap-2 text-xs text-gray-500">
+                        <label className="flex items-start gap-2 text-xs text-gray-600">
                             <input
                                 type="checkbox"
                                 checked={acceptedTerms}
@@ -228,12 +226,17 @@ export default function RegisterPage() {
                         </label>
 
                         {error && (
-                            <p className="text-sm text-red-500 text-center">
+                            <p className="text-sm text-red-700 text-center">
                                 {error}
                             </p>
                         )}
 
-                        <Button type="submit" loading={loading} className="w-full mt-1 cursor-pointer" disabled={!acceptedTerms}>
+                        <Button
+                            type="submit"
+                            loading={loading}
+                            className="w-full mt-1 cursor-pointer"
+                            disabled={!acceptedTerms}
+                        >
                             Crear cuenta
                         </Button>
                     </form>
@@ -243,13 +246,13 @@ export default function RegisterPage() {
                             Registro como Tester Junior
                         </p>
 
-                        <p className="text-xs text-gray-500 mt-2 leading-relaxed max-w-xs">
+                        <p className="text-xs text-gray-600 mt-2 leading-relaxed max-w-xs">
                             El registro de Tester se realizará mediante Google o
                             GitHub.
                         </p>
 
                         {error && (
-                            <p className="text-sm text-red-500 text-center mt-4">
+                            <p className="text-sm text-red-700 text-center mt-4">
                                 {error}
                             </p>
                         )}
@@ -257,12 +260,12 @@ export default function RegisterPage() {
                 )}
             </div>
 
-            <p className="text-center text-xs text-gray-500 mt-5">
+            <p className="text-center text-xs text-gray-600 mt-5">
                 ¿Ya tienes una cuenta?{" "}
                 <Link
                     href="/login"
                     className="underline"
-                    style={{ color: "#e07b39" }}
+                    style={{ color: "#98410f" }}
                 >
                     Inicia sesión
                 </Link>

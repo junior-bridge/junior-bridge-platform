@@ -7,7 +7,6 @@ import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { useForgotPassword } from "@/hooks/useForgotPassword";
 
-
 export default function ForgotPasswordPage() {
     const {
         email,
@@ -59,7 +58,7 @@ export default function ForgotPasswordPage() {
                     />
 
                     {error && (
-                        <p className="text-xs text-red-500 text-center">
+                        <p className="text-xs text-red-700 text-center">
                             {error}
                         </p>
                     )}

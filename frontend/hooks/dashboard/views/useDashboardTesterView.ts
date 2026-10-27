@@ -3,18 +3,20 @@ import { useRouter } from "next/navigation";
 import { Project } from "@/types/projectTypes";
 import { Postulation } from "@/types/postulationTypes";
 import { getProjects } from "@/services/project.service";
-import { applyToProject, getUserPostulations } from "@/services/postulation.service";
+import {
+    applyToProject,
+    getUserPostulations,
+} from "@/services/postulation.service";
 import { User } from "@/types";
 import Swal from "sweetalert2";
 
 export const useDashboardTesterView = (user: User | null) => {
-
     const stateColor: Record<string, string> = {
         OPEN: "bg-green-100 text-green-700",
         IN_PROGRESS: "bg-blue-100 text-blue-700",
-        IN_REVIEW: "bg-orange-100 text-orange-600",
+        IN_REVIEW: "bg-orange-100 text-orange-800",
         COMPLETED: "bg-teal-100 text-teal-700",
-        PENDING: "bg-gray-100 text-gray-500",
+        PENDING: "bg-gray-100 text-gray-600",
         REJECTED: "bg-red-100 text-red-600",
     };
     const router = useRouter();
@@ -47,7 +49,6 @@ export const useDashboardTesterView = (user: User | null) => {
         (p) => p.status === "pending",
     );
     const availableProjects = projects.filter((p) => p.state === "OPEN");
-
 
     const stats = [
         {
@@ -109,5 +110,5 @@ export const useDashboardTesterView = (user: User | null) => {
         stats,
         appliedProjectIds,
         handleApply,
-    }
-}
+    };
+};

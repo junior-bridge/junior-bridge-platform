@@ -50,8 +50,20 @@ test("TC-L-01: Inicio de sesión exitoso con credenciales válidas", async ({ pa
         }
     });
 
+    await page.routeWebSocket(
+        "**/ws/notifications/**",
+        (webSocket) => {
+            webSocket.send(
+                JSON.stringify({
+                    type: "connection_established",
+                    message: "Conectado",
+                }),
+            );
+        },
+    );
+
     // Simula las respuestas HTTP del backend.
-    await page.route("http://localhost:8000/**", async (route) => {
+    await page.route("**/api/**", async (route) => {
         const request = route.request();
         const url = new URL(request.url());
         const path = url.pathname;
@@ -99,6 +111,27 @@ test("TC-L-01: Inicio de sesión exitoso con credenciales válidas", async ({ pa
                 status: 200,
                 contentType: "application/json",
                 body: JSON.stringify(user),
+            });
+            return;
+        }
+
+        if (path === "/api/notifications/ws-ticket/") {
+            await route.fulfill({
+                status: 200,
+                contentType: "application/json",
+                body: JSON.stringify({
+                    ticket: "ticket-e2e",
+                    expires_in: 30,
+                }),
+            });
+            return;
+        }
+
+        if (path === "/api/notifications/") {
+            await route.fulfill({
+                status: 200,
+                contentType: "application/json",
+                body: JSON.stringify([]),
             });
             return;
         }
@@ -162,7 +195,7 @@ for (const scenario of invalidLoginCases) {
     test(
         `TC-L-02: Rechaza credenciales inválidas - ${scenario.description}`,
         async ({ page }, testInfo) => {
-            await page.route("http://localhost:8000/**", async (route) => {
+            await page.route("**/api/**", async (route) => {
                 const request = route.request();
                 const path = new URL(request.url()).pathname;
 
