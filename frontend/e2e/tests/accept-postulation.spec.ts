@@ -107,5 +107,6 @@ test("el cliente acepta una postulación pendiente", async ({ page }, testInfo) 
     await page.getByRole("button", { name: "Aceptar" }).click();
 
     await expect(page.getByText("ACEPTADO")).toBeVisible();
+    await expect(page.locator(".swal2-popup")).toHaveCSS("opacity", "1");
     await checkA11y(page, testInfo, "postulacion-aceptada");
 });

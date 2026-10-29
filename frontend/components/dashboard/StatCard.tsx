@@ -1,26 +1,30 @@
 import { ChevronRight } from "lucide-react";
 
 interface StatCardProps {
-  label: string;
-  value: number | string;
-  onDetailClick?: () => void;
+    label: string;
+    value: number | string;
+    onDetailClick?: () => void;
 }
 
-export default function StatCard({ label, value, onDetailClick }: StatCardProps) {
-  return (
-    <div className="bg-white rounded-xl p-4 shadow-sm">
-      <p className="text-[10px] text-gray-400 font-semibold tracking-wide uppercase mb-2">
-        {label}
-      </p>
-      <p className="text-3xl font-bold text-gray-800 mb-3">{value}</p>
-      {onDetailClick && (
-        <button
-          onClick={onDetailClick}
-          className="text-xs text-brand-green font-medium hover:underline flex items-center gap-1 cursor-pointer"
-        >
-          Ver Detalle <ChevronRight size={12} />
-        </button>
-      )}
-    </div>
-  );
+export default function StatCard({
+    label,
+    value,
+    onDetailClick,
+}: StatCardProps) {
+    return (
+        <div className="bg-white rounded-xl p-4 shadow-sm">
+            <p className="text-[10px] text-gray-600 font-semibold tracking-wide uppercase mb-2">
+                {label}
+            </p>
+            <p className="text-3xl font-bold text-gray-800 mb-3">{value}</p>
+            {onDetailClick && (
+                <button
+                    onClick={onDetailClick}
+                    className="text-xs text-brand-green font-medium hover:underline flex items-center gap-1 cursor-pointer"
+                >
+                    Ver Detalle <ChevronRight size={12} />
+                </button>
+            )}
+        </div>
+    );
 }

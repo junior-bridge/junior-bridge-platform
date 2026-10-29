@@ -27,7 +27,7 @@ const initialReportForm: {
 export const useDashboardReports = (user:User | null) => {
 
     const severityColors: Record<string, string> = {
-        high: "bg-red-100 text-red-600",
+        high: "bg-red-100 text-red-800",
         medium: "bg-yellow-100 text-yellow-700",
         low: "bg-green-100 text-green-700",
     };

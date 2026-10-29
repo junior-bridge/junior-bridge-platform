@@ -10,6 +10,7 @@ const apiProxyTarget = process.env.API_PROXY_TARGET?.trim().replace(/\/+$/, "");
 const proxiedPrefixes = ["api", "accounts"];
 
 const nextConfig: NextConfig = {
+    allowedDevOrigins: ["127.0.0.1"],
     // Django relies on trailing slashes (APPEND_SLASH); do not let Next strip them.
     skipTrailingSlashRedirect: true,
     async rewrites() {

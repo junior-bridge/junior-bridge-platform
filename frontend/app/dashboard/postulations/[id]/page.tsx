@@ -22,13 +22,8 @@ export default function PostulationDetailPage() {
     const params = useParams<{ id: string }>();
     const { user } = useUser();
     const id = Number(params.id);
-    const {
-        postulation,
-        loading,
-        actionLoading,
-        error,
-        handleStatusChange,
-    } = useDashboardPostulationDetail(id);
+    const { postulation, loading, actionLoading, error, handleStatusChange } =
+        useDashboardPostulationDetail(id);
 
     if (!user) return null;
 
@@ -39,7 +34,7 @@ export default function PostulationDetailPage() {
 
     if (loading) {
         return (
-            <p className="px-4 sm:px-6 py-8 text-center text-sm text-gray-400">
+            <p className="px-4 sm:px-6 py-8 text-center text-sm text-gray-600">
                 Cargando postulación...
             </p>
         );
@@ -79,7 +74,7 @@ export default function PostulationDetailPage() {
                     <h1 className="text-2xl font-bold text-gray-800">
                         Detalle de postulación
                     </h1>
-                    <p className="mt-1 text-sm text-gray-500">
+                    <p className="mt-1 text-sm text-gray-600">
                         Información del proyecto y del tester postulado
                     </p>
                 </div>
@@ -97,7 +92,7 @@ export default function PostulationDetailPage() {
                         {postulation.project_title ??
                             `Proyecto #${postulation.id_project}`}
                     </p>
-                    <p className="mt-2 text-xs text-gray-400">
+                    <p className="mt-2 text-xs text-gray-600">
                         Identificador: #{postulation.id_project}
                     </p>
                 </div>
@@ -108,7 +103,7 @@ export default function PostulationDetailPage() {
                         {postulation.tester_name ??
                             `Tester #${postulation.id_tester}`}
                     </p>
-                    <p className="mt-1 text-xs text-gray-500">
+                    <p className="mt-1 text-xs text-gray-600">
                         {postulation.tester_email}
                     </p>
                     <div className="mt-3 flex items-center gap-1">
@@ -128,8 +123,10 @@ export default function PostulationDetailPage() {
                                 }
                             />
                         ))}
-                        <span className="ml-1 text-xs text-gray-500">
-                            {reputation > 0 ? reputation.toFixed(1) : "Sin calificaciones"}
+                        <span className="ml-1 text-xs text-gray-600">
+                            {reputation > 0
+                                ? reputation.toFixed(1)
+                                : "Sin calificaciones"}
                         </span>
                     </div>
                 </div>
@@ -146,25 +143,24 @@ export default function PostulationDetailPage() {
                     </strong>
                 </p>
 
-                {user.role === "CLIENT" &&
-                    postulation.status === "pending" && (
-                        <div className="mt-5 flex flex-wrap gap-3 border-t border-gray-100 pt-4">
-                            <button
-                                onClick={() => handleStatusChange("accept")}
-                                disabled={actionLoading}
-                                className="btn-green-sm disabled:opacity-60"
-                            >
-                                Aceptar
-                            </button>
-                            <button
-                                onClick={() => handleStatusChange("reject")}
-                                disabled={actionLoading}
-                                className="rounded-lg bg-red-100 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-200 disabled:opacity-60"
-                            >
-                                Rechazar
-                            </button>
-                        </div>
-                    )}
+                {user.role === "CLIENT" && postulation.status === "pending" && (
+                    <div className="mt-5 flex flex-wrap gap-3 border-t border-gray-100 pt-4">
+                        <button
+                            onClick={() => handleStatusChange("accept")}
+                            disabled={actionLoading}
+                            className="btn-green-sm disabled:opacity-60"
+                        >
+                            Aceptar
+                        </button>
+                        <button
+                            onClick={() => handleStatusChange("reject")}
+                            disabled={actionLoading}
+                            className="rounded-lg bg-red-100 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-200 disabled:opacity-60"
+                        >
+                            Rechazar
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );

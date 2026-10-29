@@ -26,7 +26,7 @@ export default function DashboardLayout({
     if (isLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-[#f5f0eb]">
-                <Loader size={40} color="#e07b39" label="Cargando..." />
+                <Loader size={40} color="#98410f" label="Cargando..." />
             </div>
         );
     }
@@ -64,7 +64,7 @@ export default function DashboardLayout({
                 <div className="flex-1 flex flex-col overflow-hidden min-w-0">
                     <header className="bg-[#f5f0eb] px-4 sm:px-6 py-3 flex items-center justify-between border-b border-gray-200 shrink-0 gap-3">
                         <button
-                            className="lg:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-200 transition shrink-0"
+                            className="lg:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-200 transition shrink-0"
                             onClick={() => setSidebarOpen(true)}
                             aria-label="Abrir menú"
                         >
@@ -81,7 +81,7 @@ export default function DashboardLayout({
                                     <p className="text-sm font-semibold text-gray-800 leading-tight">
                                         {displayName}
                                     </p>
-                                    <p className="text-xs text-gray-400">
+                                    <p className="text-xs text-gray-600">
                                         {roleLabel[user.role] ?? user.role}
                                     </p>
                                 </div>

@@ -11,7 +11,7 @@ import { Report } from "@/types/reportTypes";
 
 export const useDashboardAdminView = () => {
     const stateColor: Record<string, string> = {
-        PENDING: "bg-gray-100 text-gray-500",
+        PENDING: "bg-gray-100 text-gray-600",
         OPEN: "bg-blue-100 text-blue-700",
         IN_PROGRESS: "bg-green-100 text-green-700",
         IN_REVIEW: "bg-orange-100 text-orange-600",
@@ -52,10 +52,10 @@ export const useDashboardAdminView = () => {
             .finally(() => setReportsLoading(false));
     }, []);
 
-     const stats = [
-        { 
-            label: "Usuarios Registrados", 
-            value:  adminStats?.registered_users ?? 0,
+    const stats = [
+        {
+            label: "Usuarios Registrados",
+            value: adminStats?.registered_users ?? 0,
             path: "/dashboard/users",
         },
         {
@@ -65,8 +65,8 @@ export const useDashboardAdminView = () => {
             ).length,
             path: "/dashboard/projects",
         },
-        { 
-            label: "Bugs Reportados", 
+        {
+            label: "Bugs Reportados",
             value: adminStats?.reported_bugs ?? 0,
             path: "/dashboard/reports",
         },
@@ -86,6 +86,6 @@ export const useDashboardAdminView = () => {
         reportsLoading,
         reportsError,
         loading,
-        stats
-    }
-}
+        stats,
+    };
+};

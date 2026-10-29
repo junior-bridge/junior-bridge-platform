@@ -5,7 +5,7 @@ test("crea un reporte real, persiste en MongoDB y respeta los permisos", async (
     // Arrange: usuarios y postulación aceptada únicos; login por UI.
     await session.loginAs("tester");
     await reports.navigate();
-    await expect(reports.rows).toBeVisible();
+    await expect(reports.rows).toHaveCount(2);
     await checkA11y(page, info, "reportes-listado-tester");
     const bug = {
         postulationId: seed.postulationId, title: `${seed.run}_bug_UI_café`,
@@ -30,6 +30,7 @@ test("crea un reporte real, persiste en MongoDB y respeta los permisos", async (
     const created = await response.json();
     expect(created).toMatchObject({ title: bug.title, description: bug.description, severity: "high", id_postulation: seed.postulationId, steps_to_reproduce: bug.steps });
     await expect(reports.success).toBeVisible();
+    await expect(page.locator(".swal2-popup")).toHaveCSS("opacity", "1");
     await checkA11y(page, info, "reporte-creado-confirmacion");
     await evidence(page, info, "02-reporte-creado");
     await reports.acceptMessage();

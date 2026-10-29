@@ -7,7 +7,6 @@ import { useUser } from "@/context/UserContext";
 import { useDashboardNewProjects } from "@/hooks/dashboard/useDashboardNewProjects";
 import Loader from "@/components/ui/Loader";
 
-
 export default function NewProjectPage() {
     const { user, isClient } = useUser();
     const {
@@ -18,10 +17,6 @@ export default function NewProjectPage() {
         handleSubmit,
         getControlClassName,
     } = useDashboardNewProjects({ user, isClient });
-
-
-
-
 
     if (!user || !isClient) return null;
 
@@ -38,7 +33,7 @@ export default function NewProjectPage() {
                 <h1 className="text-2xl font-bold text-gray-800">
                     Publicar proyecto
                 </h1>
-                <p className="text-gray-500 text-sm mt-1">
+                <p className="text-gray-600 text-sm mt-1">
                     Completá la información para enviar tu proyecto a revisión.
                 </p>
             </div>
@@ -89,7 +84,7 @@ export default function NewProjectPage() {
                         {errors.description && (
                             <p
                                 id="description-error"
-                                className="text-xs text-red-500"
+                                className="text-xs text-red-700"
                             >
                                 {errors.description}
                             </p>
@@ -169,7 +164,7 @@ export default function NewProjectPage() {
                             {errors.modality && (
                                 <p
                                     id="modality-error"
-                                    className="text-xs text-red-500"
+                                    className="text-xs text-red-700"
                                 >
                                     {errors.modality}
                                 </p>

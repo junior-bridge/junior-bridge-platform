@@ -8,7 +8,6 @@ import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { useResetPassword } from "@/hooks/useResetPassword";
 
-
 export default function ResetPasswordPage() {
     const params = useParams<{ uid: string; token: string }>();
     const {
@@ -80,7 +79,7 @@ export default function ResetPasswordPage() {
                     />
 
                     {error && (
-                        <p className="text-xs text-red-500 text-center">
+                        <p className="text-xs text-red-700 text-center">
                             {error}
                         </p>
                     )}

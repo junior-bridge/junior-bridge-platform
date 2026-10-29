@@ -84,7 +84,7 @@ export default function LoginPage() {
                     <div className="flex items-center gap-3 mb-5">
                         <hr className="flex-1 border-gray-200" />
 
-                        <span className="text-xs text-gray-400">o ingresa</span>
+                        <span className="text-xs text-gray-600">o ingresa</span>
 
                         <hr className="flex-1 border-gray-200" />
                     </div>
@@ -143,7 +143,7 @@ export default function LoginPage() {
                             <div className="flex justify-end">
                                 <Link
                                     href="/forgot-password"
-                                    className="text-xs text-gray-500 hover:underline"
+                                    className="text-xs text-gray-600 hover:underline"
                                 >
                                     Olvidé mi contraseña
                                 </Link>
@@ -151,7 +151,7 @@ export default function LoginPage() {
                         </div>
 
                         {error && (
-                            <p className="text-xs text-red-500 text-center">
+                            <p className="text-xs text-red-700 text-center">
                                 {error}
                             </p>
                         )}
@@ -166,12 +166,12 @@ export default function LoginPage() {
                         </button>
                     </form>
 
-                    <p className="text-center text-xs text-gray-500 mt-5">
+                    <p className="text-center text-xs text-gray-600 mt-5">
                         ¿No tienes una cuenta?{" "}
                         <Link
                             href="/register"
                             className="underline"
-                            style={{ color: "#e07b39" }}
+                            style={{ color: "#98410f" }}
                         >
                             Regístrate
                         </Link>

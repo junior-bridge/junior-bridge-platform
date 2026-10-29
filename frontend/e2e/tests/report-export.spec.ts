@@ -79,6 +79,7 @@ test("un HTTP 400 real muestra el error y no genera descargas", async ({ page, s
         await reports.chooseExport(format);
         expect((await response).status()).toBe(400);
         await expect(reports.exportError).toBeVisible();
+        await expect(page.locator(".swal2-popup")).toHaveCSS("opacity", "1");
         await checkA11y(page, info, `exportacion-error-400-${format}`);
         await evidence(page, info, `error-400-${format}`);
         await reports.acceptMessage();
@@ -101,6 +102,7 @@ test("sin autenticación la API rechaza exportar y la UI no descarga", async ({ 
         await reports.chooseExport(format);
         expect((await response).status()).toBe(401);
         await expect(reports.exportError).toBeVisible();
+        await expect(page.locator(".swal2-popup")).toHaveCSS("opacity", "1");
         await checkA11y(page, info, `exportacion-error-401-${format}`);
         await reports.acceptMessage();
         await expect(reports.exportButton).toBeEnabled();

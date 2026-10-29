@@ -162,7 +162,7 @@ def generate_pdf(rows, *, query, date, generated_at):
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
         ("TOPPADDING", (0, 0), (-1, -1), 8),
-        ("LINEBELOW", (0, 0), (-1, 0), 1, colors.HexColor("#e07b39")),
+        ("LINEBELOW", (0, 0), (-1, 0), 1, colors.HexColor("#98410f")),
     ]))
     story.extend([table, Spacer(1, 20), paragraph("Detalle completo de los reportes", heading)])
     for row in rows:

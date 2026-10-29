@@ -52,7 +52,7 @@ export default function ProfilePage() {
         <div className="px-4 sm:px-6 py-4 sm:py-6 max-w-2xl">
             <div className="mb-6">
                 <h1 className="text-2xl font-bold text-gray-800">Mi Perfil</h1>
-                <p className="text-gray-500 text-sm mt-1">
+                <p className="text-gray-600 text-sm mt-1">
                     Información de tu cuenta
                 </p>
             </div>
@@ -69,7 +69,7 @@ export default function ProfilePage() {
                                 className="object-cover"
                             />
                         ) : (
-                            user.name[0]?.toUpperCase() ?? "?"
+                            (user.name[0]?.toUpperCase() ?? "?")
                         )}
                     </div>
                     <div>
@@ -150,7 +150,7 @@ export default function ProfilePage() {
                             </button>
                         )}
                     </div>
-                    <p className="mt-2 text-xs text-gray-500">
+                    <p className="mt-2 text-xs text-gray-600">
                         JPG, PNG o WEBP; hasta 5 MB. Se optimiza al subirla.
                     </p>
                     {photoError && (
@@ -192,7 +192,7 @@ export default function ProfilePage() {
                                 type={field.type}
                                 defaultValue={field.value}
                                 disabled={!editing || field.disabled}
-                                className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-300 disabled:bg-gray-50 disabled:text-gray-400 capitalize"
+                                className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-300 disabled:bg-gray-50 disabled:text-gray-600 capitalize"
                             />
                         </div>
                     ))}
@@ -205,16 +205,13 @@ export default function ProfilePage() {
                                 type="text"
                                 defaultValue="Web, Mobile, Security"
                                 disabled={!editing}
-                                className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-300 disabled:bg-gray-50 disabled:text-gray-400"
+                                className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-300 disabled:bg-gray-50 disabled:text-gray-600"
                             />
                         </div>
                     )}
                 </div>
                 {editing && (
-                    <button
-                        className="mt-5 w-full btn-primary"
-                        
-                    >
+                    <button className="mt-5 w-full btn-primary">
                         Guardar cambios
                     </button>
                 )}
@@ -240,10 +237,7 @@ export default function ProfilePage() {
                             />
                         </div>
                     ))}
-                    <button
-                        className="mt-2 w-full btn-secondary cursor-pointer"
-                        
-                    >
+                    <button className="mt-2 w-full btn-secondary cursor-pointer">
                         Actualizar contraseña
                     </button>
                 </div>

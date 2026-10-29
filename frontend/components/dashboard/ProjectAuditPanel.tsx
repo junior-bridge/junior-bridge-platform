@@ -1,6 +1,12 @@
 import { ProjectAuditState } from "@/hooks/dashboard/useProjectAudit";
 import { AuditStrategy, ProjectAudit } from "@/types/projectTypes";
-import { AlertTriangle, ChevronDown, ChevronUp, Gauge, Loader2 } from "lucide-react";
+import {
+    AlertTriangle,
+    ChevronDown,
+    ChevronUp,
+    Gauge,
+    Loader2,
+} from "lucide-react";
 
 interface ProjectAuditPanelProps {
     state: ProjectAuditState;
@@ -10,7 +16,13 @@ interface ProjectAuditPanelProps {
     onStrategyChange: (strategy: AuditStrategy) => void;
 }
 
-const SCORE_LABELS: { key: keyof Pick<ProjectAudit, "performance" | "accessibility" | "best_practices" | "seo">; label: string }[] = [
+const SCORE_LABELS: {
+    key: keyof Pick<
+        ProjectAudit,
+        "performance" | "accessibility" | "best_practices" | "seo"
+    >;
+    label: string;
+}[] = [
     { key: "performance", label: "Rendimiento" },
     { key: "accessibility", label: "Accesibilidad" },
     { key: "best_practices", label: "Buenas prácticas" },
@@ -23,7 +35,7 @@ const STRATEGY_LABELS: Record<AuditStrategy, string> = {
 };
 
 function scoreColor(score: number | null): string {
-    if (score === null) return "bg-gray-100 text-gray-400";
+    if (score === null) return "bg-gray-100 text-gray-600";
     if (score >= 90) return "bg-green-100 text-green-700";
     if (score >= 50) return "bg-orange-100 text-orange-600";
     return "bg-red-100 text-red-600";
@@ -44,10 +56,12 @@ function AuditResult({ audit }: { audit: ProjectAudit }) {
                 <div>
                     <p className="font-semibold">La última auditoría falló</p>
                     <p className="mt-0.5">
-                        {audit.error_message || "No se pudo obtener el resultado."}
+                        {audit.error_message ||
+                            "No se pudo obtener el resultado."}
                     </p>
                     <p className="mt-1 text-[10px] text-red-400">
-                        {STRATEGY_LABELS[audit.strategy]} · {formatDate(audit.created_at)}
+                        {STRATEGY_LABELS[audit.strategy]} ·{" "}
+                        {formatDate(audit.created_at)}
                     </p>
                 </div>
             </div>
@@ -69,15 +83,16 @@ function AuditResult({ audit }: { audit: ProjectAudit }) {
                             >
                                 {score ?? "–"}
                             </span>
-                            <span className="text-[10px] text-gray-500 text-center">
+                            <span className="text-[10px] text-gray-600 text-center">
                                 {label}
                             </span>
                         </div>
                     );
                 })}
             </div>
-            <p className="mt-2 text-[10px] text-gray-400">
-                {STRATEGY_LABELS[audit.strategy]} · {formatDate(audit.created_at)}
+            <p className="mt-2 text-[10px] text-gray-600">
+                {STRATEGY_LABELS[audit.strategy]} ·{" "}
+                {formatDate(audit.created_at)}
             </p>
         </div>
     );
@@ -107,9 +122,11 @@ export default function ProjectAuditPanel({
             {isOpen && (
                 <div className="mt-3 flex flex-col gap-3">
                     {loading ? (
-                        <p className="text-xs text-gray-400">Cargando auditoría...</p>
+                        <p className="text-xs text-gray-600">
+                            Cargando auditoría...
+                        </p>
                     ) : running ? (
-                        <p className="flex items-center gap-2 text-xs text-gray-500">
+                        <p className="flex items-center gap-2 text-xs text-gray-600">
                             <Loader2 size={14} className="animate-spin" />
                             Analizando... puede tardar hasta un minuto
                         </p>
@@ -117,7 +134,7 @@ export default function ProjectAuditPanel({
                         <AuditResult audit={audit} />
                     ) : (
                         !error && (
-                            <p className="text-xs text-gray-400">
+                            <p className="text-xs text-gray-600">
                                 Todavía no hay auditorías
                             </p>
                         )
@@ -130,17 +147,21 @@ export default function ProjectAuditPanel({
                             <select
                                 value={strategy}
                                 onChange={(e) =>
-                                    onStrategyChange(e.target.value as AuditStrategy)
+                                    onStrategyChange(
+                                        e.target.value as AuditStrategy,
+                                    )
                                 }
                                 disabled={running}
                                 aria-label="Dispositivo de la auditoría"
                                 className="rounded-lg border border-gray-200 px-2 py-1.5 text-xs text-gray-600 outline-none focus:border-teal-500"
                             >
-                                {Object.entries(STRATEGY_LABELS).map(([value, label]) => (
-                                    <option key={value} value={value}>
-                                        {label}
-                                    </option>
-                                ))}
+                                {Object.entries(STRATEGY_LABELS).map(
+                                    ([value, label]) => (
+                                        <option key={value} value={value}>
+                                            {label}
+                                        </option>
+                                    ),
+                                )}
                             </select>
                             <button
                                 type="button"
@@ -148,12 +169,14 @@ export default function ProjectAuditPanel({
                                 disabled={running || loading}
                                 className="rounded-lg bg-teal-600 px-4 py-2 text-xs font-semibold text-white hover:bg-teal-700 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
                             >
-                                {running ? "Analizando..." : "Ejecutar auditoría"}
+                                {running
+                                    ? "Analizando..."
+                                    : "Ejecutar auditoría"}
                             </button>
                         </div>
                     )}
 
-                    <p className="text-[10px] text-gray-400">
+                    <p className="text-[10px] text-gray-600">
                         Datos de Google PageSpeed Insights
                     </p>
                 </div>

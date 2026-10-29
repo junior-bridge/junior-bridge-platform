@@ -9,8 +9,6 @@ import ProjectAuditPanel from "@/components/dashboard/ProjectAuditPanel";
 import ListFilters from "@/components/dashboard/ListFilters";
 import { Fragment, useState } from "react";
 
-
-
 export default function ProjectsPage() {
     const { user, isClient, isTester, isAdmin } = useUser();
     const [ratingProjectId, setRatingProjectId] = useState<number | null>(null);
@@ -70,7 +68,7 @@ export default function ProjectsPage() {
                     <h1 className="text-2xl font-bold text-gray-800">
                         Proyectos
                     </h1>
-                    <p className="text-gray-500 text-sm mt-1">
+                    <p className="text-gray-600 text-sm mt-1">
                         {isClient && "Gestioná tus proyectos publicados"}
                         {isTester && "Explorá proyectos disponibles"}
                         {isAdmin && "Todos los proyectos de la plataforma"}
@@ -80,7 +78,6 @@ export default function ProjectsPage() {
                     <Link
                         href="/dashboard/projects/new"
                         className="flex items-center gap-2 btn-primary"
-                        
                     >
                         <Plus size={15} /> Nuevo Proyecto
                     </Link>
@@ -104,12 +101,12 @@ export default function ProjectsPage() {
             )}
 
             {loading ? (
-                <p className="text-sm text-gray-400 py-8 text-center">
+                <p className="text-sm text-gray-600 py-8 text-center">
                     Cargando proyectos...
                 </p>
             ) : filteredProjects.length === 0 ? (
                 <div className="bg-white rounded-xl p-8 text-center shadow-sm">
-                    <p className="text-sm text-gray-400">
+                    <p className="text-sm text-gray-600">
                         No se encontraron proyectos.
                     </p>
                 </div>
@@ -130,12 +127,12 @@ export default function ProjectsPage() {
                                                     {p.title}
                                                 </h3>
                                                 <span
-                                                    className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${statusColors[p.state] ?? "bg-gray-100 text-gray-500"}`}
+                                                    className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${statusColors[p.state] ?? "bg-gray-100 text-gray-600"}`}
                                                 >
                                                     {p.state}
                                                 </span>
                                             </div>
-                                            <p className="text-sm text-gray-500">
+                                            <p className="text-sm text-gray-600">
                                                 {p.description}
                                             </p>
                                         </div>
@@ -150,7 +147,7 @@ export default function ProjectsPage() {
                                             </span>
                                         ))}
                                     </div>
-                                    <div className="flex gap-4 text-xs text-gray-400 pt-2 border-t border-gray-50">
+                                    <div className="flex gap-4 text-xs text-gray-600 pt-2 border-t border-gray-50">
                                         <span>
                                             Modalidad:{" "}
                                             <strong className="text-gray-600">
@@ -164,11 +161,14 @@ export default function ProjectsPage() {
                                             ).toLocaleDateString("es-AR")}
                                         </span>
                                     </div>
-                                    {(p.state === "IN_PROGRESS" || p.state === "IN_REVIEW") && (
+                                    {(p.state === "IN_PROGRESS" ||
+                                        p.state === "IN_REVIEW") && (
                                         <div className="flex justify-end mt-4 pt-3 border-t border-gray-50">
                                             <button
-                                                onClick={() => handleCompleteProject(p.id)}
-                                                className="rounded-lg bg-teal-600 px-4 py-2 text-xs font-semibold text-white hover:bg-teal-700 transition-colors"
+                                                onClick={() =>
+                                                    handleCompleteProject(p.id)
+                                                }
+                                                className="rounded-lg bg-teal-800 px-4 py-2 text-xs font-semibold text-white hover:bg-teal-900 transition-colors"
                                             >
                                                 Dar por completado
                                             </button>
@@ -183,40 +183,57 @@ export default function ProjectsPage() {
                                                     </p>
 
                                                     <div className="mt-1 flex items-center gap-1">
-                                                        {Array.from({ length: 5 }, (_, index) => (
-                                                            <span
-                                                                key={index}
-                                                                className={
-                                                                    index <
-                                                                    ratingsByProject[p.id].rating!.stars
-                                                                        ? "text-yellow-400"
-                                                                        : "text-gray-300"
-                                                                }
-                                                            >
-                                                                ★
-                                                            </span>
-                                                        ))}
+                                                        {Array.from(
+                                                            { length: 5 },
+                                                            (_, index) => (
+                                                                <span
+                                                                    key={index}
+                                                                    className={
+                                                                        index <
+                                                                        ratingsByProject[
+                                                                            p.id
+                                                                        ]
+                                                                            .rating!
+                                                                            .stars
+                                                                            ? "text-yellow-400"
+                                                                            : "text-gray-300"
+                                                                    }
+                                                                >
+                                                                    ★
+                                                                </span>
+                                                            ),
+                                                        )}
                                                     </div>
 
-                                                    {ratingsByProject[p.id].rating!.comment && (
-                                                        <p className="mt-1 text-xs text-gray-500">
-                                                            {ratingsByProject[p.id].rating!.comment}
+                                                    {ratingsByProject[p.id]
+                                                        .rating!.comment && (
+                                                        <p className="mt-1 text-xs text-gray-600">
+                                                            {
+                                                                ratingsByProject[
+                                                                    p.id
+                                                                ].rating!
+                                                                    .comment
+                                                            }
                                                         </p>
                                                     )}
                                                 </div>
                                             ) : (
                                                 <div className="flex items-center justify-between">
-                                                    <p className="text-sm text-gray-500">
+                                                    <p className="text-sm text-gray-600">
                                                         Sin calificación
                                                     </p>
 
                                                     <button
                                                         onClick={() => {
-                                                            setRatingProjectId(p.id);
+                                                            setRatingProjectId(
+                                                                p.id,
+                                                            );
                                                             setRatingStars(0);
-                                                            setRatingComment("");
+                                                            setRatingComment(
+                                                                "",
+                                                            );
                                                         }}
-                                                        className="rounded-lg bg-teal-600 px-4 py-2 text-xs font-semibold text-white hover:bg-teal-700 transition-colors"
+                                                        className="rounded-lg bg-teal-800 px-4 py-2 text-xs font-semibold text-white hover:bg-teal-900 transition-colors"
                                                     >
                                                         Calificar proyecto
                                                     </button>
@@ -236,104 +253,121 @@ export default function ProjectsPage() {
                     {isTester && (
                         <div className="flex flex-col gap-4">
                             {paginatedProjects.map((p) => {
-                                const postulation = postulationsByProject.get(p.id);
+                                const postulation = postulationsByProject.get(
+                                    p.id,
+                                );
                                 return (
                                     <div
                                         key={p.id}
                                         data-testid={`project-${p.id}`}
                                         className="bg-white rounded-xl p-5 shadow-sm"
                                     >
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <h3 className="font-bold text-gray-800">
-                                                    {p.title}
-                                                </h3>
-                                                <span
-                                                    className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${statusColors[p.state] ?? "bg-gray-100 text-gray-500"}`}
-                                                >
-                                                    {p.state}
-                                                </span>
-                                            </div>
-                                            <p className="text-xs text-gray-500 mb-2">
-                                                {p.description}
-                                            </p>
-                                            <div className="flex gap-1 flex-wrap">
-                                                {p.technologies
-                                                    .split(",")
-                                                    .map((s) => (
-                                                        <span
-                                                            key={s}
-                                                            className="text-[10px] bg-teal-50 text-teal-700 px-2 py-0.5 rounded-full"
-                                                        >
-                                                            {s.trim()}
-                                                        </span>
-                                                    ))}
-                                            </div>
-                                            <p className="text-[10px] text-gray-400 mt-1 capitalize">
-                                                Modalidad:{" "}
-                                                {p.modality.toLowerCase()}
-                                            </p>
-                                        </div>
-                                        {postulation ? (
-                                            <div className="ml-4 shrink-0 flex flex-col items-end gap-2">
-                                                <span
-                                                    className={`text-xs font-semibold px-3 py-1.5 rounded-lg ${
-                                                        postulation.status === "accepted"
-                                                            ? "bg-green-100 text-green-700"
-                                                            : postulation.status === "rejected"
-                                                              ? "bg-red-100 text-red-600"
-                                                              : "bg-yellow-100 text-yellow-700"
-                                                    }`}
-                                                >
-                                                    {postulation.status === "accepted"
-                                                        ? "Postulación aceptada"
-                                                        : postulation.status === "rejected"
-                                                          ? "Postulación rechazada"
-                                                          : "Postulación pendiente"}
-                                                </span>
-                                                {postulation.status === "accepted" && p.state === "IN_PROGRESS" && (
-                                                    <button
-                                                        onClick={() => handleFinishDelivery(p.id)}
-                                                        className="rounded-lg bg-orange-500 px-4 py-2 text-xs font-semibold text-white hover:bg-orange-600 transition-colors"
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <h3 className="font-bold text-gray-800">
+                                                        {p.title}
+                                                    </h3>
+                                                    <span
+                                                        className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${statusColors[p.state] ?? "bg-gray-100 text-gray-600"}`}
                                                     >
-                                                        Finalizar entrega
-                                                    </button>
-                                                )}
+                                                        {p.state}
+                                                    </span>
+                                                </div>
+                                                <p className="text-xs text-gray-600 mb-2">
+                                                    {p.description}
+                                                </p>
+                                                <div className="flex gap-1 flex-wrap">
+                                                    {p.technologies
+                                                        .split(",")
+                                                        .map((s) => (
+                                                            <span
+                                                                key={s}
+                                                                className="text-[10px] bg-teal-50 text-teal-700 px-2 py-0.5 rounded-full"
+                                                            >
+                                                                {s.trim()}
+                                                            </span>
+                                                        ))}
+                                                </div>
+                                                <p className="text-[10px] text-gray-600 mt-1 capitalize">
+                                                    Modalidad:{" "}
+                                                    {p.modality.toLowerCase()}
+                                                </p>
+                                            </div>
+                                            {postulation ? (
+                                                <div className="ml-4 shrink-0 flex flex-col items-end gap-2">
+                                                    <span
+                                                        className={`text-xs font-semibold px-3 py-1.5 rounded-lg ${
+                                                            postulation.status ===
+                                                            "accepted"
+                                                                ? "bg-green-100 text-green-700"
+                                                                : postulation.status ===
+                                                                    "rejected"
+                                                                  ? "bg-red-100 text-red-600"
+                                                                  : "bg-yellow-100 text-yellow-700"
+                                                        }`}
+                                                    >
+                                                        {postulation.status ===
+                                                        "accepted"
+                                                            ? "Postulación aceptada"
+                                                            : postulation.status ===
+                                                                "rejected"
+                                                              ? "Postulación rechazada"
+                                                              : "Postulación pendiente"}
+                                                    </span>
+                                                    {postulation.status ===
+                                                        "accepted" &&
+                                                        p.state ===
+                                                            "IN_PROGRESS" && (
+                                                            <button
+                                                                onClick={() =>
+                                                                    handleFinishDelivery(
+                                                                        p.id,
+                                                                    )
+                                                                }
+                                                                className="rounded-lg bg-orange-800 px-4 py-2 text-xs font-semibold text-white hover:bg-orange-900 transition-colors"
+                                                            >
+                                                                Finalizar
+                                                                entrega
+                                                            </button>
+                                                        )}
 
-                                                {postulation.status === "pending" && (
-                                                    <button
-                                                        onClick={() =>
-                                                            setPostulationToWithdraw(
-                                                                postulation,
-                                                            )
-                                                        }
-                                                        className="text-xs font-medium text-red-600 hover:underline cursor-pointer"
-                                                    >
-                                                        Retirar postulación
-                                                    </button>
-                                                )}
-                                            </div>
-                                        ) : (
-                                            <button
-                                                onClick={() => handleApply(p.id)}
-                                                disabled={
-                                                    p.state !== "OPEN" ||
-                                                    applyingId === p.id
-                                                }
-                                                className={
-                                                    p.state === "OPEN"
-                                                        ? "ml-4 shrink-0 btn-green-sm disabled:opacity-60"
-                                                        : "ml-4 shrink-0 rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-400 cursor-not-allowed"
-                                                }
-                                            >
-                                                {applyingId === p.id
-                                                    ? "Postulando..."
-                                                    : "Postularme"}
-                                            </button>
-                                        )}
-                                    </div>
-                                    {renderAuditPanel(p.id, false)}
+                                                    {postulation.status ===
+                                                        "pending" && (
+                                                        <button
+                                                            onClick={() =>
+                                                                setPostulationToWithdraw(
+                                                                    postulation,
+                                                                )
+                                                            }
+                                                            className="text-xs font-medium text-red-600 hover:underline cursor-pointer"
+                                                        >
+                                                            Retirar postulación
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                <button
+                                                    onClick={() =>
+                                                        handleApply(p.id)
+                                                    }
+                                                    disabled={
+                                                        p.state !== "OPEN" ||
+                                                        applyingId === p.id
+                                                    }
+                                                    className={
+                                                        p.state === "OPEN"
+                                                            ? "ml-4 shrink-0 btn-green-sm disabled:opacity-60"
+                                                            : "ml-4 shrink-0 rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-600 cursor-not-allowed"
+                                                    }
+                                                >
+                                                    {applyingId === p.id
+                                                        ? "Postulando..."
+                                                        : "Postularme"}
+                                                </button>
+                                            )}
+                                        </div>
+                                        {renderAuditPanel(p.id, false)}
                                     </div>
                                 );
                             })}
@@ -344,7 +378,7 @@ export default function ProjectsPage() {
                         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
                             <table className="w-full text-sm">
                                 <thead>
-                                    <tr className="text-[10px] text-gray-400 uppercase tracking-wide border-b border-gray-100 bg-gray-50">
+                                    <tr className="text-[10px] text-gray-600 uppercase tracking-wide border-b border-gray-100 bg-gray-50">
                                         {[
                                             "ID",
                                             "Proyecto",
@@ -366,64 +400,93 @@ export default function ProjectsPage() {
                                     {paginatedProjects.map((p) => (
                                         <Fragment key={p.id}>
                                             <tr className="border-b border-gray-50 last:border-0 hover:bg-gray-50">
-                                            <td className="px-4 py-3 text-gray-400 text-xs">
-                                                #{p.id}
-                                            </td>
-                                            <td className="px-4 py-3 text-gray-700 font-medium text-xs">
-                                                {p.title}
-                                            </td>
-                                            <td className="px-4 py-3 text-gray-500 text-xs capitalize">
-                                                {p.modality.toLowerCase()}
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <span
-                                                    className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${statusColors[p.state] ?? "bg-gray-100 text-gray-500"}`}
+                                                <td className="px-4 py-3 text-gray-600 text-xs">
+                                                    #{p.id}
+                                                </td>
+                                                <td className="px-4 py-3 text-gray-700 font-medium text-xs">
+                                                    {p.title}
+                                                </td>
+                                                <td className="px-4 py-3 text-gray-600 text-xs capitalize">
+                                                    {p.modality.toLowerCase()}
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <span
+                                                        className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${statusColors[p.state] ?? "bg-gray-100 text-gray-600"}`}
+                                                    >
+                                                        {p.state}
+                                                    </span>
+                                                </td>
+                                                <td className="px-4 py-3 text-gray-600 text-xs">
+                                                    {new Date(
+                                                        p.created_at,
+                                                    ).toLocaleDateString(
+                                                        "es-AR",
+                                                    )}
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    {p.state === "PENDING" && (
+                                                        <div className="flex gap-2">
+                                                            <button
+                                                                onClick={() =>
+                                                                    handleStatusChange(
+                                                                        p.id,
+                                                                        "OPEN",
+                                                                    )
+                                                                }
+                                                                disabled={
+                                                                    updatingProjectId ===
+                                                                    p.id
+                                                                }
+                                                                className="text-[10px] font-semibold px-2 py-1 rounded bg-green-800 hover:bg-green-700 text-white transition-colors"
+                                                            >
+                                                                {updatingProjectId ===
+                                                                p.id
+                                                                    ? "..."
+                                                                    : "Aprobar"}
+                                                            </button>
+                                                            <button
+                                                                onClick={() =>
+                                                                    handleStatusChange(
+                                                                        p.id,
+                                                                        "REJECTED",
+                                                                    )
+                                                                }
+                                                                disabled={
+                                                                    updatingProjectId ===
+                                                                    p.id
+                                                                }
+                                                                className="text-[10px] font-semibold px-2 py-1 rounded bg-red-100 hover:bg-red-200 text-red-600 transition-colors"
+                                                            >
+                                                                {updatingProjectId ===
+                                                                p.id
+                                                                    ? "..."
+                                                                    : "Rechazar"}
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                            <tr className="border-b border-gray-50 last:border-0">
+                                                <td
+                                                    colSpan={6}
+                                                    className="px-4 pb-3"
                                                 >
-                                                    {p.state}
-                                                </span>
-                                            </td>
-                                            <td className="px-4 py-3 text-gray-400 text-xs">
-                                                {new Date(
-                                                    p.created_at,
-                                                ).toLocaleDateString("es-AR")}
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                {p.state === "PENDING" && (
-                                                    <div className="flex gap-2">
-                                                        <button
-                                                            onClick={() => handleStatusChange(p.id, "OPEN")}
-                                                            disabled={updatingProjectId === p.id}
-                                                            className="text-[10px] font-semibold px-2 py-1 rounded bg-green-600 hover:bg-green-700 text-white transition-colors"
-                                                        >
-                                                            {updatingProjectId === p.id ? "..." : "Aprobar"}
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleStatusChange(p.id, "REJECTED")}
-                                                            disabled={updatingProjectId === p.id}
-                                                            className="text-[10px] font-semibold px-2 py-1 rounded bg-red-100 hover:bg-red-200 text-red-600 transition-colors"
-                                                        >
-                                                            {updatingProjectId === p.id ? "..." : "Rechazar"}
-                                                        </button>
-                                                    </div>
-                                                )}
-                                            </td>
-                                        </tr>
-                                        <tr className="border-b border-gray-50 last:border-0">
-                                            <td colSpan={6} className="px-4 pb-3">
-                                                {renderAuditPanel(p.id, true)}
-                                            </td>
-                                        </tr>
+                                                    {renderAuditPanel(
+                                                        p.id,
+                                                        true,
+                                                    )}
+                                                </td>
+                                            </tr>
                                         </Fragment>
                                     ))}
                                 </tbody>
                             </table>
                         </div>
                     )}
-                    
 
                     {!loading && filteredProjects.length > 0 && (
                         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4">
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-gray-600">
                                 Página {currentPage} de {totalPages}
                             </p>
 
@@ -431,7 +494,9 @@ export default function ProjectsPage() {
                                 <button
                                     type="button"
                                     onClick={() =>
-                                        setCurrentPage((page) => Math.max(1, page - 1))
+                                        setCurrentPage((page) =>
+                                            Math.max(1, page - 1),
+                                        )
                                     }
                                     disabled={currentPage === 1}
                                     className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
@@ -454,8 +519,6 @@ export default function ProjectsPage() {
                             </div>
                         </div>
                     )}
-
-
                 </>
             )}
 
@@ -465,7 +528,7 @@ export default function ProjectsPage() {
                         <h2 className="text-lg font-bold text-gray-800">
                             Retirar postulación
                         </h2>
-                        <p className="mt-2 text-sm text-gray-500">
+                        <p className="mt-2 text-sm text-gray-600">
                             ¿Confirmás que querés retirar tu postulación? Esta
                             acción no se puede deshacer.
                         </p>
@@ -498,12 +561,20 @@ export default function ProjectsPage() {
 
             {ratingProjectId !== null && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-                    <div role="dialog" aria-modal="true" aria-labelledby="rating-title" className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
-                        <h2 id="rating-title" className="text-lg font-bold text-gray-800">
+                    <div
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="rating-title"
+                        className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl"
+                    >
+                        <h2
+                            id="rating-title"
+                            className="text-lg font-bold text-gray-800"
+                        >
                             Calificar proyecto
                         </h2>
 
-                        <p className="mt-2 text-sm text-gray-500">
+                        <p className="mt-2 text-sm text-gray-600">
                             ¿Cómo fue tu experiencia con este proyecto?
                         </p>
 
@@ -547,14 +618,16 @@ export default function ProjectsPage() {
                             <textarea
                                 id="rating-comment"
                                 value={ratingComment}
-                                onChange={(e) => setRatingComment(e.target.value)}
+                                onChange={(e) =>
+                                    setRatingComment(e.target.value)
+                                }
                                 placeholder="Escribí un comentario sobre el trabajo..."
                                 maxLength={500}
                                 rows={4}
                                 className="mt-2 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-teal-500"
                             />
 
-                            <p className="mt-1 text-right text-xs text-gray-400">
+                            <p className="mt-1 text-right text-xs text-gray-600">
                                 {ratingComment.length}/500
                             </p>
                         </div>
@@ -572,7 +645,10 @@ export default function ProjectsPage() {
                                 type="button"
                                 disabled={ratingStars === 0}
                                 onClick={async () => {
-                                    if (ratingProjectId === null || ratingStars === 0) {
+                                    if (
+                                        ratingProjectId === null ||
+                                        ratingStars === 0
+                                    ) {
                                         return;
                                     }
 
@@ -586,14 +662,14 @@ export default function ProjectsPage() {
                                     setRatingStars(0);
                                     setRatingComment("");
                                 }}
-                                className="rounded-full bg-teal-600 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                className="rounded-full bg-teal-800 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-900 disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 Guardar calificación
-                            </button>                            
+                            </button>
                         </div>
                     </div>
                 </div>
-            )}            
+            )}
         </div>
     );
 }

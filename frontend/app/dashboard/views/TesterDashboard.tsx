@@ -27,15 +27,13 @@ export default function TesterDashboard({ userName }: Props) {
         handleApply,
     } = useDashboardTesterView(user);
 
-
-
     return (
         <main className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-6">
             <div className="mb-6">
                 <h1 className="text-2xl font-bold text-gray-800">
                     Hola, {userName}
                 </h1>
-                <p className="text-gray-500 text-sm mt-1">
+                <p className="text-gray-600 text-sm mt-1">
                     {loading
                         ? "Cargando tu información..."
                         : `Tenés ${activePostulations.length} proyecto${activePostulations.length !== 1 ? "s" : ""} activo${activePostulations.length !== 1 ? "s" : ""} y ${availableProjects.length} disponible${availableProjects.length !== 1 ? "s" : ""} para postularte.`}
@@ -76,7 +74,7 @@ export default function TesterDashboard({ userName }: Props) {
                                                         {proj?.title ??
                                                             `Proyecto #${post.id_project}`}
                                                     </p>
-                                                    <p className="text-xs text-gray-400">
+                                                    <p className="text-xs text-gray-600">
                                                         {proj?.description ??
                                                             ""}
                                                     </p>
@@ -93,7 +91,7 @@ export default function TesterDashboard({ userName }: Props) {
                                                 }
                                                 className="mt-2 w-full btn-orange-sm"
                                                 style={{
-                                                    backgroundColor: "#e07b39",
+                                                    backgroundColor: "#98410f",
                                                 }}
                                             >
                                                 Reportar Bug
@@ -121,11 +119,11 @@ export default function TesterDashboard({ userName }: Props) {
                         </div>
 
                         {loading ? (
-                            <p className="text-sm text-gray-400 text-center py-4">
+                            <p className="text-sm text-gray-600 text-center py-4">
                                 Cargando proyectos...
                             </p>
                         ) : availableProjects.length === 0 ? (
-                            <p className="text-sm text-gray-400 text-center py-4">
+                            <p className="text-sm text-gray-600 text-center py-4">
                                 No hay proyectos disponibles ahora.
                             </p>
                         ) : (
@@ -149,7 +147,7 @@ export default function TesterDashboard({ userName }: Props) {
                                                         {p.state}
                                                     </span>
                                                 </div>
-                                                <p className="text-xs text-gray-400 mb-1 line-clamp-1">
+                                                <p className="text-xs text-gray-600 mb-1 line-clamp-1">
                                                     {p.description}
                                                 </p>
                                                 <div className="flex gap-1 flex-wrap">
@@ -165,12 +163,12 @@ export default function TesterDashboard({ userName }: Props) {
                                                             </span>
                                                         ))}
                                                 </div>
-                                                <p className="text-[10px] text-gray-400 mt-1 capitalize">
+                                                <p className="text-[10px] text-gray-600 mt-1 capitalize">
                                                     {p.modality.toLowerCase()}
                                                 </p>
                                             </div>
                                             {alreadyApplied ? (
-                                                <span className="ml-4 shrink-0 text-[10px] font-semibold px-2 py-1 rounded-lg bg-gray-100 text-gray-500">
+                                                <span className="ml-4 shrink-0 text-[10px] font-semibold px-2 py-1 rounded-lg bg-gray-100 text-gray-600">
                                                     Postulado
                                                 </span>
                                             ) : (
@@ -212,12 +210,12 @@ export default function TesterDashboard({ userName }: Props) {
                                     Number(user?.reputation ?? 0),
                                 )}
                             />
-                            <p className="text-[10px] text-gray-400 mt-0.5">
+                            <p className="text-[10px] text-gray-600 mt-0.5">
                                 {myPostulations.length} postulaciones
                             </p>
                         </div>
                     </div>
-                    <p className="text-xs text-gray-400 text-center mt-4">
+                    <p className="text-xs text-gray-600 text-center mt-4">
                         Las calificaciones aparecerán aquí una vez que completes
                         proyectos.
                     </p>

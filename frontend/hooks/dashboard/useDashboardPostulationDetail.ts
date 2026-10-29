@@ -7,6 +7,16 @@ import { Postulation } from "@/types/postulationTypes";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 
+const accessibleSwalOptions = {
+    buttonsStyling: false,
+    customClass: {
+        title: "swal-accessible-title",
+        htmlContainer: "swal-accessible-text",
+        confirmButton: "swal-accessible-confirm",
+        cancelButton: "swal-accessible-cancel",
+    },
+};
+
 export const useDashboardPostulationDetail = (id: number) => {
     const [postulation, setPostulation] = useState<Postulation | null>(null);
     const [loading, setLoading] = useState(true);
@@ -25,8 +35,7 @@ export const useDashboardPostulationDetail = (id: number) => {
                 const data = await getPostulation(id);
                 setPostulation(data);
             } catch (err) {
-                const errorMessage =
-                    err instanceof Error ? err.message : "";
+                const errorMessage = err instanceof Error ? err.message : "";
 
                 setError(
                     errorMessage === "Postulation not found."
@@ -46,30 +55,32 @@ export const useDashboardPostulationDetail = (id: number) => {
 
         setActionLoading(true);
 
-        if (action === "reject") {
-            const result = await Swal.fire({
-                title: "¿Rechazar postulación?",
-                text: "Esta acción cambiará el estado de la postulación.",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonText: "Sí, rechazar",
-                cancelButtonText: "Cancelar",
-            });
-
-            if (!result.isConfirmed) {
-                setActionLoading(false);
-                return;
-            }
-        }
-
         try {
+            if (action === "reject") {
+                const result = await Swal.fire({
+                    ...accessibleSwalOptions,
+                    title: "¿Rechazar postulación?",
+                    text: "Esta acción cambiará el estado de la postulación.",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "Sí, rechazar",
+                    cancelButtonText: "Cancelar",
+                });
+
+                if (!result.isConfirmed) {
+                    return;
+                }
+            }
+
             const updated =
                 action === "accept"
                     ? await acceptPostulation(postulation.id_postulation)
                     : await rejectPostulation(postulation.id_postulation);
 
             setPostulation(updated);
+
             await Swal.fire({
+                ...accessibleSwalOptions,
                 title:
                     action === "accept"
                         ? "Postulación aceptada"
@@ -83,6 +94,7 @@ export const useDashboardPostulationDetail = (id: number) => {
             });
         } catch {
             await Swal.fire({
+                ...accessibleSwalOptions,
                 title:
                     action === "accept"
                         ? "No se pudo aceptar la postulación"
