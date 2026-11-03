@@ -11,7 +11,6 @@ interface Props {
 }
 
 export default function EmprendedorDashboard({ userName }: Props) {
-
     const {
         stateColor,
         stateProgress,
@@ -22,7 +21,7 @@ export default function EmprendedorDashboard({ userName }: Props) {
         loading,
         activeCount,
         pendingPostulations,
-        stats
+        stats,
     } = useDashboardEmprendedorView();
     return (
         <main className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-6">
@@ -32,21 +31,24 @@ export default function EmprendedorDashboard({ userName }: Props) {
                         Hola, {userName}
                     </h1>
 
-                    <p className="text-gray-500 text-sm mt-1">
+                    <p className="text-gray-600 text-sm mt-1">
                         {loading
                             ? "Cargando tu información..."
-                            : `Tenés ${activeCount} proyecto${activeCount !== 1 ? "s" : ""
-                            } activo${activeCount !== 1 ? "s" : ""
-                            } y ${pendingPostulations} postulacion${pendingPostulations !== 1 ? "es" : ""
-                            } nueva${pendingPostulations !== 1 ? "s" : ""
-                            } hoy.`}
+                            : `Tenés ${activeCount} proyecto${
+                                  activeCount !== 1 ? "s" : ""
+                              } activo${
+                                  activeCount !== 1 ? "s" : ""
+                              } y ${pendingPostulations} postulacion${
+                                  pendingPostulations !== 1 ? "es" : ""
+                              } nueva${
+                                  pendingPostulations !== 1 ? "s" : ""
+                              } hoy.`}
                     </p>
                 </div>
 
                 <button
                     onClick={() => router.push("/dashboard/projects/new")}
                     className="btn-primary"
-                    
                 >
                     Publicar proyecto
                 </button>
@@ -59,9 +61,7 @@ export default function EmprendedorDashboard({ userName }: Props) {
                         label={stat.label}
                         value={stat.value}
                         onDetailClick={
-                            stat.path
-                                ? () => router.push(stat.path)
-                                : undefined
+                            stat.path ? () => router.push(stat.path) : undefined
                         }
                     />
                 ))}
@@ -86,11 +86,11 @@ export default function EmprendedorDashboard({ userName }: Props) {
                         </div>
 
                         {loading ? (
-                            <p className="text-sm text-gray-400 py-4 text-center">
+                            <p className="text-sm text-gray-600 py-4 text-center">
                                 Cargando proyectos...
                             </p>
                         ) : projects.length === 0 ? (
-                            <p className="text-sm text-gray-400 py-4 text-center">
+                            <p className="text-sm text-gray-600 py-4 text-center">
                                 No tenés proyectos publicados todavía.
                             </p>
                         ) : (
@@ -104,7 +104,7 @@ export default function EmprendedorDashboard({ userName }: Props) {
                                         progress={stateProgress[p.state] ?? 0}
                                         statusColor={
                                             stateColor[p.state] ??
-                                            "bg-gray-100 text-gray-500"
+                                            "bg-gray-100 text-gray-600"
                                         }
                                     />
                                 ))}
@@ -131,11 +131,11 @@ export default function EmprendedorDashboard({ userName }: Props) {
                         </div>
 
                         {loading ? (
-                            <p className="text-sm text-gray-400 py-4 text-center">
+                            <p className="text-sm text-gray-600 py-4 text-center">
                                 Cargando reportes...
                             </p>
                         ) : reports.length === 0 ? (
-                            <p className="text-sm text-gray-400 py-4 text-center">
+                            <p className="text-sm text-gray-600 py-4 text-center">
                                 No tenés reportes recibidos todavía.
                             </p>
                         ) : (
@@ -151,11 +151,11 @@ export default function EmprendedorDashboard({ userName }: Props) {
                                                     {report.title}
                                                 </h3>
 
-                                                <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                                                <p className="text-xs text-gray-600 mt-1 line-clamp-2">
                                                     {report.description}
                                                 </p>
 
-                                                <p className="text-[11px] text-gray-400 mt-2">
+                                                <p className="text-[11px] text-gray-600 mt-2">
                                                     {new Date(
                                                         report.created_at,
                                                     ).toLocaleDateString(
@@ -170,19 +170,20 @@ export default function EmprendedorDashboard({ userName }: Props) {
                                             </div>
 
                                             <span
-                                                className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-medium ${report.state === "PENDING"
-                                                    ? "bg-yellow-100 text-yellow-700"
-                                                    : report.state ===
-                                                        "REVIEW"
-                                                        ? "bg-orange-100 text-orange-700"
-                                                        : "bg-green-100 text-green-700"
-                                                    }`}
+                                                className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-medium ${
+                                                    report.state === "PENDING"
+                                                        ? "bg-yellow-100 text-yellow-700"
+                                                        : report.state ===
+                                                            "REVIEW"
+                                                          ? "bg-orange-100 text-orange-700"
+                                                          : "bg-green-100 text-green-700"
+                                                }`}
                                             >
                                                 {report.state === "PENDING"
                                                     ? "Pendiente"
                                                     : report.state === "REVIEW"
-                                                        ? "En revisión"
-                                                        : "Cerrado"}
+                                                      ? "En revisión"
+                                                      : "Cerrado"}
                                             </span>
                                         </div>
                                     </div>
@@ -211,11 +212,11 @@ export default function EmprendedorDashboard({ userName }: Props) {
                     </div>
 
                     {loading ? (
-                        <p className="text-xs text-gray-400 text-center">
+                        <p className="text-xs text-gray-600 text-center">
                             Cargando...
                         </p>
                     ) : postulations.length === 0 ? (
-                        <p className="text-xs text-gray-400 text-center">
+                        <p className="text-xs text-gray-600 text-center">
                             Sin postulaciones aún.
                         </p>
                     ) : (
@@ -231,8 +232,8 @@ export default function EmprendedorDashboard({ userName }: Props) {
                                     stars={
                                         p.tester_reputation
                                             ? Math.round(
-                                                Number(p.tester_reputation),
-                                            )
+                                                  Number(p.tester_reputation),
+                                              )
                                             : 0
                                     }
                                     onView={() =>

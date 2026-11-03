@@ -23,7 +23,7 @@ function Stars({ value, size = 14 }: { value: number; size?: number }) {
 function SummaryCard({ label, value }: { label: string; value: string }) {
     return (
         <div className="bg-white rounded-xl p-4 shadow-sm">
-            <p className="text-[10px] text-gray-400 font-semibold tracking-wide uppercase mb-2">
+            <p className="text-[10px] text-gray-600 font-semibold tracking-wide uppercase mb-2">
                 {label}
             </p>
             <p className="text-2xl font-bold text-gray-800">{value}</p>
@@ -48,7 +48,9 @@ export default function ReputationPage() {
     if (!user || user.role !== "TESTER") {
         return (
             <div className="px-4 sm:px-6 py-4 sm:py-6">
-                <p className="text-gray-500">Esta sección es solo para testers.</p>
+                <p className="text-gray-600">
+                    Esta sección es solo para testers.
+                </p>
             </div>
         );
     }
@@ -56,8 +58,12 @@ export default function ReputationPage() {
     const ratings = reputation?.ratings ?? [];
     const average = reputation?.reputation ?? 0;
     const totalRatings = reputation?.total_ratings ?? 0;
-    const maxStars = ratings.length ? Math.max(...ratings.map((r) => r.stars)) : 0;
-    const minStars = ratings.length ? Math.min(...ratings.map((r) => r.stars)) : 0;
+    const maxStars = ratings.length
+        ? Math.max(...ratings.map((r) => r.stars))
+        : 0;
+    const minStars = ratings.length
+        ? Math.min(...ratings.map((r) => r.stars))
+        : 0;
 
     return (
         <div className="px-4 sm:px-6 py-4 sm:py-6">
@@ -65,7 +71,7 @@ export default function ReputationPage() {
                 <h1 className="text-2xl font-bold text-gray-800">
                     Mi Reputación
                 </h1>
-                <p className="text-gray-500 text-sm mt-1">
+                <p className="text-gray-600 text-sm mt-1">
                     Tu historial de calificaciones como tester
                 </p>
             </div>
@@ -74,13 +80,13 @@ export default function ReputationPage() {
                 <div className="flex justify-center py-20">
                     <Loader
                         size={40}
-                        color="#e07b39"
+                        color="#98410f"
                         label="Cargando tu reputación..."
                     />
                 </div>
             ) : error ? (
                 <div className="bg-white rounded-xl p-8 shadow-sm text-center">
-                    <p className="text-gray-500">
+                    <p className="text-gray-600">
                         No se pudo cargar tu reputación. Intentá nuevamente.
                     </p>
                 </div>
@@ -89,7 +95,9 @@ export default function ReputationPage() {
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
                         <SummaryCard
                             label="Promedio General"
-                            value={average > 0 ? `${average.toFixed(1)} ★` : "—"}
+                            value={
+                                average > 0 ? `${average.toFixed(1)} ★` : "—"
+                            }
                         />
                         <SummaryCard
                             label="Calificaciones Recibidas"
@@ -107,9 +115,10 @@ export default function ReputationPage() {
 
                     {ratings.length === 0 ? (
                         <div className="bg-white rounded-xl p-8 shadow-sm text-center">
-                            <p className="text-gray-500">
-                                Todavía no tenés calificaciones. Completá proyectos
-                                para que los emprendedores te califiquen.
+                            <p className="text-gray-600">
+                                Todavía no tenés calificaciones. Completá
+                                proyectos para que los emprendedores te
+                                califiquen.
                             </p>
                         </div>
                     ) : (
@@ -124,7 +133,7 @@ export default function ReputationPage() {
                                             <h3 className="font-bold text-gray-800">
                                                 {r.project_title}
                                             </h3>
-                                            <p className="text-xs text-gray-400">
+                                            <p className="text-xs text-gray-600">
                                                 por {r.entrepreneur_name} ·{" "}
                                                 {formatDate(r.created_at)}
                                             </p>
@@ -138,7 +147,7 @@ export default function ReputationPage() {
                                     </div>
 
                                     {r.comment && (
-                                        <p className="text-xs text-gray-500 italic border-t border-gray-50 pt-2">
+                                        <p className="text-xs text-gray-600 italic border-t border-gray-50 pt-2">
                                             “{r.comment}”
                                         </p>
                                     )}

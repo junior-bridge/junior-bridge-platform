@@ -4,7 +4,6 @@ import { useUser } from "@/context/UserContext";
 import { Search, UserPlus, Loader2 } from "lucide-react";
 import { useDashboardUsers } from "@/hooks/dashboard/useDashboardUsers";
 
-
 export default function UsersPage() {
     const { user } = useUser();
     const {
@@ -25,7 +24,7 @@ export default function UsersPage() {
     if (!user || user.role !== "ADMIN") {
         return (
             <div className="px-4 sm:px-6 py-4 sm:py-6">
-                <p className="text-gray-500">Acceso restringido.</p>
+                <p className="text-gray-600">Acceso restringido.</p>
             </div>
         );
     }
@@ -37,28 +36,28 @@ export default function UsersPage() {
                     <h1 className="text-2xl font-bold text-gray-800">
                         Usuarios
                     </h1>
-                    <p className="text-gray-500 text-sm mt-1">
+                    <p className="text-gray-600 text-sm mt-1">
                         {loading
                             ? "Cargando..."
                             : `${filteredUsers.length} usuarios encontrados`}
                     </p>
                 </div>
                 <button
-                    className="flex items-center gap-2 btn-secondary disabled:opacity-60" disabled
-                    
+                    className="flex items-center gap-2 btn-secondary disabled:opacity-60"
+                    disabled
                 >
                     <UserPlus size={15} /> Invitar usuario
                 </button>
             </div>
             <div className="flex flex-wrap gap-3 mb-5">
                 <div className="flex items-center gap-2 bg-white rounded-full px-4 py-2 w-full sm:w-64 border border-gray-200">
-                    <Search size={14} className="text-gray-400" />
+                    <Search size={14} className="text-gray-600" />
                     <input
                         type="text"
                         placeholder="Buscar usuario..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="bg-transparent text-sm outline-none w-full placeholder-gray-400"
+                        className="bg-transparent text-sm outline-none w-full placeholder-gray-600"
                     />
                 </div>
 
@@ -74,10 +73,11 @@ export default function UsersPage() {
                         <button
                             key={filterRole}
                             onClick={() => setRoleFilter(filterRole)}
-                            className={`px-4 py-2 rounded-full text-xs font-medium border transition cursor-pointer ${isActive
-                                ? "bg-brand-green text-white border-brand-green"
-                                : "bg-white text-gray-500 border-gray-200 hover:border-teal-300"
-                                }`}
+                            className={`px-4 py-2 rounded-full text-xs font-medium border transition cursor-pointer ${
+                                isActive
+                                    ? "bg-brand-green text-white border-brand-green"
+                                    : "bg-white text-gray-600 border-gray-200 hover:border-teal-300"
+                            }`}
                         >
                             {labelMap[filterRole]}
                         </button>
@@ -87,14 +87,14 @@ export default function UsersPage() {
 
             <div className="bg-white rounded-xl shadow-sm overflow-hidden">
                 {loading ? (
-                    <div className="p-10 flex justify-center items-center gap-2 text-gray-400">
+                    <div className="p-10 flex justify-center items-center gap-2 text-gray-600">
                         <Loader2 className="animate-spin" size={20} />
                         <span className="text-sm">Cargando usuarios...</span>
                     </div>
                 ) : (
                     <table className="w-full text-sm">
                         <thead>
-                            <tr className="text-[10px] text-gray-400 uppercase tracking-wide border-b border-gray-100 bg-gray-50">
+                            <tr className="text-[10px] text-gray-600 uppercase tracking-wide border-b border-gray-100 bg-gray-50">
                                 {[
                                     "Usuario",
                                     "Rol",
@@ -118,7 +118,7 @@ export default function UsersPage() {
                                 <tr>
                                     <td
                                         colSpan={7}
-                                        className="px-4 py-8 text-center text-gray-400 text-xs"
+                                        className="px-4 py-8 text-center text-gray-600 text-xs"
                                     >
                                         No se encontraron usuarios con esos
                                         criterios.
@@ -139,7 +139,7 @@ export default function UsersPage() {
                                                     <p className="text-gray-700 font-medium text-xs">
                                                         {u.name}
                                                     </p>
-                                                    <p className="text-gray-400 text-[10px]">
+                                                    <p className="text-gray-600 text-[10px]">
                                                         {u.email}
                                                     </p>
                                                 </div>
@@ -159,7 +159,7 @@ export default function UsersPage() {
                                                 {u.status}
                                             </span>
                                         </td>
-                                        <td className="px-4 py-3 text-gray-400 text-xs">
+                                        <td className="px-4 py-3 text-gray-600 text-xs">
                                             {u.joined}
                                         </td>
                                         <td className="px-4 py-3 text-gray-600 text-center text-xs">
@@ -167,7 +167,7 @@ export default function UsersPage() {
                                         </td>
                                         <td className="px-4 py-3 text-orange-500 text-xs font-medium">
                                             {u.reputation &&
-                                                u.reputation !== "-"
+                                            u.reputation !== "-"
                                                 ? `${u.reputation} ★`
                                                 : "-"}
                                         </td>
@@ -182,17 +182,16 @@ export default function UsersPage() {
                                             </div>
                                         </td>
                                     </tr>
-                                    
                                 ))
                             )}
                         </tbody>
                     </table>
                 )}
             </div>
-            
+
             {!loading && filteredUsers.length > 0 && (
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4">
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-600">
                         Página {currentPage} de {totalPages}
                     </p>
 
@@ -223,7 +222,6 @@ export default function UsersPage() {
                     </div>
                 </div>
             )}
-            
         </div>
     );
 }

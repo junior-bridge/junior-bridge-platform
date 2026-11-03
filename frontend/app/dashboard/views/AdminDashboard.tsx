@@ -27,7 +27,7 @@ export default function AdminDashboard({ userName }: Props) {
                 <h1 className="text-2xl font-bold text-gray-800">
                     Hola, {userName}
                 </h1>
-                <p className="text-gray-500 text-sm mt-1">
+                <p className="text-gray-600 text-sm mt-1">
                     Resumen general de la plataforma JuniorBridge.
                 </p>
             </div>
@@ -66,17 +66,17 @@ export default function AdminDashboard({ userName }: Props) {
                         </div>
 
                         {loading ? (
-                            <p className="text-sm text-gray-400 text-center py-4">
+                            <p className="text-sm text-gray-600 text-center py-4">
                                 Cargando...
                             </p>
                         ) : projects.length === 0 ? (
-                            <p className="text-sm text-gray-400 text-center py-4">
+                            <p className="text-sm text-gray-600 text-center py-4">
                                 No hay proyectos registrados.
                             </p>
                         ) : (
                             <table className="w-full text-sm">
                                 <thead>
-                                    <tr className="text-[10px] text-gray-400 uppercase tracking-wide border-b border-gray-100">
+                                    <tr className="text-[10px] text-gray-600 uppercase tracking-wide border-b border-gray-100">
                                         {[
                                             "Proyecto",
                                             "Modalidad",
@@ -108,7 +108,7 @@ export default function AdminDashboard({ userName }: Props) {
                                                 {p.title}
                                             </td>
 
-                                            <td className="py-2.5 text-gray-400 text-xs capitalize">
+                                            <td className="py-2.5 text-gray-600 text-xs capitalize">
                                                 {p.modality.toLowerCase()}
                                             </td>
 
@@ -120,7 +120,7 @@ export default function AdminDashboard({ userName }: Props) {
                                                 </span>
                                             </td>
 
-                                            <td className="py-2.5 text-gray-400 text-xs">
+                                            <td className="py-2.5 text-gray-600 text-xs">
                                                 {new Date(
                                                     p.created_at,
                                                 ).toLocaleDateString("es-AR", {
@@ -139,17 +139,12 @@ export default function AdminDashboard({ userName }: Props) {
                     <div className="bg-white rounded-xl p-4 shadow-sm">
                         <div className="flex items-center justify-between mb-4">
                             <h2 className="font-bold text-gray-800 flex items-center gap-2">
-                                <Users
-                                    size={16}
-                                    className="text-brand-green"
-                                />{" "}
+                                <Users size={16} className="text-brand-green" />{" "}
                                 Usuarios Recientes
                             </h2>
 
                             <button
-                                onClick={() =>
-                                    router.push("/dashboard/users")
-                                }
+                                onClick={() => router.push("/dashboard/users")}
                                 className="text-xs text-brand-green font-medium hover:underline flex items-center gap-1 cursor-pointer"
                             >
                                 Ver Todo <ChevronRight size={12} />
@@ -157,7 +152,7 @@ export default function AdminDashboard({ userName }: Props) {
                         </div>
 
                         {users.length === 0 ? (
-                            <p className="text-sm text-gray-400 text-center py-2">
+                            <p className="text-sm text-gray-600 text-center py-2">
                                 No hay usuarios registrados.
                             </p>
                         ) : (
@@ -177,7 +172,7 @@ export default function AdminDashboard({ userName }: Props) {
                                                     {u.name} {u.surname}
                                                 </p>
 
-                                                <p className="text-gray-400 text-[10px]">
+                                                <p className="text-gray-600 text-[10px]">
                                                     {u.email}
                                                 </p>
                                             </div>
@@ -205,11 +200,8 @@ export default function AdminDashboard({ userName }: Props) {
                     <div className="bg-white rounded-xl p-4 shadow-sm">
                         <div className="flex items-center justify-between mb-3">
                             <h2 className="font-bold text-gray-800 flex items-center gap-2">
-                                <Bug
-                                    size={15}
-                                    className="text-red-400"
-                                />{" "}
-                                Bugs Recientes
+                                <Bug size={15} className="text-red-400" /> Bugs
+                                Recientes
                             </h2>
 
                             {reports.length > 0 && (
@@ -225,15 +217,15 @@ export default function AdminDashboard({ userName }: Props) {
                         </div>
 
                         {reportsLoading ? (
-                            <p className="text-xs text-gray-400 text-center py-2">
+                            <p className="text-xs text-gray-600 text-center py-2">
                                 Cargando reportes...
                             </p>
                         ) : reportsError ? (
-                            <p className="text-xs text-red-500 text-center py-2">
+                            <p className="text-xs text-red-700 text-center py-2">
                                 No se pudieron cargar los reportes.
                             </p>
                         ) : reports.length === 0 ? (
-                            <p className="text-xs text-gray-400 text-center py-2">
+                            <p className="text-xs text-gray-600 text-center py-2">
                                 No hay bugs reportados.
                             </p>
                         ) : (
@@ -247,10 +239,10 @@ export default function AdminDashboard({ userName }: Props) {
                                             {report.title}
                                         </p>
                                         <div className="flex items-center justify-between mt-1">
-                                            <span className="text-[10px] text-gray-400 capitalize">
+                                            <span className="text-[10px] text-gray-600 capitalize">
                                                 {report.severity}
                                             </span>
-                                            <span className="text-[10px] text-gray-400">
+                                            <span className="text-[10px] text-gray-600">
                                                 {new Date(
                                                     report.created_at,
                                                 ).toLocaleDateString("es-AR")}
@@ -264,10 +256,7 @@ export default function AdminDashboard({ userName }: Props) {
 
                     <div className="bg-white rounded-xl p-4 shadow-sm">
                         <h2 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
-                            <Star
-                                size={15}
-                                className="text-orange-400"
-                            />{" "}
+                            <Star size={15} className="text-orange-400" />{" "}
                             Estado de Proyectos
                         </h2>
 
@@ -275,8 +264,7 @@ export default function AdminDashboard({ userName }: Props) {
                             {Object.entries(
                                 projects.reduce(
                                     (acc, p) => {
-                                        acc[p.state] =
-                                            (acc[p.state] ?? 0) + 1;
+                                        acc[p.state] = (acc[p.state] ?? 0) + 1;
                                         return acc;
                                     },
                                     {} as Record<string, number>,
@@ -299,7 +287,7 @@ export default function AdminDashboard({ userName }: Props) {
                             ))}
 
                             {projects.length === 0 && !loading && (
-                                <p className="text-xs text-gray-400 text-center">
+                                <p className="text-xs text-gray-600 text-center">
                                     Sin datos
                                 </p>
                             )}

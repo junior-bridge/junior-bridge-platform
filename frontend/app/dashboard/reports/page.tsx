@@ -19,7 +19,8 @@ export default function ReportsPage() {
     } | null>(null);
     const [evidenceLoadError, setEvidenceLoadError] = useState(false);
 
-    const { severityColors,
+    const {
+        severityColors,
         statusColors,
         severityLabels,
         statusLabels,
@@ -48,7 +49,6 @@ export default function ReportsPage() {
 
     const backdropPointerDownRef = useRef(false);
 
-
     if (!user) {
         return null;
     }
@@ -60,7 +60,7 @@ export default function ReportsPage() {
                     <h1 className="text-2xl font-bold text-gray-800">
                         Reportes
                     </h1>
-                    <p className="text-gray-500 text-sm mt-1">
+                    <p className="text-gray-600 text-sm mt-1">
                         {user.role === "CLIENT" &&
                             "Bugs reportados en tus proyectos"}
                         {user.role === "TESTER" &&
@@ -74,7 +74,13 @@ export default function ReportsPage() {
                     <ReportExportMenu
                         filters={{ q: searchTerm, date: dateFilter }}
                         count={filteredReports.length}
-                        disabledReason={loading ? "Cargando reportes..." : error ? "No se pudieron cargar los reportes." : undefined}
+                        disabledReason={
+                            loading
+                                ? "Cargando reportes..."
+                                : error
+                                  ? "No se pudieron cargar los reportes."
+                                  : undefined
+                        }
                     />
                     {user.role === "TESTER" && (
                         <button
@@ -105,7 +111,7 @@ export default function ReportsPage() {
 
             {loading && (
                 <div className="bg-white rounded-xl shadow-sm p-8 text-center">
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-600">
                         Cargando reportes...
                     </p>
                 </div>
@@ -113,10 +119,15 @@ export default function ReportsPage() {
 
             {!loading && !error && (
                 <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-                    <div className="overflow-x-auto">
+                    <div
+                        className="overflow-x-auto"
+                        role="region"
+                        aria-label="Tabla de reportes"
+                        tabIndex={0}
+                    >
                         <table className="w-full text-sm">
                             <thead>
-                                <tr className="text-[10px] text-gray-400 uppercase tracking-wide border-b border-gray-100 bg-gray-50">
+                                <tr className="text-[10px] text-gray-600 uppercase tracking-wide border-b border-gray-100 bg-gray-50">
                                     <th className="text-left px-4 py-3 font-semibold">
                                         ID
                                     </th>
@@ -149,8 +160,9 @@ export default function ReportsPage() {
                                         severityLabels[report.severity] ??
                                         report.severity;
                                     const status =
-                                        statusLabels[report.state ?? "PENDING"] ??
-                                        report.state;
+                                        statusLabels[
+                                            report.state ?? "PENDING"
+                                        ] ?? report.state;
                                     const evidenceImages = [
                                         ...(report.evidence_images ?? []),
                                         ...(report.capture_evidence
@@ -163,7 +175,7 @@ export default function ReportsPage() {
                                             key={report._id}
                                             className="border-b border-gray-50 last:border-0 hover:bg-gray-50 cursor-pointer"
                                         >
-                                            <td className="px-4 py-3 text-gray-500 font-medium text-xs">
+                                            <td className="px-4 py-3 text-gray-600 font-medium text-xs">
                                                 #{report._id.slice(-8)}
                                             </td>
                                             <td className="px-4 py-3 text-gray-600 text-xs">
@@ -179,28 +191,30 @@ export default function ReportsPage() {
                                             </td>
                                             <td className="px-4 py-3">
                                                 <span
-                                                    className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${severityColors[
-                                                        report.severity
-                                                    ] ??
+                                                    className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                                                        severityColors[
+                                                            report.severity
+                                                        ] ??
                                                         "bg-gray-100 text-gray-600"
-                                                        }`}
+                                                    }`}
                                                 >
                                                     {severityLabel}
                                                 </span>
                                             </td>
                                             <td className="px-4 py-3">
                                                 <span
-                                                    className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${statusColors[
-                                                        report.state ??
-                                                        "PENDING"
-                                                    ] ??
+                                                    className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                                                        statusColors[
+                                                            report.state ??
+                                                                "PENDING"
+                                                        ] ??
                                                         "bg-gray-100 text-gray-600"
-                                                        }`}
+                                                    }`}
                                                 >
                                                     {status}
                                                 </span>
                                             </td>
-                                            <td className="px-4 py-3 text-gray-400 text-xs whitespace-nowrap">
+                                            <td className="px-4 py-3 text-gray-600 text-xs whitespace-nowrap">
                                                 {formatDate(report.created_at)}
                                             </td>
                                             <td className="px-4 py-3 text-xs">
@@ -212,21 +226,32 @@ export default function ReportsPage() {
                                                                     key={`${image}-${index}`}
                                                                     type="button"
                                                                     onClick={() => {
-                                                                        setEvidenceLoadError(false);
-                                                                        setSelectedEvidence({
-                                                                            url: getMediaUrl(image) ?? image,
-                                                                            title: `${report.title} - Imagen ${index + 1}`,
-                                                                        });
+                                                                        setEvidenceLoadError(
+                                                                            false,
+                                                                        );
+                                                                        setSelectedEvidence(
+                                                                            {
+                                                                                url:
+                                                                                    getMediaUrl(
+                                                                                        image,
+                                                                                    ) ??
+                                                                                    image,
+                                                                                title: `${report.title} - Imagen ${index + 1}`,
+                                                                            },
+                                                                        );
                                                                     }}
                                                                     className="text-brand-green hover:underline whitespace-nowrap"
                                                                 >
-                                                                    Ver imagen {index + 1}
+                                                                    Ver imagen{" "}
+                                                                    {index + 1}
                                                                 </button>
                                                             ),
                                                         )}
                                                     </div>
                                                 ) : (
-                                                    <span className="text-gray-400">—</span>
+                                                    <span className="text-gray-600">
+                                                        —
+                                                    </span>
                                                 )}
                                             </td>
                                         </tr>
@@ -238,7 +263,7 @@ export default function ReportsPage() {
 
                     {filteredReports.length === 0 && (
                         <div className="py-12 text-center">
-                            <p className="text-sm text-gray-400">
+                            <p className="text-sm text-gray-600">
                                 {reports.length === 0
                                     ? "No hay reportes para mostrar."
                                     : "No se encontraron reportes."}
@@ -268,8 +293,8 @@ export default function ReportsPage() {
                                 </button>
                                 {evidenceLoadError ? (
                                     <p className="rounded-lg bg-white p-6 text-sm text-red-600">
-                                        No se pudo cargar la imagen. Revisá tu sesión e
-                                        intentá nuevamente.
+                                        No se pudo cargar la imagen. Revisá tu
+                                        sesión e intentá nuevamente.
                                     </p>
                                 ) : (
                                     <Image
@@ -278,7 +303,9 @@ export default function ReportsPage() {
                                         width={1600}
                                         height={1200}
                                         unoptimized
-                                        onError={() => setEvidenceLoadError(true)}
+                                        onError={() =>
+                                            setEvidenceLoadError(true)
+                                        }
                                         className="h-auto max-h-[85vh] w-auto max-w-[95vw] rounded-lg object-contain"
                                     />
                                 )}
@@ -302,7 +329,8 @@ export default function ReportsPage() {
                         backdropPointerDownRef.current = false;
                     }}
                     onClick={(event) => {
-                        const startedOnBackdrop = backdropPointerDownRef.current;
+                        const startedOnBackdrop =
+                            backdropPointerDownRef.current;
                         backdropPointerDownRef.current = false;
 
                         if (
@@ -323,7 +351,7 @@ export default function ReportsPage() {
                             type="button"
                             onClick={closeReportModal}
                             aria-label="Cerrar"
-                            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+                            className="absolute top-4 right-4 text-gray-600 hover:text-gray-600"
                         >
                             <X size={18} />
                         </button>
@@ -346,7 +374,10 @@ export default function ReportsPage() {
                             className="space-y-4"
                         >
                             <div>
-                                <label htmlFor="report-postulation" className="block text-xs font-semibold text-gray-700 mb-1">
+                                <label
+                                    htmlFor="report-postulation"
+                                    className="block text-xs font-semibold text-gray-700 mb-1"
+                                >
                                     Postulación / Proyecto *
                                 </label>
                                 <select
@@ -364,7 +395,7 @@ export default function ReportsPage() {
                                         }));
                                     }}
                                     aria-invalid={Boolean(
-                                        formErrors.postulationId
+                                        formErrors.postulationId,
                                     )}
                                     aria-describedby={
                                         formErrors.postulationId
@@ -390,13 +421,13 @@ export default function ReportsPage() {
                                 {formErrors.postulationId && (
                                     <p
                                         id="postulation-error"
-                                        className="mt-1 text-xs text-red-500"
+                                        className="mt-1 text-xs text-red-700"
                                     >
                                         {formErrors.postulationId}
                                     </p>
                                 )}
                                 {!formErrors.postulationId && (
-                                    <p className="mt-1 text-xs text-gray-500">
+                                    <p className="mt-1 text-xs text-gray-600">
                                         Elegí el proyecto en el que encontraste
                                         el problema.
                                     </p>
@@ -404,7 +435,10 @@ export default function ReportsPage() {
                             </div>
 
                             <div>
-                                <label htmlFor="report-title" className="block text-xs font-semibold text-gray-700 mb-1">
+                                <label
+                                    htmlFor="report-title"
+                                    className="block text-xs font-semibold text-gray-700 mb-1"
+                                >
                                     Título del Bug *
                                 </label>
                                 <input
@@ -434,13 +468,13 @@ export default function ReportsPage() {
                                 {formErrors.title && (
                                     <p
                                         id="title-error"
-                                        className="mt-1 text-xs text-red-500"
+                                        className="mt-1 text-xs text-red-700"
                                     >
                                         {formErrors.title}
                                     </p>
                                 )}
                                 {!formErrors.title && (
-                                    <p className="mt-1 text-xs text-gray-500">
+                                    <p className="mt-1 text-xs text-gray-600">
                                         Resumí el problema en una frase
                                         concreta.
                                     </p>
@@ -448,16 +482,25 @@ export default function ReportsPage() {
                             </div>
 
                             <div>
-                                <label htmlFor="report-severity" className="block text-xs font-semibold text-gray-700 mb-1">
+                                <label
+                                    htmlFor="report-severity"
+                                    className="block text-xs font-semibold text-gray-700 mb-1"
+                                >
                                     Severidad
                                 </label>
                                 <select
                                     id="report-severity"
                                     value={form.severity}
-                                    onChange={(e) => setForm((current) => ({
-                                        ...current,
-                                        severity: e.target.value as "low" | "medium" | "high" | "critical",
-                                    }))}
+                                    onChange={(e) =>
+                                        setForm((current) => ({
+                                            ...current,
+                                            severity: e.target.value as
+                                                | "low"
+                                                | "medium"
+                                                | "high"
+                                                | "critical",
+                                        }))
+                                    }
                                     className="w-full text-xs rounded-lg border border-gray-200 px-3 py-2 outline-none focus:border-orange-500"
                                 >
                                     <option value="low">Baja</option>
@@ -467,7 +510,10 @@ export default function ReportsPage() {
                             </div>
 
                             <div>
-                                <label htmlFor="report-description" className="block text-xs font-semibold text-gray-700 mb-1">
+                                <label
+                                    htmlFor="report-description"
+                                    className="block text-xs font-semibold text-gray-700 mb-1"
+                                >
                                     Descripción Detallada *
                                 </label>
                                 <textarea
@@ -486,7 +532,7 @@ export default function ReportsPage() {
                                         }));
                                     }}
                                     aria-invalid={Boolean(
-                                        formErrors.description
+                                        formErrors.description,
                                     )}
                                     aria-describedby={
                                         formErrors.description
@@ -499,13 +545,13 @@ export default function ReportsPage() {
                                 {formErrors.description && (
                                     <p
                                         id="description-error"
-                                        className="mt-1 text-xs text-red-500"
+                                        className="mt-1 text-xs text-red-700"
                                     >
                                         {formErrors.description}
                                     </p>
                                 )}
                                 {!formErrors.description && (
-                                    <p className="mt-1 text-xs text-gray-500">
+                                    <p className="mt-1 text-xs text-gray-600">
                                         Contá qué hiciste, qué esperabas y qué
                                         ocurrió.
                                     </p>
@@ -513,7 +559,10 @@ export default function ReportsPage() {
                             </div>
 
                             <div>
-                                <label htmlFor="report-steps" className="block text-xs font-semibold text-gray-700 mb-1">
+                                <label
+                                    htmlFor="report-steps"
+                                    className="block text-xs font-semibold text-gray-700 mb-1"
+                                >
                                     Pasos para Reproducir *
                                 </label>
                                 <textarea
@@ -532,7 +581,7 @@ export default function ReportsPage() {
                                         }));
                                     }}
                                     aria-invalid={Boolean(
-                                        formErrors.stepsToReproduce
+                                        formErrors.stepsToReproduce,
                                     )}
                                     aria-describedby={
                                         formErrors.stepsToReproduce
@@ -545,13 +594,13 @@ export default function ReportsPage() {
                                 {formErrors.stepsToReproduce && (
                                     <p
                                         id="steps-error"
-                                        className="mt-1 text-xs text-red-500"
+                                        className="mt-1 text-xs text-red-700"
                                     >
                                         {formErrors.stepsToReproduce}
                                     </p>
                                 )}
                                 {!formErrors.stepsToReproduce && (
-                                    <p className="mt-1 text-xs text-gray-500">
+                                    <p className="mt-1 text-xs text-gray-600">
                                         Numerá cada paso en una línea separada.
                                     </p>
                                 )}
@@ -601,39 +650,48 @@ export default function ReportsPage() {
                                         />
                                     </label>
                                 </div>
-                                <p className="mt-1 text-xs text-gray-500">
-                                    Hasta 5 imágenes JPG, PNG o WEBP (5 MB cada una).
+                                <p className="mt-1 text-xs text-gray-600">
+                                    Hasta 5 imágenes JPG, PNG o WEBP (5 MB cada
+                                    una).
                                 </p>
                                 {form.evidenceFiles.length > 0 && (
                                     <ul className="mt-2 space-y-1">
-                                        {form.evidenceFiles.map((file, index) => (
-                                            <li
-                                                key={`${file.name}-${file.lastModified}`}
-                                                className="flex items-center justify-between gap-2 text-xs text-gray-600"
-                                            >
-                                                <span className="truncate">
-                                                    {file.name}
-                                                </span>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        setModalError(null);
-                                                        setForm((current) => ({
-                                                            ...current,
-                                                            evidenceFiles:
-                                                                current.evidenceFiles.filter(
-                                                                    (_, fileIndex) =>
-                                                                        fileIndex !== index,
-                                                                ),
-                                                        }));
-                                                    }}
-                                                    aria-label={`Quitar ${file.name}`}
-                                                    className="text-gray-400 hover:text-red-500"
+                                        {form.evidenceFiles.map(
+                                            (file, index) => (
+                                                <li
+                                                    key={`${file.name}-${file.lastModified}`}
+                                                    className="flex items-center justify-between gap-2 text-xs text-gray-600"
                                                 >
-                                                    <X size={14} />
-                                                </button>
-                                            </li>
-                                        ))}
+                                                    <span className="truncate">
+                                                        {file.name}
+                                                    </span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setModalError(null);
+                                                            setForm(
+                                                                (current) => ({
+                                                                    ...current,
+                                                                    evidenceFiles:
+                                                                        current.evidenceFiles.filter(
+                                                                            (
+                                                                                _,
+                                                                                fileIndex,
+                                                                            ) =>
+                                                                                fileIndex !==
+                                                                                index,
+                                                                        ),
+                                                                }),
+                                                            );
+                                                        }}
+                                                        aria-label={`Quitar ${file.name}`}
+                                                        className="text-gray-600 hover:text-red-700"
+                                                    >
+                                                        <X size={14} />
+                                                    </button>
+                                                </li>
+                                            ),
+                                        )}
                                     </ul>
                                 )}
                             </div>
@@ -651,8 +709,12 @@ export default function ReportsPage() {
                                     disabled={submitting}
                                     className="btn-primary px-5 py-2 rounded-full text-xs disabled:opacity-50 flex items-center gap-2"
                                 >
-                                    {submitting && <Loader size={14} color="#ffffff" />}
-                                    {submitting ? "Enviando..." : "Crear Reporte"}
+                                    {submitting && (
+                                        <Loader size={14} color="#ffffff" />
+                                    )}
+                                    {submitting
+                                        ? "Enviando..."
+                                        : "Crear Reporte"}
                                 </button>
                             </div>
                         </form>
